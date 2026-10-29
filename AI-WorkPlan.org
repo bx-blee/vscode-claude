@@ -1,0 +1,450 @@
+#+title: Work Plan
+#+DATE: <2026-06-10 Wed 13:54>
+#+AUTHOR: Mohsen BANAN
+#+OPTIONS: toc:4
+#+TAGS: me ai aiAndMe
+
+# Provenance (installed once by aiActivity.cs --- not regenerated):
+#   Date:      2026-10-28T17:09:41+00:00
+#   User:      bystar
+#   Templates: /bisos/apps/defaults/ai-templates
+#   Command:   /bisos/venv/py3/devbin/aiActivity.cs -i initiate --activity=blee-pkg
+
+####+BEGIN: b:ai:file/particulars
+* AI Working Context
+  Working Directory: /bxRepos/blee/vscode-claude
+  File: /bisos/git/auth/bxRepos/blee/vscode-claude/AI-WorkPlan.org/bisos/git/auth/bxRepos/blee/vscode-claude/AI-WorkPlan.org
+  Activity: blee-pkg
+  Companion Docs: AI-WORKFLOW.org, AI-Activity.org, AI-DevStatus.org
+
+####+END:
+
+This Work Plan file drives the AI collaborative development.
+Interactions are broken down into "Stages". Each Stage has a set
+of TODOs that I work with Claude to accomplish.
+
+Note to a fresh Claude: read this file together with AI-WORKFLOW.org,
+AI-Activity.org and AI-DevStatus.org to orient yourself. The =<<Context Confirmation>>=
+TODO below is the standard first step, or use =/bx-confirm0= as the automated equivalent.
+TODOs tagged =:ai:= are assigned to Claude. After completing a TODO, summarize results
+under =----- Results: ------= and mark it DONE.
+
+# The DBLOCK Below is an example of commands
+####+BEGIN: blee:bxPanel:topPanelControls
+*  [[elisp:(org-cycle)][|#Control|]] :: [[elisp:(blee:bnsm:menu-back)][Back]] [[elisp:(toggle-read-only)][read/wr]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[elisp:(delete-other-windows)][(1)]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]] [[elisp:(save-buffer)][Save]] [[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]] [[elisp:(call-interactively 'b:rg:panels/all)][rg:panels/all]]  [[elisp:(org-cycle)][| ]]
+**  RipGrep:: [[elisp:(rg-menu)][rg-menu]] ||
+**  [[elisp:(bap:magit:bisos:current-bpo-repos/visit)][BPO-Repos-Magit]] ||
+**  [[elisp:(blee:buf:re-major-mode)][Re-Major-Mode]] ||  [[elisp:(org-dblock-update-buffer-bx)][Update Buf Dblocks]] || [[elisp:(org-dblock-bx-blank-buffer)][Blank Buf Dblocks]] || [[elisp:(bx:panel:variablesShow)][bx:panel:variablesShow]]
+**  [[elisp:(blee:menu-sel:comeega:maintenance:popupMenu)][||Maintenance]] 
+**  This File :: *= /bxRepos/blee/vscode-claude/AI-WorkPlan.org =* 
+* /file-truename:/  /bisos/git/auth/bxRepos/blee/vscode-claude/AI-WorkPlan.org
+*  [[elisp:(org-cycle)][|#Select|]]  :: (Results: [[elisp:(blee:bnsm:results-here)][Here]] | [[elisp:(blee:bnsm:results-split-below)][Below]] | [[elisp:(blee:bnsm:results-split-right)][Right]] | [[elisp:(blee:bnsm:results-other)][Other]] | [[elisp:(blee:bnsm:results-popup)][Popup]]) (Select:  [[elisp:(lsip-local-run-command "lpCurrentsAdmin.sh -i currentsGetThenShow")][Show Currents]]  [[elisp:(lsip-local-run-command "lpCurrentsAdmin.sh")][lpCurrentsAdmin.sh]] ) [[elisp:(org-cycle)][| ]]
+**  #See:  (Window: [[elisp:(blee:bnsm:results-window-show)][?]] | [[elisp:(blee:bnsm:results-window-set 0)][0]] | [[elisp:(blee:bnsm:results-window-set 1)][1]] | [[elisp:(blee:bnsm:results-window-set 2)][2]] | [[elisp:(blee:bnsm:results-window-set 3)][3]] ) || [[elisp:(lsip-local-run-command-here "echo pushd dest")][echo pushd dir]] || [[elisp:(lsip-local-run-command-here "lsf")][lsf]] || [[elisp:(lsip-local-run-command-here "pwd")][pwd]] |
+**  [[elisp:(org-cycle)][|#Destinations|]] :: [[Evolution]] | [[Maintainers]]  [[elisp:(org-cycle)][| ]]
+**  #See:  [[elisp:(bx:bnsm:top:panel-blee)][Blee]] | [[elisp:(bx:bnsm:top:panel-listOfDocs)][All Docs]]  E|
+####+END
+
+* Starting point for b:ai:vscodeClaude/workflow  dblocks
+
+####+BEGIN: b:ai:vscodeClaude/workflow
+* AI Emacs VSCode-Claude Workflow
+  Working Directory: /bxRepos/blee/vscode-claude
+  File: /bisos/git/auth/bxRepos/blee/vscode-claude/AI-WorkPlan.org
+  Activity: blee-pkg
+  Companion Docs: AI-WORKFLOW.org, AI-Activity.org, AI-DevStatus.org
+
+####+END:
+
+* Overview, Purpose and Context
+
+<<Overview>>
+
+This is the Blee layer for integrating Emacs with VSCode and  VSCode-Claude.
+
+The Blee integration itrself has two layers Emacs+VSCode Integration and Emacs+VSCode-Claude integration.
+
+This is two way integration as described in the ./Emacs+VS-Code+Claude.org design.
+
+The current claudeSessions.cs should be renamed to vscodeClaude.cs
+In vscodeClaude.cs There will be two layers, one for just vscode and one for vscodeClaude.
+All of vscode-calude-el should be layered on top of vscodeClaude.cs -- Do as much as possible in python
+and as little as possible in elisp.
+
+The ./AI-Activity.org is just a starting point because this is the very first blee-pkg that is being developed.
+Also it highly likely that additional skills will also be developed in the context of this activity.
+
+
+* Stage 0: Confirm AI's Understanding of This Repo's Context
+
+Goal: Confirm AI's understanding of the context and capture that in [[Context Confirmation]] TODO.
+
+
+* Stage 0 TODOs
+** +
+** LOOP [#A] <<Context Confirmation>> for AI (typically triggered by /bx-confirm0) :aiAndMe:
+SCHEDULED: <2026-06-09 Tue>
+Must be repeated each time a new Claude instance is started here.
+Based on the series of files starting from CLAUDE.md in this repo,
+describe succinctly what you have understood.
+Enumerate explicitly which files you have imported and which you have considered.
+Prompt the user to confirm that the desired/appropriate model (/model) is being used for this project.
+Since this is to be repeated, leave the todo tag as LOOP.
+** -
+
+* Stage 1: Misc Place Holder 
+
+Goal: A placeholder for misc ideas and TODOs
+
+
+* Stage 1 TODOs (Misc)
+** +
+** TODO [#C] A Placeholder
+** -
+
+
+* Stage 2: Capture and Clean Up The Starting Point
+
+Goal: This directory is a starting point copy from /bxRepos/blee/mtdt-names/ plus various other copies and renames
+
+
+* Stage 2 TODOs
+** +
+** TODO [#A] <<2.1>> Understand and Cleanup The Starting Point and The AI-Activity :aiAndMe:
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+Consider the following as related and revistable -- Also read the rest of Stage 2 and other satges and [[Overview]]
+- All the elisp files are  /bxRepos/blee/mtdt-names/ . They need to be renamed and rewritten.
+- The Blee Package AI-Activity.org needs to be improved/re-written and maintained as we move forward.
+- Likely new skills need to be developed as we move forward.
+- This package is the central place for maintenance in blee of all things vscode and claude. Dblocks, yasnipets, menus
+----- Results: ------
+Decisions (Mohsen, 2026-10-29): prefix =b:= (not =bap:=); files as below; 2.4 done together with 2.1.
+- Elisp, rewritten (the mtdt/bbdb content is gone):
+  - =b:vscode.el= --- the vscode layer; a skeleton until vscodeClaude.cs has a vscode layer (Stage 4).
+  - =b:vscode:claude.el= --- the vscodeClaude layer: =b:vscode:claude/atPrompt=,
+    =b:vscode:claude:aiActivity/commitMsgGenerate= (x c), =b:vscode:claude:magit:commitMsg/offer=,
+    =…/markUsed=, the transient =b:vscode:claude:magit/dispatch=, =b:vscode:claude:magit|config=.
+  - =b:vscode:claude:menu.el= --- replaces =b:vscode:menu.el= (deleted).
+  - =b:vscode-claude::pkg.el= --- entry point, as =b:aiplus::pkg.el=.
+  - =dblock-vscode-claude.el= --- now only =b:ai:vscodeClaude/workflow=; the copies of
+    =b:prog:file/proclamations= and =…/particulars= (which would have overridden env3's) are removed.
+    Its =b:prog:file/particulars= dblock body still names dblock-comeega-prog.el: regenerate in Blee.
+- =package.recipe= → =vscode-claude= / =bx-blee/vscode-claude=; =mtdt-README.org= deleted (README is [[2.3]]).
+- =AI-Activity.org= (shared: =bxexamples/aiTemplates-DE/blee-pkg/=) rewritten: what a blee-pkg is,
+  structure, naming, bnpa absorption, conventions, skills.
+- Verified: =emacs-31.1 --batch= with Blee's straight build dir and stubs loads the package;
+  =b:vscode:claude:magit|config= sets the hooks and =x=; the menu builds; =atPrompt='s error path works.
+  Not yet verified in a restarted Blee.
+- Candidate skills (not written): =blee-pkg-authorship= (structure, naming, bnpa absorption,
+  batch testing --- now in AI-Activity.org; extract when it grows).
+
+** TODO [#A] <<2.2>> Setup /bisos/blee/env3/plus/bnpa:vscode-claude.el - it is a copy of bnpa:aiplus.el
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+This is how a blee pkg is absorbed into blee.
+It needs to be captured in AI-Activity.org and prehaps a skill as well.
+----- Results: ------
+Partly done with [[2.4]] (2026-10-29): =bnpa:vscode-claude.el= adapted from the aiplus copy
+(=config|main= requires =b:vscode-claude::pkg= and runs =b:vscode:claude:magit|config= after magit);
+=plus-init.el= runs it after =bnpa:aiplus=. Captured in AI-Activity.org, "How a Package Is Absorbed".
+Open: verify in a restarted Blee; whether a skill is warranted.
+
+** TODO [#A] <<2.3>> Write a README.org that describes what we are doing here
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- Look at README.org of sibling blee packages
+- Combine 
+----- Results: ------
+
+** TODO [#A] <<2.4>> Move code from /bisos/blee/env3/plus/bcpg:claudePlus.el to this package
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+And also perhaps bcpg:magitPlus.el
+----- Results: ------
+Done with [[2.1]] (2026-10-29). In =blee/env3=:
+- =bcpg:claudePlus.el=: the "VS Code Claude Prompt" section (=bap:claudeSessions/prompt=, its vars) removed;
+  the claude-code.el adoption (terminal Claude, ghostel shim) stays --- it is not VS Code.
+- =bcpg:magitPlus.el=: the "Claude's Commit Message" section and the x/hook lines of =config|main= removed;
+  the 69/90 commit settings stay (general BISOS, not Claude).
+- Renames: =bap:claudeSessions/prompt= → =b:vscode:claude/atPrompt=;
+  =bap:magit:claudeCommitMsg/request= → =b:vscode:claude:aiActivity/commitMsgGenerate=;
+  =bap:magit:claudeCommitMsg/{offer,markUsed}= → =b:vscode:claude:magit:commitMsg/{offer,markUsed}=;
+  =bap:magit:claudeDispatch= → =b:vscode:claude:magit/dispatch=. Behaviour unchanged (still =claudeSessions.cs -i prompt=).
+- Needed [[2.2]]'s wiring so x c keeps working: =bnpa:vscode-claude.el= adapted and added to =plus-init.el=.
+- Historical mentions of the =bap:= names remain in bisos-pip/aiActivity's AI-WorkPlan/AI-DevStatus.
+
+** -
+
+* Stage 4: Go to bisos.aiActivity and do the renamings from claudeSessions.cs to vscodeClaude.cs 
+
+<<Stage 4>>
+
+Goal: Functionality wont be changed. Just renamed
+
+
+* Stage 4 TODOs b:vscode:claude/atPrompt is a thin layer over bisos.aiActivity vscodeClaude.cs -i claudePrompt
+** +
+** TODO [#A] <<3.1>> Renamings from claudeSessions.cs to vscodeClaude.cs 
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: High
+:REPO: /bxRepos/bisos-pip/aiActivity
+:BASE: /bxRepos/bisos-pip/aiActivity/py3
+:FOUND: <2026-10-29 Thu 17:02>
+:END:
+- Do the work at /bxRepos/bisos-pip/aiActivity/AI-WorkPlan.org
+----- Results: ------
+
+** -
+
+
+* Stage 5: Verify that b:vscodeClaude:atPrompt Works
+
+Goal: After having rearranged and restructured the code, the primary (emacs -> vscode -> claude) should be b:vscode:claude/atPrompt
+
+It has an optional sessionId
+
+
+* Stage 5 TODOs b:vscode:claude/atPrompt is a thin layer over bisos.aiActivity vscodeClaude.cs -i claudePrompt
+** +
+** TODO [#A] <<5.1>> Implement and test b:vscode:claude/atPrompt
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- Verify that exisiting functional code that has been rearranged still works.
+- Test it as a command.
+----- Results: ------
+
+** TODO [#A] <<5.1>> Go back to [[Stage 4]] and its examples and add invokation of Cmnd through Emacs
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: /bxRepos/bisos-pip/aiActivity
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- That would test the full integration
+----- Results: ------
+
+** -
+
+* Stage 6: With b:vscode:claude/atPrompt Tell Claude Running Emacs's Server Socket Name -- b:vscode:claude/thisEmacsServer
+
+Goal: Make the  vscodeClaude and Blee/Emacs  communication bidirectional
+
+
+* Stage 6 TODOs 
+** +
+** TODO [#A] <<6.1>> Implement b:vscode:claude/thisEmacsServer and Associated Claude Skills
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- We give Claude our socket and ask it to run an emacsclient with it to verify that Claude can access us
+----- Results: ------
+
+** TODO [#A] <<6.2>> Verify that Claude can Update Dblocks Through Emacs
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- Improve the dblock skill if needed 
+----- Results: ------
+
+** -
+
+* Stage 7: With b:vscode:claude/atPrompt Create a set of org Commands in b:ai:vscodeClaude/workflow dblock
+
+A starting point but irrelevant starting point for  b:ai:vscodeClaude/workflow is in  ./dblock-vscode-claude.el
+
+As an example of how org commands in a dblock work see::  blee:bxPanel:topPanelControls
+
+Each cmnd just sends a b:vscode:claude/atPrompt with a bx-command
+
+What is below is just a start and will evolve.
+<<The order and scope of commands>>  can be:
+
+- [[Select Claude Session]]  ||  [[bx-confirm-repo]]   || [[bx-confirm-here]]
+- [[This Emacs Server]]  -- Perhaps can also be added to bx-confirm
+- bx-archive-read || bx-status-read || bx-ai-outputs || bx-task-do || bx-task-done
+- bx-session-verify || bx-status-update || bx-archive-update
+- bx-git-commit-msg || bx-git-uncommited-list 
+
+
+* Stage 7 TODOs 
+** +
+** TODO [#A] <<7.1>> Build a generalized org command string model
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- Experiment with one or two simple commands like:
+-  [[elisp:(b:vscode:claude:aiActivity/bx-confirm-here)][bx-confirm-here]
+- Instead of elisp:  -- Perhaps have [[aiActivity:bx-confirm-here][bx-confirm-here] Does org-mode support that?
+----- Results: ------
+
+** TODO [#A] <<7.2>> Update b:ai:vscodeClaude/workflow
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+Using the model of [[7.1]] build b:ai:vscodeClaude/workflow
+to produce [[The order and scope of commands]]
+----- Results: ------
+
+
+** -
+
+* Stage 8: Complete and Verify the Full Claude-Magit Cycle
+
+<<Stage 8>>
+
+- Claude: /bx-git-uncommited-list
+  provides me a list that I can click on and  when selected
+  with emacs client it puts me that repos magit
+- Mohsen: I stage  whatever I want
+- Mohsen: Magit (x c) -- b:vscode:claude:aiActivity/commitMsgGenerate
+- Claude: Generates the Claude Commit Message
+  - Optionally when done raise the magit window in emacs
+- Mohsen: Magit (c c) -- yes for accept Calude Message
+- Mohsen: Ctl-c Ctl-c
+
+* Stage 8 TODOs 
+** +
+** TODO [#A] <<8.1>> Can /bx-git-uncommited-list give me a list from which I can select
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- Once selected, emacsclient magit
+----- Results: ------
+
+** TODO [#A] <<8.2>> After Stage, Magit (x c) -- b:vscode:claude:aiActivity/commitMsgGenerate
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- Code already exists. In this package now. Needs to be tested.
+- Upstream input for the github magit issues to reserve Magit (x c) for AI Commit Msg Generation
+----- Results: ------
+
+** TODO [#A] <<8.3>> Full Cycle testing of all of [[Stage 8]]
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- Make sure that all of it falls into place.
+----- Results: ------
+** -
+
+
+* Stage 9: READMEs Capture and Consistency
+
+<<Stage 9>>
+
+Revisit README of aiActivity and this package for completeness and consistency
+
+* Stage 9 TODOs 
+** +
+** TODO [#A] <<9.1>> Review this Package's README 
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- Make sure that all relevant aiActivity READMEs are consistent.
+----- Results: ------
+
+** -
+
+* Stage 10: vscode Interfaces
+
+<<Stage 10>>
+
+Include  vscode interface in b:vscode.el
+
+* Stage 10 TODOs 
+** +
+** TODO [#A] <<10.1>> Capture relevant vscode from ../open-in package
+SCHEDULED: <2026-10-28 Wed 22:50>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-01 Thu 10:32>
+:END:
+- Think of other features that can go in b:vscode.el
+----- Results: ------
+
+** -
+
+
+
+
+# Local Variables:
+# eval: (setq-local toc-org-max-depth 4)
+# eval: (setq-local org-log-done 'time)
+# End:

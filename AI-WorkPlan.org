@@ -135,7 +135,8 @@ Decisions (Mohsen, 2026-10-29): prefix =b:= (not =bap:=); files as below; 2.4 do
   - =dblock-vscode-claude.el= --- now only =b:ai:vscodeClaude/workflow=; the copies of
     =b:prog:file/proclamations= and =…/particulars= (which would have overridden env3's) are removed.
     Its =b:prog:file/particulars= dblock body still names dblock-comeega-prog.el: regenerate in Blee.
-- =package.recipe= → =vscode-claude= / =bx-blee/vscode-claude=; =mtdt-README.org= deleted (README is [[2.3]]).
+- =package.recipe= → =vscode-claude= / =bx-blee/vscode-claude=; =mtdt-README.org= deleted (README is
+  [[2.3]]).
 - =AI-Activity.org= (shared: =bxexamples/aiTemplates-DE/blee-pkg/=) rewritten: what a blee-pkg is,
   structure, naming, bnpa absorption, conventions, skills.
 - Verified: =emacs-31.1 --batch= with Blee's straight build dir and stubs loads the package;
@@ -207,15 +208,19 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 And also perhaps bcpg:magitPlus.el
 ----- Results: ------
 Done with [[2.1]] (2026-10-29). In =blee/env3=:
-- =bcpg:claudePlus.el=: the "VS Code Claude Prompt" section (=bap:claudeSessions/prompt=, its vars) removed;
+- =bcpg:claudePlus.el=: the "VS Code Claude Prompt" section (=bap:claudeSessions/prompt=, its vars)
+  removed;
   the claude-code.el adoption (terminal Claude, ghostel shim) stays --- it is not VS Code.
-- =bcpg:magitPlus.el=: the "Claude's Commit Message" section and the x/hook lines of =config|main= removed;
+- =bcpg:magitPlus.el=: the "Claude's Commit Message" section and the x/hook lines of =config|main=
+  removed;
   the 69/90 commit settings stay (general BISOS, not Claude).
 - Renames: =bap:claudeSessions/prompt= → =b:vscode:claude/atPrompt=;
   =bap:magit:claudeCommitMsg/request= → =b:vscode:claude:aiActivity/commitMsgGenerate=;
   =bap:magit:claudeCommitMsg/{offer,markUsed}= → =b:vscode:claude:magit:commitMsg/{offer,markUsed}=;
-  =bap:magit:claudeDispatch= → =b:vscode:claude:magit/dispatch=. Behaviour unchanged (still =claudeSessions.cs -i prompt=).
-- Needed [[2.2]]'s wiring so x c keeps working: =bnpa:vscode-claude.el= adapted and added to =plus-init.el=.
+  =bap:magit:claudeDispatch= → =b:vscode:claude:magit/dispatch=. Behaviour unchanged (still
+  =claudeSessions.cs -i prompt=).
+- Needed [[2.2]]'s wiring so x c keeps working: =bnpa:vscode-claude.el= adapted and added to
+  =plus-init.el=.
 - Historical mentions of the =bap:= names remain in bisos-pip/aiActivity's AI-WorkPlan/AI-DevStatus.
 
 ** -
@@ -478,7 +483,10 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 - Land on the line (and column) of point, not just the file; =--reuse-window= so it does not
   open a new window each time.
 ----- Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenFile <file> [line [col]] (--reuse-window --goto). Elisp not yet.
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenFile <file>
+[line [col]] (--reuse-window --goto). Elisp not yet.
+2026-10-30: b:vscode/fileOpen now runs vscode.cs -i vscodeOpenFile <file> <line> <col> at point (in
+dired: the file at point; no file: the directory, vscodeOpenFolder), through b:vscode:program/run.
 
 ** DONE [#C] <<10.3>> Open the repo (project root) as a VS Code folder
 CLOSED: [2026-10-30 Fri 18:10]
@@ -493,7 +501,8 @@ CLOSED: [2026-10-30 Fri 18:10]
 - Matters for Claude: the folder sets the session's working directory, so which =CLAUDE.md= and
   =.claude/commands= are loaded. A single file loses that.
 ----- Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenFolder <dir>, --window=reuse|new. Elisp not yet.
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenFolder
+<dir>, --window=reuse|new. Elisp not yet.
 2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
 stays in vscode.cs for shell use. Revisit if a use from Blee appears.
 
@@ -508,7 +517,8 @@ CLOSED: [2026-10-30 Fri 18:10]
 :END:
 - A multi-root workspace without a new window, e.g. a sibling repo such as bisos-pip/aiActivity.
 ----- Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeAddFolder <dir>. Elisp not yet.
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeAddFolder <dir>.
+Elisp not yet.
 2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
 stays in vscode.cs for shell use. Revisit if a use from Blee appears.
 
@@ -523,7 +533,8 @@ CLOSED: [2026-10-30 Fri 18:10]
 :END:
 - Two marked files in dired, or the file at point in magit (against HEAD or the index).
 ----- Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeDiff <a> <b> (files; the dired/magit side is elisp). Elisp not yet.
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeDiff <a> <b>
+(files; the dired/magit side is elisp). Elisp not yet.
 2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
 stays in vscode.cs for shell use. Revisit if a use from Blee appears.
 
@@ -540,7 +551,8 @@ CLOSED: [2026-10-30 Fri 17:56]
   =vscode://anthropic.claude-code/open?session=…&prompt=…= URI handed to it.
 - Logic in the Python vscode layer of vscodeClaude.cs ([[Stage 4]]); the elisp only wraps it.
 ----- Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenUri <uri>; vscodeClaude_csu sends its /open URI through vscode_csu. Elisp not yet.
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenUri <uri>;
+vscodeClaude_csu sends its /open URI through vscode_csu. Elisp not yet.
 2026-10-30: DONE, no elisp needed. atPrompt already reaches --open-url through vscodeClaude.cs
 (claudePrompt calls vscode_csu.openUriSend); a b:vscode/openUrl would be a primitive no Blee
 command calls. For a raw URI: vscode.cs -i vscodeOpenUri. Answers 10.12's last question: Blee
@@ -560,7 +572,8 @@ CLOSED: [2026-10-30 Fri 17:56]
 - Commands then fail with a clear message instead of silently doing nothing.
 - In Python (vscodeClaude.cs vscode layer).
 ----- Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeTopology (launcher, ipcHook, desktop main and DISPLAY, a verdict). Elisp not yet.
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeTopology
+(launcher, ipcHook, desktop main and DISPLAY, a verdict). Elisp not yet.
 2026-10-30: DONE, no elisp needed. The "fail with a clear message" half is in Python too:
 claudePrompt refuses through vscode_csu.displayProblem (naming the desktop's DISPLAY), and
 atPrompt shows the EH_Problem. vscodeTopology is a diagnostic, run from a shell or the examples.
@@ -577,7 +590,8 @@ CLOSED: [2026-10-30 Fri 17:56]
 - Check for and install =anthropic.claude-code=: item 4 of the design's "Components to Build".
 - In Python (vscodeClaude.cs vscode layer).
 ----- Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeExtensions and vscodeExtensionVersion <id>; installing stays in vscode-sbom.pcs. Elisp not yet.
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeExtensions and
+vscodeExtensionVersion <id>; installing stays in vscode-sbom.pcs. Elisp not yet.
 2026-10-30: DONE, no elisp needed. Checking and installing are setup, done once from a shell
 (vscode.cs -i vscodeExtensionVersion anthropic.claude-code; vscode-sbom.pcs), not from Blee.
 
@@ -592,6 +606,9 @@ CLOSED: [2026-10-30 Fri 17:56]
 - A VS Code task or keybinding running =emacsclient -s <socket> +line file=.
 - A setup snippet for README.org or the panel, not elisp. Makes editing two-way, not only Claude.
 ----- Results: ------
+2026-10-30: built: vscode.cs -i bleeOpenFile <file> [line [col]] (partner socket, emacsclient -n
++L:C, raise the frame) and vscodeBleeLinkSnippet (the user task, ctrl+alt+e, task.saveBeforeRun).
+Tested against a fresh Blee (line and column land). Not yet: the task in VS Code.
 
 ** TODO [#B] <<10.10>> One owner for "open in vscode": b:vscode vs open-in
 :PROPERTIES:
@@ -615,6 +632,8 @@ CLOSED: [2026-10-30 Fri 17:56]
 :END:
 - A VS Code submenu in b:vscode:claude:menu.el, or a b:vscode:menu.el of its own.
 ----- Results: ------
+2026-10-30: b:vscode:claude:menu.el has Prompt, Magit, Session and VS Code submenus; and a transient,
+b:vscode:claude/dispatch (also magit x d).
 
 ** TODO [#B] <<10.12>> Make b:vscode/fileOpen robust: local process, TRAMP paths, Linux only
 :PROPERTIES:
@@ -633,10 +652,112 @@ CLOSED: [2026-10-30 Fri 17:56]
 ----- Results: ------
 2026-10-30: decided with [[10.6]]: through vscode.cs (vscodeOpenFile), which already runs code
 locally, with the right environment, Linux only. Left here: the TRAMP path handling.
+2026-10-30: done with 10.2: local process (default-directory ~/), TRAMP paths refused, the macOS
+and Windows branches dropped.
 
 ** -
 
 
+* Stage 11: The Partnership and Claude Code Hooks
+
+<<Stage 11>>
+
+Goal: implement the design of README.org, "The Partnership and the Associations" and channel 5
+(Claude events → Blee). Decided 2026-10-30: vscode-claude is VS Code only (claude-code.el stays
+Blee's separate terminal path; its design is the model, not a dependency); no MCP server in this
+phase (channel 3 stays emacsclient through Bash and the bs-blee-emacs-server skill); hooks are in
+this phase.
+
+* Stage 11 TODOs
+** +
+** TODO [#A] <<11.1>> b:vscode/init and the partner file
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-30 Fri>
+:END:
+- Write /bisos/var/blee/vscode/partner-<user>.json (socket, pid, DISPLAY, time); remove it on
+  kill-emacs-hook if still ours. Run from bnpa:vscode-claude's config|main, or by hand.
+- Python reader in vscode_csu (bisos-pip/aiActivity): the live partner or none (stale: dead pid,
+  missing socket). Used by 11.3 and 10.9.
+----- Results: ------
+2026-10-30: built. b:vscode.el: b:vscode/init (writes the file, adds b:vscode:partner/remove to
+kill-emacs-hook; removes only if the pid is ours), b:vscode/partnerShow, b:vscode:partner/socket
+(starts the server, Blee's naming). Run by hand, not from config|main: a second Blee must not take the
+partner role unasked. vscode_csu.partnerRead (pid must be an emacs, socket must exist) and vscode.cs -i
+vscodePartner. Tested: batch (scratch dir), and a fresh Blee: init wrote it, vscodePartner live, exit
+removed it, a stale file reads as none.
+
+** TODO [#A] <<11.2>> Associations: confirmRoot, confirmHere, rootRegister
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-30 Fri>
+:END:
+- b:vscode:claude/confirmRoot sends /bx-confirm-root dir= emacs= callback=yes; rootRegister (Claude's
+  callback) records root dir → session id. confirmHere sends /bx-confirm-here <dir> and records it.
+- atPrompt finds the session by walk-up from default-directory; checks it against the running ones.
+----- Results: ------
+2026-10-30: built in b:vscode:claude.el: associations (activity dir -> session, true names), the
+walk-up in session/forDir (association if its session runs, a dead one dropped; else the covering
+session, deepest cwd then newest; else the latest), confirmRoot (/bx-confirm-root dir= emacs=
+callback=yes), rootRegister, confirmHere, associationsShow. Tested in batch with stubbed sessions;
+rootRegister called by emacsclient in a fresh Blee, as Claude does. Not yet: a real confirmRoot into a
+VS Code session, with Mohsen watching.
+
+** TODO [#A] <<11.3>> vscodeClaude.cs -i hookToEmacs and hooksSnippet
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: /bxRepos/bisos-pip/aiActivity
+:BASE: this
+:FOUND: <2026-10-30 Fri>
+:END:
+- Reads the hook JSON on stdin; no live partner → exit 0 at once, silently. Otherwise emacsclient
+  --eval (b:vscode:claude/hookHandle ...) with a short timeout; always exit 0.
+- hooksSnippet prints the ~/.claude/settings.json "hooks" entry (Stop, Notification) to paste.
+----- Results: ------
+2026-10-30: built in vscodeClaude_csu (bisos-pip/aiActivity): hookToEmacs (stdin JSON; no live
+partner: nothing, silent, about 0.4s; else emacsclient --eval hookHandle, 5s timeout; stdout always
+empty; always exit 0) and hooksSnippet (Stop and Notification, absolute path, timeout 10). Not
+installed in ~/.claude/settings.json: that is Mohsen's to add.
+
+** TODO [#A] <<11.4>> b:vscode:claude/hookHandle and the first handlers
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-30 Fri>
+:END:
+- hookHandle runs b:vscode:claude:event-hook with the event (type, session, cwd, JSON).
+- Stop after /bx-git-commit-msg: raise magit for the repo (with [[8.2]], [[8.3]]). Notification: a
+  message in Blee.
+----- Results: ------
+2026-10-30: built: hookHandle (parses the JSON, runs b:vscode:claude:event-hook from a timer, returns
+at once), hook/notification (a message), hook/commitMsgReady (on Stop, a request older than the
+repo's CLAUDE_COMMIT_MSG: magit status, raised frame). x c records the request; x x submits. Tested:
+batch, and hookToEmacs into a fresh Blee delivered Notification and Stop. Not yet from a real session.
+
+** TODO [#B] <<11.5>> Verify that hooks do not affect pure VS Code use
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-30 Fri>
+:END:
+- With no partner file, and with a stale one: a session runs with the hooks installed and nothing
+  happens, no delay, no error shown.
+----- Results: ------
+2026-10-30: with no partner file, and with a stale one: hookToEmacs exits 0 in about 0.4s, nothing on
+stdout or stderr. Not yet: a real session with the hooks installed.
+
+** -
 
 
 # Local Variables:

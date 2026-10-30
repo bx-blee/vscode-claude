@@ -27,10 +27,12 @@ extension of VS Code is where the conversation happens: its panel renders diffs,
 sessions and permissions far better than a terminal. The Blee layer joins the two:
 
 - *Emacs → Claude:* from any Blee context (a magit buffer, a panel, an org TODO) put a prompt ---
-  normally a =/bx-= command with its arguments --- into a chosen Claude session. You press Enter.
+  normally a =/bx-= command with its arguments --- into a chosen Claude session. You press Enter,
+  or ask Emacs to (submit).
 - *Claude → Emacs:* Claude hands results back (a commit message for magit) and, when a prompt names
   your Emacs, reaches it with =emacsclient=.
-- *VS Code → Emacs:* from the file in front of you in VS Code to the same line in Blee (planned).
+- *VS Code → Emacs:* from the file in front of you in VS Code to the same line in Blee.
+- *Claude events → Emacs:* Claude Code hooks tell Blee when Claude stops or waits for you.
 
 *The Emacs layer is optional and does not interfere.* =CLAUDE.md=, the AI-WorkPlan, the =/bx-=
 commands and the skills never require Emacs. Claude reaches Emacs only when a prompt names it, or
@@ -58,8 +60,9 @@ with its TODO anchor in [[file:./AI-WorkPlan.org][AI-WorkPlan.org]].
   - [[#pure-vs-code][Pure VS Code]]
   - [[#from-blee-a-prompt-into-a-session][From Blee: a Prompt into a Session]]
   - [[#the-claude-magit-commit-cycle][The Claude-Magit Commit Cycle]]
-  - [[#confirming-a-session-from-blee-planned][Confirming a Session from Blee (planned)]]
-  - [[#from-vs-code-to-blee-planned][From VS Code to Blee (planned)]]
+  - [[#confirming-a-session-from-blee][Confirming a Session from Blee]]
+  - [[#from-vs-code-to-blee][From VS Code to Blee]]
+  - [[#claude-code-hooks][Claude Code Hooks]]
   - [[#org-command-links-planned][Org Command Links (planned)]]
 - [[#deployment-topologies][Deployment Topologies]]
 - [[#design-principles][Design Principles]]
@@ -78,12 +81,12 @@ with its TODO anchor in [[file:./AI-WorkPlan.org][AI-WorkPlan.org]].
 
 The hierarchy, top down:
 
-| Level          | What it is                                     | How many                 |
-|----------------+------------------------------------------------+--------------------------|
-| Emacs (Blee)   | the running Blee server (its socket)           | one; optional            |
-| VS Code        | the user's desktop VS Code instance            | one; partners with Emacs |
+| Level          | What it is                                       | How many                 |
+|----------------+--------------------------------------------------+--------------------------|
+| Emacs (Blee)   | the running Blee server (its socket)             | one; optional            |
+| VS Code        | the user's desktop VS Code instance              | one; partners with Emacs |
 | window         | a VS Code window; its folder is a *root dir*     | many per VS Code         |
-| Claude session | a conversation; its cwd is the window's folder | many per window (tabs)   |
+| Claude session | a conversation; its cwd is the window's folder   | many per window (tabs)   |
 | AI-Activity    | a directory with a =CLAUDE.md= (an activity dir) | a hierarchy per session  |
 
 - *Emacs's socket* is =(expand-file-name server-name server-socket-dir)=: Blee knows its own.
@@ -113,15 +116,13 @@ An activity dir need not be a git repo; it is the directory that holds a =CLAUDE
 =/bx-confirm-root= takes optional arguments, for Blee only. Without them it is the complete
 confirmation and does nothing Emacs-related:
 
-| Argument       | Effect                                                                   |
-|----------------+--------------------------------------------------------------------------|
+| Argument         | Effect                                                                   |
+|------------------+--------------------------------------------------------------------------|
 | =dir=<rootDir>=  | the root the sender means; a session rooted elsewhere is reported, stops |
-| =emacs=<socket>= | Claude checks it can reach that Emacs (=emacs-pid=, read-only)             |
-| =callback=yes=   | with =emacs==: Claude registers its session id with that Emacs             |
+| =emacs=<socket>= | Claude checks it can reach that Emacs (=emacs-pid=, read-only)           |
+| =callback=yes=   | with =emacs==: Claude registers its session id with that Emacs           |
 
 ** The Partnership and the Associations
-
-/(planned: =b:vscode/init=, the partner file, the associations, =b:vscode:claude/rootRegister=)/
 
 - *=b:vscode/init= declares the partnership.* It writes the partner file
   =/bisos/var/blee/vscode/partner-<user>.json=: the socket path, the Emacs pid, =DISPLAY=, the time.
@@ -149,18 +150,20 @@ confirmation and does nothing Emacs-related:
 
 [[file:./images/vscodeClaudeChannels.png]]
 
-| # | Channel              | Through                         | Status                 |
-|---+----------------------+---------------------------------+------------------------|
-| 1 | Prompt in            | =vscodeClaude.cs -i claudePrompt= | works                  |
-| 2 | Results back by file | =<repo>/.git/CLAUDE_COMMIT_MSG=   | works                  |
-| 3 | Results back by call | =emacsclient -s <socket>=         | works                  |
-| 4 | VS Code → Emacs      | a VS Code task, =vscode.cs=       | planned, WorkPlan 10.9 |
+| # | Channel              | Through                              | Status |
+|---+----------------------+--------------------------------------+--------|
+| 1 | Prompt in            | =vscodeClaude.cs -i claudePrompt=    | works  |
+| 2 | Results back by file | =<repo>/.git/CLAUDE_COMMIT_MSG=      | works  |
+| 3 | Results back by call | =emacsclient -s <socket>=            | works  |
+| 4 | VS Code → Emacs      | a VS Code task, =vscode.cs=          | works  |
+| 5 | Claude events → Blee | Claude Code hooks, =vscodeClaude.cs= | works  |
 
 - *1, prompt in.* The Claude extension's URI is
   =vscode://anthropic.claude-code/open?session=<sessionId>&prompt=<text>=, handed over by
   =code --open-url=. It opens the session, but a session already open ignores =prompt=, so
   =claudePrompt= puts the text on the clipboard (=xclip=) and pastes it (=xdotool=) into the focused
-  input box. It never presses Enter: *you press Enter.* It needs the desktop VS Code's =DISPLAY=;
+  input box. *You press Enter* --- unless =--submit=yes= (from Blee: submit), which presses it with
+  =xdotool= once the prompt is in. It needs the desktop VS Code's =DISPLAY=;
   without it, it refuses and names the =DISPLAY= the desktop runs on.
 - *2, results by file.* =/bx-git-commit-msg= writes the message;
   =b:vscode:claude:magit:commitMsg/offer= (on =git-commit-setup-hook=) offers it when the commit
@@ -175,6 +178,19 @@ confirmation and does nothing Emacs-related:
   =emacsclient -n +LINE:COL FILE= and raises the Emacs frame. =vscodeBleeLinkSnippet= prints the
   task and key for you to paste (VS Code's JSON files take comments, so they are not merged
   automatically). Set =task.saveBeforeRun= to =always=; in Blee, =global-auto-revert-mode=.
+- *5, Claude events → Blee.* Channel 3 started by Claude Code itself rather than by Claude's choice.
+  Claude Code runs /hooks/ --- commands configured in =settings.json= --- on events of a session,
+  in VS Code sessions as in terminal ones; each gets the event as JSON on stdin (=session_id=,
+  =cwd=, =hook_event_name=, ...). The hook command is =vscodeClaude.cs -i hookToEmacs <event>=:
+  - It does nothing, quietly and at once, unless the partner file names a live Emacs: *a pure VS
+    Code session is not affected.* It never blocks or fails the session (short timeout, exit 0).
+  - Otherwise it hands the event to =b:vscode:claude/hookHandle= by =emacsclient=, which runs
+    =b:vscode:claude:event-hook= (the model is claude-code.el's =claude-code-handle-hook= and
+    =claude-code-event-hook=).
+  - First handlers: /Stop/ after =/bx-git-commit-msg= raises magit for that repo (Stage 8);
+    /Notification/ (Claude waits for you) shows a message in Blee.
+  - Installed in the user's =~/.claude/settings.json=, not in the shared templates;
+    =vscodeClaude.cs -i hooksSnippet= prints the entry to add.
 
 * The Layers
 
@@ -194,28 +210,40 @@ has the command tables.
     =vscodeExtensionVersion=;
   - act: =vscodeFocus=, =vscodeOpenFile=, =vscodeOpenFolder=, =vscodeAddFolder=, =vscodeDiff=,
     =vscodeOpenUri=;
-  - /(planned, WorkPlan 10.9)/ =bleeOpenFile=, =vscodeBleeLinkSnippet=.
+  - Blee: =vscodePartner=, =bleeOpenFile=, =vscodeBleeLinkSnippet=.
 - =vscodeClaude.cs=, its Claude sessions: =claudeSessionsList=, =claudeSessionsLatest=,
-  =claudePromptUri=, =claudePrompt=.
+  =claudePromptUri=, =claudePrompt= (=--submit=); the hooks: =hookToEmacs=, =hooksSnippet=.
 
 ** The elisp Layer
 
-=…= is =b:vscode:claude=.
+=…= is =b:vscode:claude=. A =C-u= prefix flips submit for one send.
 
-| Function                       | Key | Does                                          |
-|--------------------------------+-----+-----------------------------------------------|
-| =…/atPrompt <text> [session]=    |     | =vscodeClaude.cs -i claudePrompt=               |
-| =…:aiActivity/commitMsgGenerate= | =x c= | =/bx-git-commit-msg <repo>= into the session    |
-| =…:magit:commitMsg/offer=        |     | offers =CLAUDE_COMMIT_MSG= in the commit buffer |
-| =…:magit:commitMsg/markUsed=     |     | renames it =.used= after the commit             |
-| =…:magit/dispatch=               | =x=   | the transient; also in =magit-dispatch=         |
-| =b:vscode/fileOpen=              |     | the file in VS Code (to use =vscodeOpenFile=)   |
-| =b:vscode/init=                  |     | /(planned)/ the partnership                     |
-| =…/confirmRoot=, =…/confirmHere=   |     | /(planned)/ the associations                    |
-| =…/rootRegister=                 |     | /(planned)/ Claude's callback                   |
+| Function                           | Key   | Does                                           |
+|------------------------------------+-------+------------------------------------------------|
+| =…/dispatch=                       |       | the transient of all below                     |
+| =…/atPrompt=                       | =s=   | a prompt into this buffer's session            |
+| =…/sendWithContext=                | =x=   | a prompt, with =@file:line= of point or region |
+| =…/sendRegion=, =…/sendBufferFile= | =r o= | the region, the file                           |
+| =…/fixErrorAtPoint=                | =e=   | flymake / flycheck error at point, to fix      |
+| =…:bx/dispatch=                    | =/=   | the =/bx-= commands                            |
+| =…/confirmRoot=, =…/confirmHere=   | =R H= | confirm the session's activities; associate    |
+| =…/rootRegister=                   |       | Claude's callback of =/bx-confirm-root=        |
+| =…/submitToggle=                   | =S=   | prompts submitted (Enter pressed) or not       |
+| =…/hookHandle=                     |       | receives Claude Code hook events               |
+| =b:vscode/fileOpen=                | =f=   | this file in VS Code, at point                 |
+| =b:vscode/init=, =…/partnerShow=   | =p P= | this Emacs is the partner; show it             |
 
-The menu (=b:vscode:claude:menu.el=) offers atPrompt and the commit message. Errors of the
-programs (=EH_Problem= in their output) are shown in the =*vscodeClaude*= buffer.
+In magit, =x= is =…:magit/dispatch=:
+
+| Key   | Function                               | Does                                         |
+|-------+----------------------------------------+----------------------------------------------|
+| =x c= | =…:aiActivity/commitMsgGenerate=       | =/bx-git-commit-msg <repo>=; you press Enter |
+| =x x= | =…:aiActivity/commitMsgGenerateSubmit= | the same, submitted                          |
+| =x d= | =…/dispatch=                           | the VS Code Claude transient                 |
+
+=…:magit:commitMsg/offer= and =…/markUsed= are the commit-buffer hooks of channel 2. The menu
+(=b:vscode:claude:menu.el=) offers the same: Prompt, Magit, Session, VS Code. Errors of the programs
+(=EH_Problem= in their output) are shown in the =*vscodeClaude*= and =*vscode*= buffers.
 
 * Use
 
@@ -231,33 +259,49 @@ this directory.
 =M-x b:vscode:claude/atPrompt=, or from elisp:
 
 #+begin_src emacs-lisp
-(b:vscode:claude/atPrompt "/bx-status-read")                 ; the latest local session
+(b:vscode:claude/atPrompt "/bx-status-read")                 ; this buffer's session
 (b:vscode:claude/atPrompt "/bx-status-read" "<sessionId>")   ; a given one (claudeSessionsList)
+(b:vscode:claude/atPrompt "/bx-status-read" nil t)           ; submitted
 #+end_src
 
-The VS Code window comes to the front with the prompt in the input box; read it, press Enter.
+The VS Code window comes to the front with the prompt in the input box; read it, press Enter. This
+buffer's session is the one associated with its activity (below), else the one whose folder holds
+the buffer, else the latest local one.
 
 ** The Claude-Magit Commit Cycle
 
 1. In magit, stage what you want.
-2. =x c=: =/bx-git-commit-msg <repo>= goes into the session; press Enter in VS Code.
+2. =x c=: =/bx-git-commit-msg <repo>= goes into the session; press Enter in VS Code. Or =x x=:
+   submitted.
 3. Claude writes =.git/CLAUDE_COMMIT_MSG= (the 69/90 format) from the staged diff.
-4. =c c=: the commit buffer offers Claude's message; accept, edit, =C-c C-c=.
+4. With the hooks installed, Claude's Stop raises Blee at that repo's magit status.
+5. =c c=: the commit buffer offers Claude's message; accept, edit, =C-c C-c=.
 
 Planned with it (Stage 8): =/bx-git-uncommitted-list= giving a list whose entries open magit in
 Blee.
 
-** Confirming a Session from Blee (planned)
+** Confirming a Session from Blee
 
-=M-x b:vscode/init= once per Blee; then =b:vscode:claude/confirmRoot= in a buffer of the root, and
+=b:vscode:claude/confirmRoot= in a buffer of the root (the VS Code window's folder), and
 =b:vscode:claude/confirmHere= in a buffer of each activity joined. After that, =atPrompt= from any
-buffer goes to the session of its activity.
+buffer goes to the session of its activity. =b:vscode:claude/associationsShow= lists them. The
+associations live in this Emacs only.
 
-** From VS Code to Blee (planned)
+** From VS Code to Blee
 
-With the task and key of channel 4 installed: in VS Code, the key; Blee comes to the front at the
-same file and line. Useful after Claude has edited a file, or after following a file link in
-Claude's chat.
+Once: =M-x b:vscode/init= in Blee (the partner file), and the task and key that
+=vscode.cs -i vscodeBleeLinkSnippet= prints, pasted into VS Code's user files. Then, in VS Code,
+=ctrl+alt+e=: Blee comes to the front at the same file and line. Useful after Claude has edited a
+file, or after following a file link in Claude's chat. =b:vscode/init= is run by hand, not at
+startup, so that a second Blee does not take the partner role unasked.
+
+** Claude Code Hooks
+
+Once: =M-x b:vscode/init= in Blee, and the ="hooks"= entry that =vscodeClaude.cs -i hooksSnippet=
+prints, merged by hand into =~/.claude/settings.json=. Then every Claude session (VS Code or
+terminal) runs =hookToEmacs= on Stop and Notification. With no live partner it does nothing.
+=b:vscode:claude:event-hook= takes your own handlers: each gets a plist (=:type=, =:session=, =:cwd=,
+=:data=).
 
 ** Org Command Links (planned)
 
@@ -267,8 +311,8 @@ each sending a =/bx-= command through =atPrompt=: select a session, =bx-confirm-
 
 * Deployment Topologies
 
-| Topology                      | Prompt in                 | Status                       |
-|-------------------------------+---------------------------+------------------------------|
+| Topology                      | Prompt in                   | Status                       |
+|-------------------------------+-----------------------------+------------------------------|
 | A. Desktop VS Code, Emacs's X | =code --open-url= and paste | works; the target            |
 | B. Remote VS Code (a server)  | none: =--open-url= refused  | needs a bridge extension     |
 | C. No VS Code                 | =claude -p "/bx-..."=       | self-contained commands only |
@@ -279,7 +323,7 @@ the [[file:./Emacs+VS-Code+Claude.org][design paper]].
 * Design Principles
 
 - *The Emacs layer is optional* and does not interfere with pure VS Code use.
-- *You press Enter.* Emacs proposes prompts; nothing is submitted on your behalf.
+- *You press Enter*, unless you asked Emacs to: submit is an explicit option (=x x=, =C-u=, =S=).
 - *Prompts are commands.* What Emacs sends is a =/bx-= command with explicit arguments, so the same
   request works typed by hand, sent from Emacs, or run headless.
 - *Context travels as arguments, not hidden state.* A prompt names its directory, file, anchor or
@@ -322,15 +366,15 @@ Not tested; it needs Blee's libraries (=blee-libs=).
 
 * Files of This Package
 
-| File                              | What                                             |
-|-----------------------------------+--------------------------------------------------|
-| =b:vscode-claude::pkg.el=           | the entry point: requires the modules, the group |
-| =b:vscode.el=                       | the vscode layer, over =vscode.cs=                 |
-| =b:vscode:claude.el=                | the Claude layer, over =vscodeClaude.cs=           |
-| =b:vscode:claude:menu.el=           | the menu                                         |
-| =dblock-vscode-claude.el=           | the =b:ai:vscodeClaude/workflow= dblock            |
-| =images/vscodeClaude-graphviz.pcs=  | the figures of this README                       |
-| =Emacs+VS-Code+Claude.org=          | the design paper of 2026-10-27                   |
+| File                                  | What                                             |
+|---------------------------------------+--------------------------------------------------|
+| =b:vscode-claude::pkg.el=             | the entry point: requires the modules, the group |
+| =b:vscode.el=                         | the vscode layer, over =vscode.cs=               |
+| =b:vscode:claude.el=                  | the Claude layer, over =vscodeClaude.cs=         |
+| =b:vscode:claude:menu.el=             | the menu                                         |
+| =dblock-vscode-claude.el=             | the =b:ai:vscodeClaude/workflow= dblock          |
+| =images/vscodeClaude-graphviz.pcs=    | the figures of this README                       |
+| =Emacs+VS-Code+Claude.org=            | the design paper of 2026-10-27                   |
 | =AI-WorkPlan.org=, =AI-DevStatus.org= | the AI-Activity of this package                  |
 
 * Related
@@ -347,12 +391,16 @@ Not tested; it needs Blee's libraries (=blee-libs=).
 
 As of 2026-10-30:
 - Works: =atPrompt=, =x c= and the commit-message hooks over =vscodeClaude.cs=; =vscode.cs= and
-  =vscodeClaude.cs= verified through their dispatchers; the package loads in a batch Emacs.
-- Not yet verified in a restarted Blee: the =bnpa:vscode-claude.el= adoption.
-- Planned: the partnership and associations, =/bx-confirm-root='s callback target (=rootRegister=),
-  VS Code → Emacs (WorkPlan 10.9), the elisp over =vscode.cs= (10.2), the org command links
-  (Stage 7).
-
+  =vscodeClaude.cs= verified through their dispatchers.
+- Built 2026-10-30 (Stage 11, 10.2, 10.9, 10.11, 10.12), tested in batch Emacs and in a fresh Blee
+  (=blee -p emacs=31 -i run=, driven by its socket): the partner file, =hookToEmacs= into Blee (and
+  its no-partner and stale-partner paths), =rootRegister=, the associations, =bleeOpenFile=, the
+  transients and the menu.
+- Not yet tried with you watching: =--submit= (Enter in VS Code), the paste into a session chosen by
+  association, the VS Code task and key, the hooks from a real VS Code session, a prompt starting
+  with =/= when submitted.
+- Not yet verified in a restarted Blee: the =bnpa:vscode-claude.el= adoption of the new code.
+- Planned: the org command links (Stage 7); a clickable =/bx-git-uncommitted-list= (8.1).
 
 # ###+BEGIN: blee:bxPanel:footerOrgParams
 #+STARTUP: overview

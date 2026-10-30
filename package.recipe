@@ -1,0 +1,4 @@
+(vscode-claude
+  :fetcher github
+  :repo "bx-blee/vscode-claude"
+  :files ("*.el"))

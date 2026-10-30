@@ -1,0 +1,218 @@
+#+title: Emacs + VS Code + Claude --- Driving the VS Code Claude Panel from Blee
+#+DATE: <2026-10-27 Tue>
+#+AUTHOR: Mohsen BANAN
+#+OPTIONS: toc:3
+
+*Superseded as the current design by [[file:./README.org][README.org]] (2026-10-30); kept as the record of
+the findings it rests on. Names below are those of 2026-10-27 (=bap:…=, =claudeSessions.cs=).*
+
+*A high-level design paper (2026-10-27).* It records what was established in one Claude Code session
+and lays out what to build on it. Statements about the Claude VS Code extension are from reading
+its shipped code (version 2.1.311) and from trials; that interface is not documented as an API and
+may change between versions.
+
+* Table of Contents     :TOC:
+- [[#goal][Goal]]
+- [[#why-not-emacs-only-or-vs-code-only][Why Not Emacs Only, or VS Code Only]]
+- [[#what-is-established][What Is Established]]
+  - [[#claude-to-emacs-emacsclient-and-the-bs-blee-emacs-server-skill][Claude to Emacs: emacsclient and the bs-blee-emacs-server Skill]]
+  - [[#claude-to-emacs-through-files-the-commit-message-hand-off][Claude to Emacs Through Files: the Commit-Message Hand-off]]
+  - [[#emacs-to-claude-the-open-uri-of-the-vs-code-extension][Emacs to Claude: the /open URI of the VS Code Extension]]
+  - [[#delivering-the-uri-desktop-vs-code-works-the-remote-server-does-not][Delivering the URI: Desktop VS Code Works, the Remote Server Does Not]]
+- [[#architecture][Architecture]]
+- [[#deployment-topologies][Deployment Topologies]]
+- [[#design-principles][Design Principles]]
+- [[#components-to-build][Components to Build]]
+- [[#first-use-case-bx-git-commit-msg-from-magit][First Use Case: /bx-git-commit-msg from Magit]]
+- [[#open-questions-and-risks][Open Questions and Risks]]
+- [[#prior-and-similar-art][Prior and Similar Art]]
+- [[#next-steps][Next Steps]]
+
+* Goal
+
+Blee (Emacs) stays the place where the work is done --- magit, panels, org files, COMEEGA source ---
+and the Claude Code VS Code extension stays the place where the conversation with Claude happens.
+The two are joined in both directions:
+
+- *Emacs → Claude:* from any Blee context (a magit status buffer, a panel, an org TODO) send a
+  prompt --- typically a =/bx-= command plus the context it needs (a directory, a file, a TODO
+  anchor) --- into a chosen Claude session in VS Code.
+- *Claude → Emacs:* Claude reads and, with the user's agreement, acts on the user's running Blee:
+  inspects state, regenerates dblocks, hands results back (a commit message, a refreshed buffer).
+
+* Why Not Emacs Only, or VS Code Only
+
+- Blee already integrates =stevemolitor/claude-code.el=: Claude in an Emacs terminal buffer. It is
+  pure Emacs, but its terminal interface is far behind the VS Code extension's panel (rendering of
+  diffs, tool calls, sessions, permissions, focus view).
+- VS Code alone loses Blee: magit, COMEEGA dblocks, Blee panels, the user's keys and habits.
+- So: each tool for what it is best at, and a thin, explicit link between them.
+
+* What Is Established
+
+** Claude to Emacs: emacsclient and the bs-blee-emacs-server Skill
+
+Claude reaches the user's running Blee through its server socket with =emacsclient=. This is
+captured as the skill =bs-blee-emacs-server=
+(=aiTemplates-DE/mother/_skills/bs-blee-emacs-server/SKILL.md=):
+
+- The socket path comes from the user: =(expand-file-name server-name server-socket-dir)=, e.g.
+  =/tmp/emacs1000/blee-3.1-31.1-<pid>= (in a privileged container =/run/user/<uid>= may not work).
+- *Read freely, change only with agreement*; restore whatever was changed.
+- Dblock regeneration through the user's Blee (the =F7 d= functions, =bx-dblock= with
+  =G_emacsServerPid=), including the pitfall of the global dblock regexp. Verified 2026-10-27.
+- New Blee elisp is authored the COMEEGA way (=b:elisp:defs/cl-defun= dblocks).
+
+** Claude to Emacs Through Files: the Commit-Message Hand-off
+
+=/bx-git-commit-msg= writes =<repo>/.git/CLAUDE_COMMIT_MSG= (69/90 format). Blee's
+=bcpg:magitPlus.el= (=bap:magit:claudeCommitMsg/offer=, on =git-commit-setup-hook=) offers it when
+the commit buffer opens and renames it to =.used= after the commit. In use since 2026-10-27.
+Since 2026-10-29 this lives in this package: =b:vscode:claude:magit:commitMsg/offer= in
+=b:vscode:claude.el=.
+
+** Emacs to Claude: the /open URI of the VS Code Extension
+
+The extension registers a URI handler:
+
+: vscode://anthropic.claude-code/open?session=<sessionId>&prompt=<url-encoded text>
+
+- It opens the session (or, without =session=, a new conversation) in the editor area and *puts
+  the prompt in the input box*. It does not submit it: the user reads it and presses Enter.
+- Session ids are the names of =~/.claude/projects/<encoded-cwd>/<sessionId>.jsonl=.
+- The extension's commands (=claude-vscode.focus=, =newConversation=, ...) take no prompt, except
+  the internal =claude-vscode.primaryEditor.open(session, prompt)= that the URI calls.
+- The IDE lock files (=~/.claude/ide/*.lock=, websocket) serve the other direction --- Claude
+  calling the editor --- and cannot inject prompts.
+
+** Delivering the URI: Desktop VS Code Works, the Remote Server Does Not
+
+- *Desktop VS Code* (running on the same host and display as Emacs): =code --open-url '<uri>'=
+  works --- verified by the user on a VM.
+- *Remote VS Code* (the Windows 11 client attached to a VS Code server in the container): the
+  server's =remote-cli/code= refuses outside a VS Code terminal (it needs =VSCODE_IPC_HOOK_CLI=),
+  and with that set answers "Ignoring option 'open-url': not supported". There is no command-line
+  path from the container into the remote window.
+
+This is the result the design builds on: *with a desktop VS Code next to Emacs, Emacs can put any
+prompt into any Claude session with one shell command.*
+
+* Architecture
+
+#+begin_example
+          ┌──────────────────────── one host / one X display ────────────────────────┐
+          │                                                                           │
+          │   Blee (Emacs)                              VS Code Desktop               │
+          │   ┌──────────────────────┐   code --open-url  ┌────────────────────────┐  │
+          │   │ magit, panels, org   │ ─────────────────▶ │ Claude extension panel │  │
+          │   │ bap:claude:vscode/*  │   vscode://...open │  session <id>: prompt   │  │
+          │   └──────────────────────┘   ?session&prompt  │  filled in, user Enter  │  │
+          │        ▲        ▲                             └───────────┬────────────┘  │
+          │        │        │ files (.git/CLAUDE_COMMIT_MSG, ...)     │ Claude Code   │
+          │        │        └─────────────────────────────────────────┤ (tools)       │
+          │        │  emacsclient -s <socket>  (skill bs-blee-emacs-server)           │
+          │        └──────────────────────────────────────────────────┘               │
+          └───────────────────────────────────────────────────────────────────────────┘
+#+end_example
+
+Three channels, each already proven:
+1. *Prompt in:* Emacs → =code --open-url= → the extension's =/open= URI → the session's input box.
+2. *Results back by file:* Claude writes a file that a Blee hook picks up (the commit message).
+3. *Results back by call:* Claude → =emacsclient= → the running Blee (read state; act when asked).
+
+* Deployment Topologies
+
+| Topology                              | Prompt in                    | Status                        |
+|---------------------------------------+------------------------------+-------------------------------|
+| A. Desktop VS Code on Emacs's display | =code --open-url=              | Works (VM). The target.       |
+| (VM, or the container's X display)    |                              |                               |
+| B. Remote VS Code (Windows 11 client) | none from the command line;  | Possible, not built: a small  |
+|                                       | a bridge extension (socket → | VS Code extension, one socket |
+|                                       | =executeCommand=)              | per window                    |
+| C. No VS Code                         | =claude -p "/bx-..."=          | Works for self-contained      |
+|                                       | (headless)                   | commands; no conversation     |
+
+- *A* is the design's primary topology. In the container, Emacs runs on X display =:1=, so a
+  desktop VS Code can run beside it; sessions in =~/.claude= are shared with any other front end.
+- *B* keeps the Windows client but costs a custom extension, and relies on the internal command.
+- *C* suits commands that read only the repository (=/bx-git-commit-msg= reads the staged diff, not
+  the conversation); each run is a fresh session and pays for loading the context.
+
+* Design Principles
+
+- *The user presses Enter.* Emacs proposes prompts; nothing is submitted on the user's behalf. The
+  extension enforces this, and the design keeps it as a feature.
+- *Prompts are commands.* What Emacs sends is normally a =/bx-= slash command with explicit
+  arguments (directory, file, anchor), so the same request works typed by hand, sent from Emacs,
+  or run headless.
+- *Context travels as arguments, not as hidden state.* A prompt names the repo or file it is about;
+  the commands verify from disk (as =/bx-git-commit-msg= does with =git diff --staged=).
+- *Claude in Emacs: read freely, change only with agreement* (skill =bs-blee-emacs-server=).
+- *Prefer the published surface.* Use the =/open= URI; fall back to the internal command only in
+  the bridge (topology B).
+- *COMEEGA throughout.* The Blee side is =b:elisp:defs/cl-defun= dblocks in a =bcpg:= package,
+  configured in its =config|main=.
+
+* Components to Build
+
+1. *Elisp prompt layer* (Blee, a =bcpg:= package or in =magitPlus=):
+   - =bap:claude:vscode/prompt= --- build the URI (URL-encode the prompt, optional session) and
+     run =code --open-url= asynchronously.
+   - Session selection: a variable for the current target session, set by a command that lists
+     recent sessions from =~/.claude/projects/*/= (title, directory, last write); nil = new
+     conversation.
+2. *Context commands:* thin wrappers per Blee context --- magit (repo top-level), a file buffer
+   (path, line), an org TODO (its anchor), a Blee panel (its node).
+3. *Return paths:* conventions for file hand-offs (like =CLAUDE_COMMIT_MSG=), and for Claude to
+   notify Blee by =emacsclient= when a result is ready (e.g. refresh magit).
+4. *Desktop VS Code setup* for topology A in the container: install, Claude extension, login; run on
+   Emacs's display.
+5. *Optional:* the bridge extension (topology B); a headless runner (topology C) using the same
+   prompt layer with =claude -p=.
+6. *Documentation:* a skill or an update to =bs-blee-emacs-server= for the Emacs → Claude
+   direction; the Blee panel for the user.
+
+* First Use Case: /bx-git-commit-msg from Magit
+
+1. In magit, the user stages, then presses a key (e.g. in =magit-status-mode-map=).
+2. Blee sends =/bx-git-commit-msg <magit-toplevel>= to the target session.
+3. VS Code shows the conversation with the prompt filled in; the user presses Enter.
+4. Claude writes =<repo>/.git/CLAUDE_COMMIT_MSG= and, optionally, tells Blee by =emacsclient=.
+5. =c c= in magit: the existing hook offers the message.
+
+Every step but 1--2 exists today.
+
+* Open Questions and Risks
+
+- *A prompt starting with =/=:* whether the input box opens the slash menu and Enter then picks a
+  menu entry instead of sending. To test first.
+- *The =session= parameter:* verified in the code, not yet in a trial (the VM trial used
+  =prompt= only).
+- *Same session in two front ends* (the Windows VS Code and a desktop VS Code at once): avoid; one
+  session, one open panel.
+- *Undocumented interface:* the =/open= URI and its parameters may change with extension
+  updates; keep the URI building in one function.
+- *Prompt length:* URIs have practical limits; long context goes in a file named by the prompt.
+- *Electron in a privileged container:* VS Code may need =--no-sandbox= or a larger =/dev/shm=
+  (as Chrome did).
+- *Several VS Code windows:* =--open-url= goes to the desktop instance; which window receives it
+  when several are open is to be observed.
+
+* Prior and Similar Art
+
+From memory, not surveyed (re-check before quoting):
+- =stevemolitor/claude-code.el= --- Claude in an Emacs terminal; already in Blee.
+- =manzaltu/claude-code-ide.el= and =stevemolitor/monet= --- Emacs as Claude's IDE (diffs,
+  diagnostics) over the lock-file websocket protocol: the Claude → editor direction.
+- =xenodium/agent-shell= --- a native Emacs interface over the Agent Client Protocol.
+- VS Code "Remote Control" (Elio Struyf) --- run VS Code commands from outside over a websocket;
+  the idea behind the bridge of topology B.
+- None known that drives the VS Code Claude panel from Emacs.
+
+* Next Steps
+
+1. Install desktop VS Code beside Emacs in the container (topology A); confirm =--open-url= there.
+2. Trial =session== and a =/bx-= prompt (the slash-menu question).
+3. Write =bap:claude:vscode/prompt= and the magit key; use it for =/bx-git-commit-msg=.
+4. Extend to other Blee contexts; decide whether B or C are worth building.
+5. Record in =bisos.aiActivity='s =AI-WorkPlan.org= as a stage, and in the skills.

@@ -1,0 +1,57 @@
+digraph {
+	compound=true nodesep=0.3 rankdir=TB ranksep=0.45
+	node [fontsize=11 shape=rectangle]
+	subgraph cluster_emacs {
+		color=darkgreen fontcolor=darkgreen label="Optional: the Blee layer (bx-blee/vscode-claude)" style=dashed
+		emacs [label="Blee (Emacs)
+server socket" fillcolor=darkseagreen3 style=filled]
+		partner [label="/bisos/var/blee/vscode/
+partner-<user>.json
+(b:vscode/init)" fillcolor=white shape=note style=filled]
+		assoc [label="associations
+root dir → session
+activity dir → session
+(buffers find theirs by walk-up)" fillcolor=white shape=note style=filled]
+	}
+	subgraph cluster_vscode {
+		color=navy fontcolor=navy label="VS Code alone: a complete AI-Activity" style=solid
+		vscode [label="VS Code
+(one desktop instance)" fillcolor=lightblue style=filled]
+		winA [label="window
+folder = root dir A" fillcolor=lightblue style=filled]
+		winB [label="window
+folder = root dir B" fillcolor=lightblue style=filled]
+		sessA1 [label="Claude session
+cwd = A" fillcolor=lightblue style=filled]
+		sessA2 [label="Claude session
+cwd = A" fillcolor=lightblue style=filled]
+		sessB [label="Claude session
+cwd = B" fillcolor=lightblue style=filled]
+		actRoot [label="root AI-Activity
+A/CLAUDE.md
+/bx-confirm-root" fillcolor=white shape=note style=filled]
+		actSub [label="sub AI-Activity
+A/sub/CLAUDE.md (initiateSub)
+/bx-confirm-here" fillcolor=white shape=note style=filled]
+		actOther [label="AI-Activity elsewhere
+C/CLAUDE.md (initiate)
+/bx-confirm-here" fillcolor=white shape=note style=filled]
+		actRootB [label="root AI-Activity
+B/CLAUDE.md
+/bx-confirm-root" fillcolor=white shape=note style=filled]
+	}
+	vscode -> winA
+	vscode -> winB
+	winA -> sessA1
+	winA -> sessA2
+	winB -> sessB
+	sessA1 -> actRoot
+	sessA1 -> actSub [label=" joined " fontsize=9 style=dashed]
+	sessA1 -> actOther [label=" joined " fontsize=9 style=dashed]
+	sessB -> actRootB
+	emacs -> vscode [label=" partners, one to one " color=darkgreen dir=both fontcolor=darkgreen fontsize=10 penwidth=1.6]
+	emacs -> partner [color=darkgreen style=dashed]
+	emacs -> assoc [color=darkgreen style=dashed]
+	assoc -> sessA1 [label=" callback=yes: 
+ session id " color=darkgreen constraint=false fontcolor=darkgreen fontsize=9 style=dotted]
+}

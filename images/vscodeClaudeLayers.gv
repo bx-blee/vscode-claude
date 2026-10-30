@@ -1,0 +1,86 @@
+digraph {
+	nodesep=0.35 rankdir=TB ranksep=0.5
+	node [fontsize=11 shape=rectangle]
+	lyr_users [label=Users fontcolor=gray30 fontsize=11 shape=plaintext]
+	lyr_elisp [label="elisp
+(this package)" fontcolor=gray30 fontsize=11 shape=plaintext]
+	lyr_csxu [label="CSXUs
+(bisos.aiActivity)" fontcolor=gray30 fontsize=11 shape=plaintext]
+	lyr_csu [label="CS-Units
+(bisos.aiActivity)" fontcolor=gray30 fontsize=11 shape=plaintext]
+	lyr_ext [label=Underneath fontcolor=gray30 fontsize=11 shape=plaintext]
+	lyr_users -> lyr_elisp [style=invis]
+	lyr_elisp -> lyr_csxu [style=invis]
+	lyr_csxu -> lyr_csu [style=invis]
+	lyr_csu -> lyr_ext [style=invis]
+	{
+		rank=same
+		lyr_users
+		bleeUser [label="Blee user
+(keys, menus, org links)" fillcolor=darkseagreen3 style=filled]
+		shellUser [label="shell, Claude,
+VS Code tasks" fillcolor=lightblue style=filled]
+		lyr_users -> bleeUser [style=invis]
+		bleeUser -> shellUser [style=invis]
+	}
+	subgraph cluster_elisp {
+		color=darkgreen fontcolor=darkgreen label="Optional: the Emacs layer" style=dashed
+		{
+			rank=same
+			elVscode [label="b:vscode.el
+fileOpen (to wrap vscode.cs)" fillcolor=darkseagreen3 style=filled]
+			elClaude [label="b:vscode:claude.el
+atPrompt, commitMsgGenerate,
+magit hooks and x c" fillcolor=darkseagreen3 style=filled]
+			elMenu [label="b:vscode:claude:menu.el
+b:vscode-claude::pkg.el" fillcolor=darkseagreen3 style=filled]
+		}
+	}
+	{
+		rank=same
+		lyr_csxu
+		csVscode [label="vscode.cs" fillcolor=lightsteelblue style=filled]
+		csClaude [label="vscodeClaude.cs" fillcolor=lightsteelblue style=filled]
+		lyr_csxu -> csVscode [style=invis]
+		csVscode -> csClaude [style=invis]
+	}
+	{
+		rank=same
+		lyr_csu
+		csuVscode [label="vscode_csu.py
+open file / folder / URI, diff,
+focus, topology, extensions,
+clipboard and paste" fillcolor=lightsteelblue style=filled]
+		csuClaude [label="vscodeClaude_csu.py
+session registry, prompt URI,
+claudePrompt" fillcolor=lightsteelblue style=filled]
+		lyr_csu -> csuVscode [style=invis]
+		csuVscode -> csuClaude [style=invis]
+	}
+	{
+		rank=same
+		lyr_ext
+		code [label="code CLI and
+desktop VS Code" fillcolor=lightblue style=filled]
+		xtools [label="xclip, xdotool
+(DISPLAY)" fillcolor=white style=filled]
+		registry [label="~/.claude/sessions/
+<pid>.json" fillcolor=white shape=note style=filled]
+		lyr_ext -> code [style=invis]
+		code -> xtools [style=invis]
+		xtools -> registry [style=invis]
+	}
+	bleeUser -> elVscode
+	bleeUser -> elClaude
+	bleeUser -> elMenu
+	elVscode -> csVscode
+	elClaude -> csClaude
+	shellUser -> csVscode [label=" without Emacs " color=navy fontcolor=navy fontsize=9]
+	shellUser -> csClaude [color=navy]
+	csVscode -> csuVscode
+	csClaude -> csuClaude
+	csuClaude -> csuVscode [label=" builds on " constraint=false fontsize=9]
+	csuVscode -> code
+	csuVscode -> xtools
+	csuClaude -> registry
+}

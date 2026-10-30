@@ -1,0 +1,51 @@
+digraph {
+	nodesep=0.5 rankdir=LR ranksep=0.7
+	node [fontsize=11 shape=rectangle]
+	subgraph cluster_blee {
+		color=darkgreen fontcolor=darkgreen label="Blee (optional)" style=dashed
+		atPrompt [label="b:vscode:claude/atPrompt
+(x c in magit, menus,
+org command links)" fillcolor=darkseagreen3 style=filled]
+		magit [label="magit commit buffer
+(commitMsg/offer)" fillcolor=darkseagreen3 style=filled]
+		server [label="Blee server
+(emacsclient -s <socket>)" fillcolor=darkseagreen3 style=filled]
+		bleeFile [label="the file in Blee,
+at the same line" fillcolor=darkseagreen3 style=filled]
+	}
+	subgraph cluster_between {
+		label=between style=invis
+		promptCs [label="vscodeClaude.cs
+-i claudePrompt" fillcolor=lightsteelblue style=filled]
+		msgFile [label="<repo>/.git/
+CLAUDE_COMMIT_MSG" fillcolor=white shape=note style=filled]
+		openCs [label="vscode.cs
+-i bleeOpenFile
+(planned)" fillcolor=lightsteelblue style="filled,dashed"]
+	}
+	subgraph cluster_vscode {
+		color=navy fontcolor=navy label="VS Code + Claude" style=solid
+		input [label="session input box
+(you press Enter)" fillcolor=lightblue style=filled]
+		claude [label="Claude
+(its tools)" fillcolor=lightblue style=filled]
+		editor [label="VS Code editor
+(user task + key)" fillcolor=lightblue style=filled]
+	}
+	atPrompt -> promptCs [label="1 prompt in" color=navy fontcolor=navy fontsize=10 penwidth=1.6]
+	promptCs -> input [label="code --open-url,
+paste" color=navy fontcolor=navy fontsize=10 penwidth=1.6]
+	magit -> msgFile [label="offered at c c" color=crimson dir=back fontcolor=crimson fontsize=10 penwidth=1.6]
+	msgFile -> claude [label="2 by file" color=crimson dir=back fontcolor=crimson fontsize=10 penwidth=1.6]
+	server -> claude [label="3 by call (when the prompt
+names this Emacs)" color=crimson dir=back fontcolor=crimson fontsize=10 penwidth=1.6]
+	bleeFile -> openCs [label=emacsclient color=darkgreen dir=back fontcolor=darkgreen fontsize=10 penwidth=1.6 style=dashed]
+	openCs -> editor [label="4 VS Code → Emacs" color=darkgreen dir=back fontcolor=darkgreen fontsize=10 penwidth=1.6 style=dashed]
+	atPrompt -> magit [constraint=false style=invis]
+	magit -> server [constraint=false style=invis]
+	server -> bleeFile [constraint=false style=invis]
+	promptCs -> msgFile [constraint=false style=invis]
+	msgFile -> openCs [constraint=false style=invis]
+	input -> claude [constraint=false style=invis]
+	claude -> editor [constraint=false style=invis]
+}

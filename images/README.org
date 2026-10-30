@@ -1,0 +1,13 @@
+#+title: Figures of vscode-claude
+
+All figures are produced by [[file:./vscodeClaude-graphviz.pcs][vscodeClaude-graphviz.pcs]], rendered here in every format
+(=.gv=, =.png=, =.svg=, =.pdf=, =.jpg=, plus =.title= / =.caption=):
+
+: ./vscodeClaude-graphviz.pcs --format=all -i ngProcess all
+: ./vscodeClaude-graphviz.pcs --format=evince -i ngProcess vscodeClaudeHierarchy   # while editing one
+
+| Graph                   | Shows                                                         | Used in            |
+|-------------------------+---------------------------------------------------------------+--------------------|
+| =vscodeClaudeHierarchy= | Emacs, one VS Code, windows, Claude sessions, AI-Activities   | README, The Model  |
+| =vscodeClaudeChannels=  | the four channels between Blee and VS Code Claude             | README, Channels   |
+| =vscodeClaudeLayers=    | elisp over the CSXUs over the CS-Units                        | README, The Layers |

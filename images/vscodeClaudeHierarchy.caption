@@ -1,0 +1,1 @@
+One Emacs partners with one VS Code instance. A VS Code window's folder is the root directory of its Claude sessions; each session holds a hierarchy of AI-Activities: its root (/bx-confirm-root) and the activities joined later (/bx-confirm-here). The Emacs side (dashed) is optional.

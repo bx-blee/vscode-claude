@@ -1,0 +1,1 @@
+Thin elisp over two small CSXUs, each over its CS-Unit; vscodeClaude_csu builds on vscode_csu. The CSXUs are complete without Emacs: shells, Claude and VS Code use them directly.

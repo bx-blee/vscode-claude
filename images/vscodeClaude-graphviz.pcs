@@ -1,0 +1,276 @@
+#!/usr/bin/env python
+
+####+BEGIN: b:prog:file/particulars :authors ("./inserts/authors-mb.org")
+""" #+begin_org
+* *[[elisp:(org-cycle)][| Particulars |]]* :: Authors, version
+** This File: /bisos/git/bxRepos/blee/vscode-claude/images/vscodeClaude-graphviz.pcs
+** Authors: Mohsen BANAN, http://mohsen.banan.1.byname.net/contact
+#+end_org """
+####+END:
+
+""" #+begin_org
+* Overview and Relevant Pointers
+The figures of the vscode-claude Blee package's README.org: the hierarchy (Emacs, one VS Code, its
+windows, their Claude sessions, each session's AI-Activities), the channels between Blee and VS Code
+Claude, and the layers of the implementation. In all three, the Emacs side is drawn dashed: it is
+optional, and VS Code alone is a complete AI-Activity.
+#+end_org """
+
+from bisos import b
+from bisos.b import cs
+
+import graphviz
+
+from bisos.graphviz import graphvizSeed
+ng = graphvizSeed.namedGraph
+
+
+####+BEGIN: b:py3:cs:orgItem/basic :type "=Seed Setup= " :title "*Common Facilities*" :comment "General"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  =Seed Setup=  [[elisp:(outline-show-subtree+toggle)][||]] *Common Facilities* General  [[elisp:(org-cycle)][| ]]
+#+end_org """
+####+END:
+
+namedGraphsList = [
+    # Forward references: the functions are defined below this block.
+    ng("vscodeClaudeHierarchy",
+       func=lambda: vscodeClaudeHierarchy(),
+       title="Emacs, VS Code, Claude Sessions and AI-Activities",
+       caption="One Emacs partners with one VS Code instance. A VS Code window's folder is the root "
+               "directory of its Claude sessions; each session holds a hierarchy of AI-Activities: "
+               "its root (/bx-confirm-root) and the activities joined later (/bx-confirm-here). "
+               "The Emacs side (dashed) is optional."),
+    ng("vscodeClaudeChannels",
+       func=lambda: vscodeClaudeChannels(),
+       title="The Channels Between Blee and VS Code Claude",
+       caption="1: a prompt into a session's input box (the user presses Enter); 2: results back by "
+               "file; 3: results back by call, when the prompt names that Emacs; 4: from the VS Code "
+               "editor to Blee at the same line (planned)."),
+    ng("vscodeClaudeLayers",
+       func=lambda: vscodeClaudeLayers(),
+       title="The Layers of vscode-claude",
+       caption="Thin elisp over two small CSXUs, each over its CS-Unit; vscodeClaude_csu builds on "
+               "vscode_csu. The CSXUs are complete without Emacs: shells, Claude and VS Code use "
+               "them directly."),
+]
+
+graphvizSeed.setup(
+    seedType="common",
+    namedGraphsList=namedGraphsList,
+)
+
+# Conventions shared by the three figures.
+#   green  (darkseagreen3) = Blee / Emacs
+#   blue   (lightblue)     = VS Code and Claude
+#   steel  (lightsteelblue)= the Python layer (CSXUs, CS-Units)
+#   white notes            = files
+#   dashed cluster border  = optional (the Emacs layer)
+emacsNode = {'style': 'filled', 'fillcolor': 'darkseagreen3'}
+vscodeNode = {'style': 'filled', 'fillcolor': 'lightblue'}
+pythonNode = {'style': 'filled', 'fillcolor': 'lightsteelblue'}
+fileNode = {'shape': 'note', 'style': 'filled', 'fillcolor': 'white'}
+optionalCluster = {'style': 'dashed', 'color': 'darkgreen', 'fontcolor': 'darkgreen'}
+coreCluster = {'style': 'solid', 'color': 'navy', 'fontcolor': 'navy'}
+
+
+####+BEGIN: b:py3:cs:func/typing :funcName "vscodeClaudeHierarchy" :funcType "Typed" :deco "track"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-Typed  [[elisp:(outline-show-subtree+toggle)][||]] /vscodeClaudeHierarchy/  deco=track  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def vscodeClaudeHierarchy(
+####+END:
+) -> graphviz.Digraph:
+    """ #+begin_org
+** [[elisp:(org-cycle)][| *DocStr | ]  Emacs <-> VS Code -> windows -> Claude sessions -> AI-Activities.
+    #+end_org """
+
+    d = graphviz.Digraph()
+    d.attr(rankdir='TB', nodesep='0.3', ranksep='0.45', compound='true')
+    d.attr('node', fontsize='11', shape='rectangle')
+
+    with d.subgraph(name='cluster_emacs') as e:
+        e.attr(label='Optional: the Blee layer (bx-blee/vscode-claude)', **optionalCluster)
+        e.node('emacs', 'Blee (Emacs)\nserver socket', **emacsNode)
+        e.node('partner', '/bisos/var/blee/vscode/\npartner-<user>.json\n(b:vscode/init)', **fileNode)
+        e.node('assoc', 'associations\nroot dir → session\nactivity dir → session\n(buffers find theirs by walk-up)',
+               **fileNode)
+
+    with d.subgraph(name='cluster_vscode') as v:
+        v.attr(label='VS Code alone: a complete AI-Activity', **coreCluster)
+        v.node('vscode', 'VS Code\n(one desktop instance)', **vscodeNode)
+        v.node('winA', 'window\nfolder = root dir A', **vscodeNode)
+        v.node('winB', 'window\nfolder = root dir B', **vscodeNode)
+        v.node('sessA1', 'Claude session\ncwd = A', **vscodeNode)
+        v.node('sessA2', 'Claude session\ncwd = A', **vscodeNode)
+        v.node('sessB', 'Claude session\ncwd = B', **vscodeNode)
+        v.node('actRoot', 'root AI-Activity\nA/CLAUDE.md\n/bx-confirm-root', **fileNode)
+        v.node('actSub', 'sub AI-Activity\nA/sub/CLAUDE.md (initiateSub)\n/bx-confirm-here', **fileNode)
+        v.node('actOther', 'AI-Activity elsewhere\nC/CLAUDE.md (initiate)\n/bx-confirm-here', **fileNode)
+        v.node('actRootB', 'root AI-Activity\nB/CLAUDE.md\n/bx-confirm-root', **fileNode)
+
+    d.edge('vscode', 'winA')
+    d.edge('vscode', 'winB')
+    d.edge('winA', 'sessA1')
+    d.edge('winA', 'sessA2')
+    d.edge('winB', 'sessB')
+    d.edge('sessA1', 'actRoot')
+    d.edge('sessA1', 'actSub', style='dashed', label=' joined ', fontsize='9')
+    d.edge('sessA1', 'actOther', style='dashed', label=' joined ', fontsize='9')
+    d.edge('sessB', 'actRootB')
+
+    d.edge('emacs', 'vscode', dir='both', label=' partners, one to one ', fontsize='10',
+           color='darkgreen', fontcolor='darkgreen', penwidth='1.6')
+    d.edge('emacs', 'partner', color='darkgreen', style='dashed')
+    d.edge('emacs', 'assoc', color='darkgreen', style='dashed')
+    d.edge('assoc', 'sessA1', color='darkgreen', style='dotted', constraint='false',
+           label=' callback=yes: \n session id ', fontsize='9', fontcolor='darkgreen')
+
+    return d
+
+
+####+BEGIN: b:py3:cs:func/typing :funcName "vscodeClaudeChannels" :funcType "Typed" :deco "track"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-Typed  [[elisp:(outline-show-subtree+toggle)][||]] /vscodeClaudeChannels/  deco=track  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def vscodeClaudeChannels(
+####+END:
+) -> graphviz.Digraph:
+    """ #+begin_org
+** [[elisp:(org-cycle)][| *DocStr | ]  Four channels, Blee on the left, VS Code Claude on the right.
+    #+end_org """
+
+    d = graphviz.Digraph()
+    d.attr(rankdir='LR', nodesep='0.5', ranksep='0.7')
+    d.attr('node', fontsize='11', shape='rectangle')
+
+    channel = {'fontsize': '10', 'penwidth': '1.6'}
+
+    with d.subgraph(name='cluster_blee') as e:
+        e.attr(label='Blee (optional)', **optionalCluster)
+        e.node('atPrompt', 'b:vscode:claude/atPrompt\n(x c in magit, menus,\norg command links)', **emacsNode)
+        e.node('magit', 'magit commit buffer\n(commitMsg/offer)', **emacsNode)
+        e.node('server', 'Blee server\n(emacsclient -s <socket>)', **emacsNode)
+        e.node('bleeFile', 'the file in Blee,\nat the same line', **emacsNode)
+
+    with d.subgraph(name='cluster_between') as m:
+        m.attr(label='between', style='invis')
+        m.node('promptCs', 'vscodeClaude.cs\n-i claudePrompt', **pythonNode)
+        m.node('msgFile', '<repo>/.git/\nCLAUDE_COMMIT_MSG', **fileNode)
+        m.node('openCs', 'vscode.cs\n-i bleeOpenFile\n(planned)', **{**pythonNode, 'style': 'filled,dashed'})
+
+    with d.subgraph(name='cluster_vscode') as v:
+        v.attr(label='VS Code + Claude', **coreCluster)
+        v.node('input', 'session input box\n(you press Enter)', **vscodeNode)
+        v.node('claude', 'Claude\n(its tools)', **vscodeNode)
+        v.node('editor', 'VS Code editor\n(user task + key)', **vscodeNode)
+
+    d.edge('atPrompt', 'promptCs', label='1 prompt in', color='navy', fontcolor='navy', **channel)
+    d.edge('promptCs', 'input', label='code --open-url,\npaste', color='navy', fontcolor='navy', **channel)
+
+    # Right to left, declared left to right with dir='back' so that LR ranking holds.
+    d.edge('magit', 'msgFile', dir='back', label='offered at c c', color='crimson', fontcolor='crimson', **channel)
+    d.edge('msgFile', 'claude', dir='back', label='2 by file', color='crimson', fontcolor='crimson', **channel)
+    d.edge('server', 'claude', dir='back', label='3 by call (when the prompt\nnames this Emacs)',
+           color='crimson', fontcolor='crimson', **channel)
+    d.edge('bleeFile', 'openCs', dir='back', style='dashed', color='darkgreen', fontcolor='darkgreen',
+           label='emacsclient', **channel)
+    d.edge('openCs', 'editor', dir='back', style='dashed', color='darkgreen', fontcolor='darkgreen',
+           label='4 VS Code → Emacs', **channel)
+
+    # Top-to-bottom order within each column (a flat invisible edge per pair).
+    for column in [['atPrompt', 'magit', 'server', 'bleeFile'],
+                   ['promptCs', 'msgFile', 'openCs'],
+                   ['input', 'claude', 'editor']]:
+        for upper, lower in zip(column, column[1:]):
+            d.edge(upper, lower, style='invis', constraint='false')
+
+    return d
+
+
+####+BEGIN: b:py3:cs:func/typing :funcName "vscodeClaudeLayers" :funcType "Typed" :deco "track"
+""" #+begin_org
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  F-T-Typed  [[elisp:(outline-show-subtree+toggle)][||]] /vscodeClaudeLayers/  deco=track  [[elisp:(org-cycle)][| ]]
+#+end_org """
+@cs.track(fnLoc=True, fnEntry=True, fnExit=True)
+def vscodeClaudeLayers(
+####+END:
+) -> graphviz.Digraph:
+    """ #+begin_org
+** [[elisp:(org-cycle)][| *DocStr | ]  elisp -> CSXUs -> CS-Units -> VS Code, X tools, the session registry.
+    #+end_org """
+
+    d = graphviz.Digraph()
+    d.attr(rankdir='TB', nodesep='0.35', ranksep='0.5')
+    d.attr('node', fontsize='11', shape='rectangle')
+
+    layerLabels = [
+        ('lyr_users', 'Users'),
+        ('lyr_elisp', 'elisp\n(this package)'),
+        ('lyr_csxu', 'CSXUs\n(bisos.aiActivity)'),
+        ('lyr_csu', 'CS-Units\n(bisos.aiActivity)'),
+        ('lyr_ext', 'Underneath'),
+    ]
+    for name, label in layerLabels:
+        d.node(name, label, shape='plaintext', fontsize='11', fontcolor='gray30')
+    for (upper, _), (lower, _) in zip(layerLabels, layerLabels[1:]):
+        d.edge(upper, lower, style='invis')
+
+    def layer(labelNode: str, nodes: list) -> None:
+        with d.subgraph() as s:
+            s.attr(rank='same')
+            s.node(labelNode)
+            for name, label, attrs in nodes:
+                s.node(name, label, **attrs)
+            order = [labelNode] + [name for name, _, _ in nodes]
+            for left, right in zip(order, order[1:]):
+                s.edge(left, right, style='invis')
+
+    layer('lyr_users', [
+        ('bleeUser', 'Blee user\n(keys, menus, org links)', emacsNode),
+        ('shellUser', 'shell, Claude,\nVS Code tasks', vscodeNode),
+    ])
+    with d.subgraph(name='cluster_elisp') as e:
+        e.attr(label='Optional: the Emacs layer', **optionalCluster)
+        with e.subgraph() as s:
+            s.attr(rank='same')
+            s.node('elVscode', 'b:vscode.el\nfileOpen (to wrap vscode.cs)', **emacsNode)
+            s.node('elClaude', 'b:vscode:claude.el\natPrompt, commitMsgGenerate,\nmagit hooks and x c', **emacsNode)
+            s.node('elMenu', 'b:vscode:claude:menu.el\nb:vscode-claude::pkg.el', **emacsNode)
+    layer('lyr_csxu', [
+        ('csVscode', 'vscode.cs', pythonNode),
+        ('csClaude', 'vscodeClaude.cs', pythonNode),
+    ])
+    layer('lyr_csu', [
+        ('csuVscode', 'vscode_csu.py\nopen file / folder / URI, diff,\nfocus, topology, extensions,\nclipboard and paste', pythonNode),
+        ('csuClaude', 'vscodeClaude_csu.py\nsession registry, prompt URI,\nclaudePrompt', pythonNode),
+    ])
+    layer('lyr_ext', [
+        ('code', 'code CLI and\ndesktop VS Code', vscodeNode),
+        ('xtools', 'xclip, xdotool\n(DISPLAY)', {'style': 'filled', 'fillcolor': 'white'}),
+        ('registry', '~/.claude/sessions/\n<pid>.json', fileNode),
+    ])
+
+    d.edge('bleeUser', 'elVscode')
+    d.edge('bleeUser', 'elClaude')
+    d.edge('bleeUser', 'elMenu')
+    d.edge('elVscode', 'csVscode')
+    d.edge('elClaude', 'csClaude')
+    d.edge('shellUser', 'csVscode', color='navy', label=' without Emacs ', fontsize='9', fontcolor='navy')
+    d.edge('shellUser', 'csClaude', color='navy')
+    d.edge('csVscode', 'csuVscode')
+    d.edge('csClaude', 'csuClaude')
+    d.edge('csuClaude', 'csuVscode', label=' builds on ', fontsize='9', constraint='false')
+    d.edge('csuVscode', 'code')
+    d.edge('csuVscode', 'xtools')
+    d.edge('csuClaude', 'registry')
+
+    return d
+
+""" #+begin_org
+#+begin_src sh :results output :session shared
+vscodeClaude-graphviz.pcs --format=evince  -i ngProcess vscodeClaudeHierarchy
+vscodeClaude-graphviz.pcs --format=all  -i ngProcess all
+#+end_src
+#+end_org """

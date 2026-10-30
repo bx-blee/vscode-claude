@@ -25,7 +25,7 @@ of TODOs that I work with Claude to accomplish.
 
 Note to a fresh Claude: read this file together with AI-WORKFLOW.org,
 AI-Activity.org and AI-DevStatus.org to orient yourself. The =<<Context Confirmation>>=
-TODO below is the standard first step, or use =/bx-confirm0= as the automated equivalent.
+TODO below is the standard first step, or use =/bx-confirm-root= as the automated equivalent.
 TODOs tagged =:ai:= are assigned to Claude. After completing a TODO, summarize results
 under =----- Results: ------= and mark it DONE.
 
@@ -81,7 +81,7 @@ Goal: Confirm AI's understanding of the context and capture that in [[Context Co
 
 * Stage 0 TODOs
 ** +
-** LOOP [#A] <<Context Confirmation>> for AI (typically triggered by /bx-confirm0) :aiAndMe:
+** LOOP [#A] <<Context Confirmation>> for AI (typically triggered by /bx-confirm-root) :aiAndMe:
 SCHEDULED: <2026-06-09 Tue>
 Must be repeated each time a new Claude instance is started here.
 Based on the series of files starting from CLAUDE.md in this repo,
@@ -173,6 +173,27 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 - Look at README.org of sibling blee packages
 - Combine 
 ----- Results: ------
+2026-10-30: README.org written as both design and documentation, in the frame of aiplus/README.org
+(panel line, Overview, TOC, Installation, footer). The design between: the model (Emacs, one VS Code,
+windows, Claude sessions, the AI-Activity hierarchy of root and here), the partnership (b:vscode/init,
+partner file /bisos/var/blee/vscode/partner-<user>.json) and associations (activity dir → session,
+by walk-up; the optional /bx-confirm-root callback), the four channels, the layers and the command
+tables of vscode.cs / vscodeClaude.cs, use, topologies, principles. "The Emacs layer is optional" is
+stated first. Unbuilt parts are marked (planned).
+- Figures: images/vscodeClaude-graphviz.pcs (hierarchy, channels, layers), all formats rendered;
+  images/README.org lists them.
+- Emacs+VS-Code+Claude.org: a line at the top saying README.org supersedes it as the design.
+- With it, in aiTemplates-workFlow: /bx-confirm0 renamed /bx-confirm-root (optional dir=, emacs=,
+  callback=yes; bx-confirm0 kept as an alias), AI-WORKFLOW.org's "Root and Here" section, base → root.
+- Not yet TODOs: b:vscode/init and the partner file, confirmRoot / confirmHere / rootRegister,
+  bleeOpenFile and vscodeBleeLinkSnippet (10.9). The README's dblock-free TOC is hand-written; toc-org
+  regenerates it on save in Blee.
+2026-10-30, after Mohsen's review: the Overview opens on AI-Activity (beyond the chatbot model,
+pure VS Code Claude can be used with it, described in bisos.aiActivity) and this package as the Blee
+layer that augments it. Every table under 105 (orgTableAlign.py); the full command tables now live
+only in aiActivity's README, which this one links to. aiActivity's README: its VS Code section split
+into one table per CSXU, a "Root and Here" subsection under its topology, and links back here (also
+part of [[9.1]]).
 
 ** TODO [#A] <<2.4>> Move code from /bisos/blee/env3/plus/bcpg:claudePlus.el to this package
 SCHEDULED: <2026-10-28 Wed 22:50>
@@ -208,7 +229,7 @@ Goal: Functionality wont be changed. Just renamed
 
 * Stage 4 TODOs b:vscode:claude/atPrompt is a thin layer over bisos.aiActivity vscodeClaude.cs -i claudePrompt
 ** +
-** TODO [#A] <<3.1>> Renamings from claudeSessions.cs to vscodeClaude.cs 
+** TODO [#A] <<4.1>> Renamings from claudeSessions.cs to vscodeClaude.cs
 SCHEDULED: <2026-10-28 Wed 22:50>
 :PROPERTIES:
 :ORIGIN: Mohsen
@@ -217,8 +238,15 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 :BASE: /bxRepos/bisos-pip/aiActivity/py3
 :FOUND: <2026-10-29 Thu 17:02>
 :END:
-- Do the work at /bxRepos/bisos-pip/aiActivity/AI-WorkPlan.org
+- Do the work at /bxRepos/bisos-pip/aiActivity/AI-WorkPlan.org, as its 22.1 (Stage 22).
+- Decided 2026-10-29: two CSUs, =vscode_csu.py= (the vscode layer) and =vscodeClaude_csu.py=
+  (the Claude layer), each with its own examples; the CSXU =vscodeClaude.cs= stays small.
 ----- Results: ------
+2026-10-29: done in bisos-pip/aiActivity, recorded under its 22.1. Here: =b:vscode:claude.el= runs
+=vscodeClaude.cs -i claudePrompt= (=b:vscode:claude:program=); needs aiActivity reinstalled first.
+The vscode layer's first command, =vscodeOpenUri=, is the Python half of [[10.6]].
+Revised 2026-10-29: one CSXU per layer --- =vscode.cs= under =b:vscode.el=, =vscodeClaude.cs= under
+=b:vscode:claude.el=.
 
 ** -
 
@@ -245,7 +273,7 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 - Test it as a command.
 ----- Results: ------
 
-** TODO [#A] <<5.1>> Go back to [[Stage 4]] and its examples and add invokation of Cmnd through Emacs
+** TODO [#A] <<5.2>> Go back to [[Stage 4]] and its examples and add invokation of Cmnd through Emacs
 SCHEDULED: <2026-10-28 Wed 22:50>
 :PROPERTIES:
 :ORIGIN: Mohsen
@@ -438,6 +466,173 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 :END:
 - Think of other features that can go in b:vscode.el
 ----- Results: ------
+
+** TODO [#B] <<10.2>> b:vscode/fileOpen at point: code --goto file:line:col
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- Land on the line (and column) of point, not just the file; =--reuse-window= so it does not
+  open a new window each time.
+----- Results: ------
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenFile <file> [line [col]] (--reuse-window --goto). Elisp not yet.
+
+** DONE [#C] <<10.3>> Open the repo (project root) as a VS Code folder
+CLOSED: [2026-10-30 Fri 18:10]
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- =magit-toplevel= or =project-root= of the current buffer, opened as a folder.
+- Matters for Claude: the folder sets the session's working directory, so which =CLAUDE.md= and
+  =.claude/commands= are loaded. A single file loses that.
+----- Results: ------
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenFolder <dir>, --window=reuse|new. Elisp not yet.
+2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
+stays in vscode.cs for shell use. Revisit if a use from Blee appears.
+
+** DONE [#C] <<10.4>> Add a folder to the current VS Code window: code --add
+CLOSED: [2026-10-30 Fri 18:10]
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Low
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- A multi-root workspace without a new window, e.g. a sibling repo such as bisos-pip/aiActivity.
+----- Results: ------
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeAddFolder <dir>. Elisp not yet.
+2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
+stays in vscode.cs for shell use. Revisit if a use from Blee appears.
+
+** DONE [#C] <<10.5>> Diff in VS Code: code --diff
+CLOSED: [2026-10-30 Fri 18:10]
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Low
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- Two marked files in dired, or the file at point in magit (against HEAD or the index).
+----- Results: ------
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeDiff <a> <b> (files; the dired/magit side is elisp). Elisp not yet.
+2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
+stays in vscode.cs for shell use. Revisit if a use from Blee appears.
+
+** DONE [#B] <<10.6>> b:vscode/openUrl: the code --open-url primitive under atPrompt
+CLOSED: [2026-10-30 Fri 17:56]
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: High
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- The design's "prompt in" channel without the Claude part: b:vscode:claude/atPrompt becomes a
+  =vscode://anthropic.claude-code/open?session=…&prompt=…= URI handed to it.
+- Logic in the Python vscode layer of vscodeClaude.cs ([[Stage 4]]); the elisp only wraps it.
+----- Results: ------
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenUri <uri>; vscodeClaude_csu sends its /open URI through vscode_csu. Elisp not yet.
+2026-10-30: DONE, no elisp needed. atPrompt already reaches --open-url through vscodeClaude.cs
+(claudePrompt calls vscode_csu.openUriSend); a b:vscode/openUrl would be a primitive no Blee
+command calls. For a raw URI: vscode.cs -i vscodeOpenUri. Answers 10.12's last question: Blee
+reaches VS Code only through vscode.cs.
+
+** DONE [#B] <<10.7>> VS Code status and topology check
+CLOSED: [2026-10-30 Fri 17:56]
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Medium
+:REPO: /bxRepos/bisos-pip/aiActivity
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- Is a desktop VS Code running on Emacs's DISPLAY (topology A), or is =code= only the remote CLI
+  (=VSCODE_IPC_HOOK_CLI=, topology B) where =--open-url= is refused? See Emacs+VS-Code+Claude.org.
+- Commands then fail with a clear message instead of silently doing nothing.
+- In Python (vscodeClaude.cs vscode layer).
+----- Results: ------
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeTopology (launcher, ipcHook, desktop main and DISPLAY, a verdict). Elisp not yet.
+2026-10-30: DONE, no elisp needed. The "fail with a clear message" half is in Python too:
+claudePrompt refuses through vscode_csu.displayProblem (naming the desktop's DISPLAY), and
+atPrompt shows the EH_Problem. vscodeTopology is a diagnostic, run from a shell or the examples.
+
+** DONE [#B] <<10.8>> VS Code extension setup: --list-extensions, --install-extension
+CLOSED: [2026-10-30 Fri 17:56]
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Low
+:REPO: /bxRepos/bisos-pip/aiActivity
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- Check for and install =anthropic.claude-code=: item 4 of the design's "Components to Build".
+- In Python (vscodeClaude.cs vscode layer).
+----- Results: ------
+2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeExtensions and vscodeExtensionVersion <id>; installing stays in vscode-sbom.pcs. Elisp not yet.
+2026-10-30: DONE, no elisp needed. Checking and installing are setup, done once from a shell
+(vscode.cs -i vscodeExtensionVersion anthropic.claude-code; vscode-sbom.pcs), not from Blee.
+
+** TODO [#B] <<10.9>> VS Code to Emacs: open the current file in Blee at its line
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- A VS Code task or keybinding running =emacsclient -s <socket> +line file=.
+- A setup snippet for README.org or the panel, not elisp. Makes editing two-way, not only Claude.
+----- Results: ------
+
+** TODO [#B] <<10.10>> One owner for "open in vscode": b:vscode vs open-in
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- =b:open-in/vscode= (from =xah-open-in-vscode=) and =b:vscode/fileOpen= are the same function.
+- Keep one implementation, probably in b:vscode, and have the open-in transient call it. See [[10.1]].
+----- Results: ------
+
+** TODO [#B] <<10.11>> Menu entries for the vscode layer
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Low
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- A VS Code submenu in b:vscode:claude:menu.el, or a b:vscode:menu.el of its own.
+----- Results: ------
+
+** TODO [#B] <<10.12>> Make b:vscode/fileOpen robust: local process, TRAMP paths, Linux only
+:PROPERTIES:
+:ORIGIN: Claude
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-29 Thu>
+:END:
+- =shell-command= runs in the buffer's =default-directory=: from a TRAMP buffer it runs remotely
+  and passes a =/ssh:…= path. Run locally (=default-directory= =~/=, as atPrompt does), and either
+  refuse remote paths or map them to a =vscode-remote://= URI.
+- Drop the macOS and Windows branches: Blee runs on Linux.
+- Should fileOpen and 10.2–10.5 go through vscodeClaude.cs too, so one place knows how to reach
+  VS Code? Decide with [[10.6]].
+----- Results: ------
+2026-10-30: decided with [[10.6]]: through vscode.cs (vscodeOpenFile), which already runs code
+locally, with the right environment, Linux only. Left here: the TRAMP path handling.
 
 ** -
 

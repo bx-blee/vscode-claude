@@ -144,6 +144,16 @@ Decisions (Mohsen, 2026-10-29): prefix =b:= (not =bap:=); files as below; 2.4 do
   Not yet verified in a restarted Blee.
 - Candidate skills (not written): =blee-pkg-authorship= (structure, naming, bnpa absorption,
   batch testing --- now in AI-Activity.org; extract when it grows).
+2026-10-31: written. aiTemplates-DE: new skill =blee-pkg-authorship= (layout, elisp-over-CSXU
+layering and the runner, COMEEGA by hand, menus built once, transients and magit, bnpa, batch and
+fresh-Blee tests, the three-repo commit order); blee-pkg AI-Activity.org gained rules (one layer per
+CSXU, menus built once, fresh-Blee testing, the commit order, the README frame);
+=bs-blee-emacs-server= gained the socket sources, "Test in a fresh Blee" and "Diagnose a slow Blee";
+=writing-cs-commands= (opResults=None, argsMin and parChoices not enforced, exit 0 on refusal, a
+command run by another program), =readme-authorship= (several READMEs: one owner per table, anchors),
+=graphviz-authoring= (the vanishing cluster, duplicate style). aiTemplates-workFlow:
+=bx-ai-commands-authorship= (rename by alias; new commands need a new session). The skills figure
+(aiActivity's aiEcosystemTree) has a Blee group. Needs assemblyUpdate of the base.
 
 ** TODO [#A] <<2.2>> Setup /bisos/blee/env3/plus/bnpa:vscode-claude.el - it is a copy of bnpa:aiplus.el
 SCHEDULED: <2026-10-28 Wed 22:50>
@@ -759,6 +769,67 @@ stdout or stderr. Not yet: a real session with the hooks installed.
 
 ** -
 
+* Stage 12: Selecting Claude Sessions From Blee
+
+<<Stage 12>>
+
+Goal: let the user choose which VS Code Claude session a buffer prompts, instead of only the
+automatic choice (association by walk-up, else the covering session, else the latest). "Select Claude
+Session" is the first item of [[The order and scope of commands]] (Stage 7). Proposed 2026-10-30, not
+built: a choice applies per activity dir (the associations of [[11.2]]), with a buffer-local override
+by C-u. To be decided before building.
+
+* Stage 12 TODOs
+** +
+** TODO [#A] <<12.1>> b:vscode:claude/sessionSelect: a picker over the running sessions
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-30 Fri>
+:END:
+- completing-read over claudeSessionsList: name, folder, status (busy, idle), last active.
+- The choice becomes the association of this buffer's activity dir (nearest CLAUDE.md above, else
+  default-directory); with C-u, a buffer-local override instead.
+- A "new conversation" candidate: the next prompt starts a fresh session (--session=new).
+----- Results: ------
+
+** TODO [#B] <<12.2>> b:vscode:claude/sessionForget: back to the automatic choice
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-30 Fri>
+:END:
+- Drop this activity dir's association (or, with C-u, the buffer-local override).
+----- Results: ------
+
+** TODO [#B] <<12.3>> confirmRoot asks when several sessions share the root's folder
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-30 Fri>
+:END:
+- Today it takes the most recently active one silently; ask through the 12.1 picker instead.
+----- Results: ------
+
+** TODO [#B] <<12.4>> Show the target session in the transient, and a "Choose session" key
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-30 Fri>
+:END:
+- b:vscode:claude/dispatch: c "Choose session" in the Session column; the menu title shows the
+  session this buffer would prompt, so the target is visible before sending.
+----- Results: ------
+
+** -
 
 # Local Variables:
 # eval: (setq-local toc-org-max-depth 4)

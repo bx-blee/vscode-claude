@@ -22,23 +22,62 @@ architecture, what works, what is untested and the design decisions made so far.
 This file is maintained by Claude. Updates are typically triggered by the
 =/bx-status-update= slash command, after major interactions, or before a release.
 
-Note to a fresh Claude: this file is intentionally sparse at project start.
-Fill in the sections below when asked to update, following the structure provided.
-
 * Current State
-  [To be filled in by Claude after first substantive interaction]
+As of 2026-10-31. The Blee layer that joins Emacs and VS Code Claude for AI-Activity: designed
+(README.org), and implemented through Stage 11. Optional: VS Code alone is a complete AI-Activity.
+Used from Mohsen's Blee on 2026-10-30: confirmRoot (with Claude's rootRegister callback), x x
+(submitted /bx-git-commit-msg), /bx- commands from the transient. Next: install the Claude Code hooks
+and run the full commit cycle (8.3); then Stage 12 (selecting sessions) and Stage 7 (org command
+links). Committed: 6d9ea0a, 68faaf4 (not pushed); AI-WorkPlan.org has later edits (Stage 12).
 
 * Architecture
-  [Key components, file structure, entry points]
+- Python, in bisos-pip/aiActivity (the logic): =vscode.cs= over =vscode_csu.py= (VS Code itself:
+  open, focus, topology, extensions, the partner file, bleeOpenFile) and =vscodeClaude.cs= over
+  =vscodeClaude_csu.py= (sessions from =~/.claude/sessions/=, claudePrompt with --submit,
+  hookToEmacs, hooksSnippet). vscodeClaude_csu imports vscode_csu as a library.
+- elisp, here (thin): =b:vscode.el= (runner =b:vscode:program/run=, fileOpen, =b:vscode/init= and the
+  partner file =/bisos/var/blee/vscode/partner-<user>.json=), =b:vscode:claude.el= (atPrompt, sessions
+  and associations, confirmRoot / confirmHere / rootRegister, send with context, hookHandle and
+  =b:vscode:claude:event-hook=, magit x c / x x, the transients), =b:vscode:claude:menu.el=,
+  =b:vscode-claude::pkg.el=, =dblock-vscode-claude.el=.
+- Adoption: =blee/env3/plus/bnpa:vscode-claude.el=, from =plus-init.el= after =bnpa:aiplus=.
+- Channels (README.org): 1 prompt in (/open URI, xclip paste, optional Enter); 2 results by file
+  (.git/CLAUDE_COMMIT_MSG); 3 by call (emacsclient); 4 VS Code to Emacs (bleeOpenFile); 5 Claude Code
+  hooks to Blee.
+- Figures: =images/vscodeClaude-graphviz.pcs= (hierarchy, channels, layers).
 
 * What Works
-  [Verified functionality]
+- atPrompt, x c, x x, the commit-message offer in magit (verified by Mohsen in his Blee).
+- confirmRoot and the rootRegister callback, from Mohsen's Blee into this session (2026-10-30).
+- The transient's /bx- commands (Mohsen, 2026-10-30).
+- Batch Emacs: 33 checks of the elisp logic (scratchpad logictest.el, not kept in the repo).
+- A fresh Blee driven by its socket: the partner file written and removed at exit, hookToEmacs
+  delivering Stop and Notification, rootRegister, bleeOpenFile at line and column.
+- hookToEmacs with no partner or a stale one: exit 0, no output, about 0.4 s.
 
 * What Is Untested
-  [Known gaps]
+- The hooks from a real Claude session (the hooksSnippet entry is not in ~/.claude/settings.json):
+  the magit raise on Stop, the Notification message (11.4, 11.5, 8.3).
+- --submit into a new conversation, and a submitted prompt that starts with =/=.
+- The VS Code task and key of vscodeBleeLinkSnippet (10.9).
+- confirmHere with a real sub-activity; several sessions in one window (Stage 12).
+- The bnpa adoption in a restarted Blee: loaded in fresh Blees, not yet checked after a restart of
+  Mohsen's own.
 
 * Key Design Decisions
-  [Non-obvious choices and their rationale]
+- The Emacs layer is optional and does not interfere: Claude reaches Emacs only when a prompt names
+  it (=emacs=<socket>=) or the user asks; hookToEmacs does nothing without a live partner.
+- One Emacs partners with one VS Code; a window's folder is a root dir; sessions hold a hierarchy of
+  AI-Activities (root by /bx-confirm-root, more by /bx-confirm-here). Associations: activity dir to
+  session, by walk-up; a base-dir need not be a repo.
+- Python first; one CSXU per elisp layer.
+- You press Enter, unless asked (x x, C-u, the S toggle).
+- b:vscode/init is run by hand, not at startup: a second (test) Blee must not take the partner role.
+- VS Code only: claude-code.el stays Blee's separate terminal-Claude path; its design was the model
+  for the transient, not a dependency. No MCP server in this phase (channel 3 is emacsclient).
+- Pointers outside this repo's import chain: the design paper =Emacs+VS-Code+Claude.org= (superseded
+  by README.org); the /bx-confirm-root command and "Root and Here" in aiTemplates-workFlow; the
+  =blee-pkg-authorship= skill in aiTemplates-DE (WorkPlan 2.1, 2.3).
 
 # Local Variables:
 # eval: (setq-local toc-org-max-depth 4)

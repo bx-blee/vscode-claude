@@ -10,12 +10,25 @@
 #   Templates: /bisos/apps/defaults/ai-templates
 #   Command:   /bisos/venv/py3/devbin/aiActivity.cs -i initiate --activity=blee-pkg
 
+####+BEGIN: b:ai:workflow/driver
+*  [[elisp:(revert-buffer)][revert-buffer]] | [[elisp:(toggle-read-only)][read/wr]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[elisp:(delete-other-windows)][(1)]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]] [[elisp:(save-buffer)][Save]] [[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]]
+*  [[elisp:(org-cycle)][AI Workflow Driver :: /bx- commands]]    *After |S|: submitted*
+  VS Code :: [[elisp:(b:vscode/fileOpen)][Visit]] | [[elisp:(b:vscode:claude/dispatch)][Transient]]
+  Session :: [[elisp:(b:vscode:claude/sessionSelect)][select-session]] | [[aiActivity:confirm-root][confirm-root]] | [[aiActivity:confirm-here][confirm-here]]  *|S|*  [[aiActivity:S=confirm-root][confirm-root]] | [[aiActivity:S=confirm-here][confirm-here]]
+  Read    :: [[aiActivity:status-read][status-read]] | [[aiActivity:archive-read][archive-read]] | [[aiActivity:ai-outputs][ai-outputs]]  *|S|*  [[aiActivity:S=status-read][status-read]] | [[aiActivity:S=archive-read][archive-read]] | [[aiActivity:S=ai-outputs][ai-outputs]]
+  Work    :: [[aiActivity:todo-do][todo-do]] | [[aiActivity:todo-done][todo-done]]  *|S|*  [[aiActivity:S=todo-do][todo-do]] | [[aiActivity:S=todo-done][todo-done]]
+  Record  :: [[aiActivity:status-update][status-update]] | [[aiActivity:archive-update][archive-update]]  *|S|*  [[aiActivity:S=status-update][status-update]] | [[aiActivity:S=archive-update][archive-update]]
+  Git     :: [[aiActivity:git-commit-msg][git-commit-msg]] | [[aiActivity:git-commit-walk][git-commit-walk]]  *|S|*  [[aiActivity:S=git-commit-msg][git-commit-msg]]
+  Close   :: [[aiActivity:git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:session-verify][session-verify]]  *|S|*  [[aiActivity:S=git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:S=session-verify][session-verify]]
+
+  ####+END:
+
 ####+BEGIN: b:ai:file/particulars
 * AI Working Context
   Working Directory: /bxRepos/blee/vscode-claude
-  File: /bisos/git/auth/bxRepos/blee/vscode-claude/AI-WorkPlan.org/bisos/git/auth/bxRepos/blee/vscode-claude/AI-WorkPlan.org
+  File: /bisos/git/auth/bxRepos/blee/vscode-claude/AI-WorkPlan.org
   Activity: blee-pkg
-  Companion Docs: AI-WORKFLOW.org, AI-Activity.org, AI-DevStatus.org
+  Companion Docs: AI-WORKFLOW.org, AI-Activity.org, AI-DevStatus.org, README.org
 
 ####+END:
 
@@ -29,31 +42,6 @@ TODO below is the standard first step, or use =/bx-confirm-root= as the automate
 TODOs tagged =:ai:= are assigned to Claude. After completing a TODO, summarize results
 under =----- Results: ------= and mark it DONE.
 
-# The DBLOCK Below is an example of commands
-####+BEGIN: blee:bxPanel:topPanelControls
-*  [[elisp:(org-cycle)][|#Control|]] :: [[elisp:(blee:bnsm:menu-back)][Back]] [[elisp:(toggle-read-only)][read/wr]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[elisp:(delete-other-windows)][(1)]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]] [[elisp:(save-buffer)][Save]] [[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]] [[elisp:(call-interactively 'b:rg:panels/all)][rg:panels/all]]  [[elisp:(org-cycle)][| ]]
-**  RipGrep:: [[elisp:(rg-menu)][rg-menu]] ||
-**  [[elisp:(bap:magit:bisos:current-bpo-repos/visit)][BPO-Repos-Magit]] ||
-**  [[elisp:(blee:buf:re-major-mode)][Re-Major-Mode]] ||  [[elisp:(org-dblock-update-buffer-bx)][Update Buf Dblocks]] || [[elisp:(org-dblock-bx-blank-buffer)][Blank Buf Dblocks]] || [[elisp:(bx:panel:variablesShow)][bx:panel:variablesShow]]
-**  [[elisp:(blee:menu-sel:comeega:maintenance:popupMenu)][||Maintenance]] 
-**  This File :: *= /bxRepos/blee/vscode-claude/AI-WorkPlan.org =* 
-* /file-truename:/  /bisos/git/auth/bxRepos/blee/vscode-claude/AI-WorkPlan.org
-*  [[elisp:(org-cycle)][|#Select|]]  :: (Results: [[elisp:(blee:bnsm:results-here)][Here]] | [[elisp:(blee:bnsm:results-split-below)][Below]] | [[elisp:(blee:bnsm:results-split-right)][Right]] | [[elisp:(blee:bnsm:results-other)][Other]] | [[elisp:(blee:bnsm:results-popup)][Popup]]) (Select:  [[elisp:(lsip-local-run-command "lpCurrentsAdmin.sh -i currentsGetThenShow")][Show Currents]]  [[elisp:(lsip-local-run-command "lpCurrentsAdmin.sh")][lpCurrentsAdmin.sh]] ) [[elisp:(org-cycle)][| ]]
-**  #See:  (Window: [[elisp:(blee:bnsm:results-window-show)][?]] | [[elisp:(blee:bnsm:results-window-set 0)][0]] | [[elisp:(blee:bnsm:results-window-set 1)][1]] | [[elisp:(blee:bnsm:results-window-set 2)][2]] | [[elisp:(blee:bnsm:results-window-set 3)][3]] ) || [[elisp:(lsip-local-run-command-here "echo pushd dest")][echo pushd dir]] || [[elisp:(lsip-local-run-command-here "lsf")][lsf]] || [[elisp:(lsip-local-run-command-here "pwd")][pwd]] |
-**  [[elisp:(org-cycle)][|#Destinations|]] :: [[Evolution]] | [[Maintainers]]  [[elisp:(org-cycle)][| ]]
-**  #See:  [[elisp:(bx:bnsm:top:panel-blee)][Blee]] | [[elisp:(bx:bnsm:top:panel-listOfDocs)][All Docs]]  E|
-####+END
-
-* Starting point for b:ai:vscodeClaude/workflow  dblocks
-
-####+BEGIN: b:ai:vscodeClaude/workflow
-* AI Emacs VSCode-Claude Workflow
-  Working Directory: /bxRepos/blee/vscode-claude
-  File: /bisos/git/auth/bxRepos/blee/vscode-claude/AI-WorkPlan.org
-  Activity: blee-pkg
-  Companion Docs: AI-WORKFLOW.org, AI-Activity.org, AI-DevStatus.org
-
-####+END:
 
 * Overview, Purpose and Context
 
@@ -368,6 +356,19 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 -  [[elisp:(b:vscode:claude:aiActivity/bx-confirm-here)][bx-confirm-here]
 - Instead of elisp:  -- Perhaps have [[aiActivity:bx-confirm-here][bx-confirm-here] Does org-mode support that?
 ----- Results: ------
+2026-11-01 (Claude). Yes: org-link-set-parameters defines a link type. Decided with Mohsen: aiActivity:
+(bx: is too generic). Built in layer 5 (b:vscode:claude:aiActivity.el, "Org Links"):
+[[aiActivity:<name> <args>]] sends /bx-<name> <args> to the buffer's activity session; C-u C-c C-o
+flips submit. confirm-root, confirm-here, git-commit-msg, git-commit-walk go through their functions;
+todo-do and todo-done without an anchor ask among the open TODOs (new todoDo, todoDone; transient t,
+T). commitMsgGenerate now loads magit itself (a link may be followed before magit is loaded).
+- Layer 0, aiTemplates-workFlow: new /bx-todo-do <anchor> (read the TODO from disk, restate it and the
+  plan; :ai: proceeds, others wait; writes Results, never marks DONE); /bx-done renamed /bx-todo-done
+  (bx-done kept as an alias); AI-WORKFLOW.org's command table. aiActivity: the usage figure, its table
+  (README) and the commands tree (aiGeneralTree) follow, re-rendered.
+- Tested: batch, 12 checks (the link type, plain and C-u, each special case, the anchors, through
+  org-open-at-point); the layer test again (31 checks, 0 failures). Not yet: a click in Mohsen's Blee
+  into a real session.
 
 ** TODO [#A] <<7.2>> Update b:ai:vscodeClaude/workflow
 SCHEDULED: <2026-10-28 Wed 22:50>
@@ -381,6 +382,25 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 Using the model of [[7.1]] build b:ai:vscodeClaude/workflow
 to produce [[The order and scope of commands]]
 ----- Results: ------
+2026-11-01 (Claude). Decided with Mohsen: the dblock is b:ai:workflow/driver (named for its purpose;
+layer-neutral, so the seed in layer 0 names no layer-5 code). dblock-vscode-claude.el writes it: a
+heading and rows Session (Select, Root, Here), Read, Work (Do TODO, Done TODO), Record, Git, of
+aiActivity: links. The earlier names b:ai:vscodeClaude/workflow and .../workflowDriver are aliases.
+The seed WorkPlan (aiTemplates-workFlow mother/AI-WorkPlan.org) carries it empty (its frozen body,
+with old bxexamples paths and a copied Control line, is gone); the headers of this WorkPlan, the
+LibreOffice sub's and bisos-pip/vscodeClaude's renamed (their bodies regenerate in Blee). From the
+list: bx-confirm-repo is confirm-root; This Emacs Server is done by confirm-root (emacs=); bx-task-do
+became /bx-todo-do (7.1). README.org: "Org Links and the Workflow Driver".
+- Tested in a fresh Blee: Update Buf Dblocks filled the new name and the old alias. Not yet: in
+  Mohsen's Blee (Update Buf Dblocks here, then a click).
+2026-11-01, revised with Mohsen: lines up to 105 displayed characters; each label is the command it
+sends; after |S| the same links again, submitted (S= in the link path, bold, tooltip "submits:"); a
+control line first (Back ... Magit), :controls nil to omit it (this WorkPlan also has its own
+topPanelControls dblock). Rows: Session, Read, Work, Record, Git (git-commit-walk always submits, no
+copy). Tested: batch, 18 checks; a fresh Blee, displayed widths 49 to 103.
+Then: choices separated by " | ", the |S| marker spaced wider; session-end commands in a row of
+their own, Close (git-uncommitted-list, session-verify), so every row fits 105 (Record would be 111);
+labels padded so the :: align. Fresh Blee: displayed widths 58 to 98.
 
 
 ** -
@@ -619,6 +639,9 @@ vscodeExtensionVersion <id>; installing stays in vscode-sbom.pcs. Elisp not yet.
 2026-10-30: built: vscode.cs -i bleeOpenFile <file> [line [col]] (partner socket, emacsclient -n
 +L:C, raise the frame) and vscodeBleeLinkSnippet (the user task, ctrl+alt+e, task.saveBeforeRun).
 Tested against a fresh Blee (line and column land). Not yet: the task in VS Code.
+2026-11-01: the setup is now a command, not a paste: vscode.cs -i vscodeBleeLinkInstall (and
+vscodeBleeLinkCheck), bisos-pip/vscodeClaude 3.1. Tested on scratch directories; not yet on
+Mohsen's files.
 
 ** TODO [#B] <<10.10>> One owner for "open in vscode": b:vscode vs open-in
 :PROPERTIES:
@@ -735,6 +758,8 @@ VS Code session, with Mohsen watching.
 partner: nothing, silent, about 0.4s; else emacsclient --eval hookHandle, 5s timeout; stdout always
 empty; always exit 0) and hooksSnippet (Stop and Notification, absolute path, timeout 10). Not
 installed in ~/.claude/settings.json: that is Mohsen's to add.
+2026-11-01: vscodeClaude.cs -i hooksInstall merges them (and hooksCheck reports them),
+bisos-pip/vscodeClaude 3.2. Tested on a scratch settings file; not yet on Mohsen's.
 
 ** TODO [#A] <<11.4>> b:vscode:claude/hookHandle and the first handlers
 :PROPERTIES:
@@ -794,6 +819,12 @@ by C-u. To be decided before building.
   default-directory); with C-u, a buffer-local override instead.
 - A "new conversation" candidate: the next prompt starts a fresh session (--session=new).
 ----- Results: ------
+2026-10-31: built in layer 4 (b:vscode:claude.el): b:vscode:claude/sessionSelect, a picker over
+the running sessions (name, status, last active, folder, id) and "(a new conversation)". The choice
+is recorded for the base dir (b:vscode:claude:baseDir: the git repo; with layer 5 the AI-Activity
+dir); C-u: buffer-local (b:vscode:claude:session:buffer). "New" is one-shot
+(b:vscode:claude:session:next) and drops the base dir's association, so the new session is found by
+its folder afterwards. Tested in batch (layertest.el, layer 4 alone).
 
 ** TODO [#B] <<12.2>> b:vscode:claude/sessionForget: back to the automatic choice
 :PROPERTIES:
@@ -805,6 +836,7 @@ by C-u. To be decided before building.
 :END:
 - Drop this activity dir's association (or, with C-u, the buffer-local override).
 ----- Results: ------
+2026-10-31: b:vscode:claude/sessionForget (C-u: the buffer-local choice). Tested in batch.
 
 ** TODO [#B] <<12.3>> confirmRoot asks when several sessions share the root's folder
 :PROPERTIES:
@@ -816,6 +848,8 @@ by C-u. To be decided before building.
 :END:
 - Today it takes the most recently active one silently; ask through the 12.1 picker instead.
 ----- Results: ------
+2026-10-31: layer 5's confirmRoot asks through layer 4's b:vscode:claude:session/choose when
+several sessions share the root's folder (one: no question). Tested in batch.
 
 ** TODO [#B] <<12.4>> Show the target session in the transient, and a "Choose session" key
 :PROPERTIES:
@@ -828,6 +862,167 @@ by C-u. To be decided before building.
 - b:vscode:claude/dispatch: c "Choose session" in the Session column; the menu title shows the
   session this buffer would prompt, so the target is visible before sending.
 ----- Results: ------
+2026-10-31: b:vscode:claude/dispatch's title shows where a prompt would go
+(b:vscode:claude:session/targetDescribe); c Choose session, F Forget, l Associations. Tested in
+batch; the transient not yet opened interactively.
+
+** TODO [#B] <<12.5>> A Blee-side commit walk: x n in magit moves to the next repo
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-31 Sat>
+:END:
+- /bx-git-commit-walk (aiTemplates-workFlow, 2026-10-31) opens each repo's magit through
+  vscode.cs -i bleeMagit, and the user says "next" to Claude. Instead: Claude sends the walk's list
+  to Blee once (b:vscode:claude:magit/walk), and x n in magit opens the next repo; with the Claude
+  Code hooks, the Stop after a commit message could also bring magit back.
+----- Results: ------
+2026-10-31: built in layer 5: b:vscode:claude:aiActivity:magit/walk (Claude hands Blee the
+list: /bx-git-commit-walk emacs= walk=<this function>), walkNext (magit x n; asks when the repo still
+has changes), walkStart (x w: sends that prompt, submitted). Tested in batch and in a fresh Blee
+(the walk opened the first repo's magit). Not yet: a real walk driven by Claude.
+
+** -
+
+* Stage 13: True Layering --- Five Layers, Each Usable Without Those Above
+
+<<Stage 13>>
+
+Goal: make the layering real in the code, not only in the names. Reviewed 2026-10-31 (Mohsen):
+
+| # | Layer                        | Holds                                                         |
+|---+------------------------------+---------------------------------------------------------------|
+| 1 | AI-Activity                  | aiActivity.cs, templates, /bx- commands, root and here        |
+| 2 | VS Code                      | vscode.cs: open, focus, diff, topology, extensions, URI       |
+| 3 | Emacs <-> VS Code            | the partner file, bleeOpenFile, bleeMagit, b:vscode.el        |
+| 4 | Emacs <-> VS Code Claude     | prompts, sessions, context, submit, hooks; no /bx-, CLAUDE.md |
+| 5 | + AI-Activity                | root and here from Blee, commit cycle, /bx- menus, the walk   |
+
+Layer 1 is engine-neutral in its content, Claude (terminal or VS Code) in practice. Found
+intertwined today: layers 4 and 5 share =b:vscode:claude.el= and its transient (the association
+mechanism is 4, filling it from root and here is 5; the hook mechanism is 4, the commit handler 5);
+layer 3's Python commands sit in =vscode.cs= beside layer 2; and layer 1 names upper-layer code
+(=/bx-confirm-root callback=yes= evaluates =b:vscode:claude/rootRegister=; =/bx-git-commit-walk= runs
+=vscode.cs -i bleeMagit=). Test of done: each layer loads and works with the layers below it only.
+
+* Stage 13 TODOs
+** +
+** TODO [#A] <<13.1>> Split b:vscode:claude.el: layer 4 and b:vscode:claude:aiActivity.el (layer 5)
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: High
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-31 Sat>
+:END:
+- Layer 4 (=b:vscode:claude.el=): atPrompt, sessions, the generic dir -> session association API,
+  the sends, submit, the hook mechanism (hookHandle, event-hook), a transient without /bx-. It names
+  no /bx- command and no CLAUDE.md.
+- Layer 5 (=b:vscode:claude:aiActivity.el=): confirmRoot, confirmHere, rootRegister (filling the
+  layer-4 association by activity dir), the commit cycle (x c, x x, offer, markUsed, the Stop
+  handler), the /bx- transient as a suffix group added to layer 4's, the walk (12.5), Stage 7.
+- Names: keep the user-facing ones where possible; layer-5 functions under =b:vscode:claude:aiActivity=.
+- Tests: batch-load layer 4 alone; the existing batch test split along the same line.
+----- Results: ------
+2026-10-31: split. b:vscode:claude.el is layer 4 (prompts, sessions, base dirs and
+associations, sends, submit, hooks, its transient) and names no /bx- command and no CLAUDE.md;
+b:vscode:claude:aiActivity.el is layer 5 (the AI-Activity dir as layer 4's base dir, confirmRoot /
+confirmHere / rootRegister, bxSend, the commit cycle and its Stop handler, the walk, the /bx-
+transient appended to layer 4's as "a", magit's x). Layer-5 names moved under
+b:vscode:claude:aiActivity; b:vscode:claude:magit|config kept as an alias (env3's bnpa calls it).
+Tested: batch, 32 checks, layer 4 loaded alone first; a fresh Blee loads both. Found: Blee sets
+straight-check-for-modifications to nil, so the new file needed its link in straight's build dir
+(added by hand; a straight-rebuild-package does the same), else Blee's startup stops.
+
+** TODO [#A] <<13.2>> Layer 3's Python out of vscode.cs
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: High
+:REPO: /bxRepos/bisos-pip/aiActivity
+:BASE: this
+:FOUND: <2026-10-31 Sat>
+:END:
+- vscodePartner, bleeOpenFile, bleeMagit, vscodeBleeLinkSnippet and the partner helpers move to
+  =vscodeEmacs_csu.py=. Decide: its own CSXU (=vscodeEmacs.cs=, the one-CSXU-per-elisp-layer rule:
+  b:vscode.el sits over it) or a second CSU in vscode.cs's csuList (one examples menu, two chapters).
+- vscodeClaude_csu's hookToEmacs then imports the partner reader from layer 3, not layer 2.
+----- Results: ------
+2026-10-31: layer 3's Python moved to vscodeEmacs_csu.py (partner file, partnerRead,
+elispString, emacsEval; vscodePartner, bleeOpenFile, bleeMagit, vscodeBleeLinkSnippet), a second CSU
+in vscode.cs's csuList (one examples menu, the Blee chapter); vscode_csu (layer 2) has no Emacs in it
+now; vscodeClaude_csu takes the partner reader from vscodeEmacs_csu. Tested through the dispatchers.
+
+** TODO [#A] <<13.3>> Layer 1 states a contract instead of naming upper-layer code
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: High
+:REPO: /bxRepos/bxObjects/aiTemplates-workFlow
+:BASE: this
+:FOUND: <2026-10-31 Sat>
+:END:
+- /bx-confirm-root: the prompt names its registration function (e.g. =register=<function>=), so the
+  command evaluates what Blee sent, not =b:vscode:claude/rootRegister=; keep callback=yes as the
+  switch, or fold it into register=.
+- /bx-git-commit-walk: "the opener the partner Emacs provides" in the command; the specific
+  =vscode.cs -i bleeMagit= in layer 3's documentation (or passed as an argument).
+- The skills (bs-blee-emacs-server) and AI-WORKFLOW.org follow the same rule.
+----- Results: ------
+2026-10-31: /bx-confirm-root takes register=<function> (named by the sender) instead of
+callback=yes; /bx-git-commit-walk opens repos with open=<command> or the new aiActivity.cs userConfig
+setting gitOpener (empty by default; for Blee: vscode.cs -i bleeMagit), and takes walk=<function>
+from Blee. The workflow tree names no Blee code now; AI-WORKFLOW.org and bs-blee-emacs-server follow.
+
+** TODO [#B] <<13.4>> README.org and the layers figure as five layers
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-31 Sat>
+:END:
+- README.org presents layers 1-5 explicitly (what each holds, what it needs, how to use only the
+  lower ones); =vscodeClaude-graphviz.pcs=: =vscodeClaudeLayers= redrawn with five bands; aiActivity's
+  README section follows.
+- AI-Activity.org (blee-pkg) and the =blee-pkg-authorship= skill: the rule "a lower layer never names
+  an upper one", with this package as the example.
+----- Results: ------
+2026-10-31: the rule "a lower layer never names an upper one" is in the blee-pkg
+AI-Activity.org and in the blee-pkg-authorship skill (with the inversion table and the straight
+pitfall). Left for the next step: README.org and the five-band layers figure.
+2026-11-01: README.org presents the layers as 0-5, and vscodeClaudeLayers has six bands (with [[13.5]]).
+
+** TODO [#A] <<13.5>> Table of Repos for the 6 Layers in README.org
+SCHEDULED: <2026-11-01 Sun>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-31 Sat>
+:END:
+After the graphical presentation of the 6 layers, we will have a
+table with  3 Columns. Column 1 is The Layer #, Column 2 is the github URL, Column 3 is package name/link
+
+For layer 0 There will be 3 Repos and no package.
+For Layer 1, there will be 1 Repo and bisos.aiActivity at PyPi
+For Layer 2, there will be 1 github repo and bisos.vscodeClaude at PyPi (I have not pushed that yet, but we can document it.)
+For Layer 3, there will be one github repo. Not Pkg at at this time. Later I may put it at melpa, etc.
+The guthub urls should be fully spelled out.
+----- Results: ------
+2026-11-01 (Claude). Decided with Mohsen: layers numbered 0 to 5 (0 the templates, 1 their
+executables; 1 to 5 keep their earlier meaning), and tables top down, layer 5 first, as in the figure.
+- README.org, "Where Each Layer Lives" after the figure's text: #, GitHub URL, PyPI URL; 3, 4 and 5
+  share bx-blee/vscode-claude (no package yet, package.recipe ready for MELPA); 2 bisos.vscodeClaude
+  (marked planned on PyPI); 1 bisos.aiActivity; 0 the three bxObjects repos, no package. Notes below
+  the table: layer 2 also holds the Python of 3 and 4; which of layer 0's repos is the base.
+- With it: "The Five Layers" became "The Six Layers" (Overview, TOC, principles); "What Each Layer
+  Holds" reversed and renumbered 0-5 (rows and bullets for 0 and 1 apart); the supplies table's /bx-
+  rows are layer 0, gitOpener layer 1; "Layers 0 and 1 alone", "All six"; Related.
+- The graphviz layers figure (vscodeClaudeLayers) has six bands, 0 the templates; title and caption
+  follow; re-rendered. The PyPI and package cells are plain URLs, so the table aligns by raw width.
+
 
 ** -
 

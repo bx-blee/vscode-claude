@@ -5,6 +5,7 @@
 
 (require 'easymenu)
 (require 'b:vscode:claude)
+(require 'b:vscode:claude:aiActivity)
 
 ;; (b:vscode:claude:menu:plugin|install modes:menu:global (s-- 6))
 (defun b:vscode:claude:menu:plugin|install (<menuLabel <menuDelimiter)
@@ -99,7 +100,9 @@ As such what happens below should be exactly what is necessary and no more."
          (b:vscode:claude/submitToggle)
          :style toggle :selected b:vscode:claude:submit?]
         ["VS Code Claude Transient  -- b:vscode:claude/dispatch"
-         (b:vscode:claude/dispatch)]))
+         (b:vscode:claude/dispatch)]
+        ["AI-Activity (/bx-) Transient  -- b:vscode:claude:aiActivity/dispatch"
+         (b:vscode:claude:aiActivity/dispatch)]))
 
 ;;; Magit
 
@@ -111,17 +114,29 @@ As such what happens below should be exactly what is necessary and no more."
         ["Commit Message, Submitted  -- b:vscode:claude:aiActivity/commitMsgGenerateSubmit"
          (b:vscode:claude:aiActivity/commitMsgGenerateSubmit)
          :help "As above, and press Enter in VS Code (magit x x)"]
+        ["Commit Walk: Start  -- b:vscode:claude:aiActivity:magit/walkStart"
+         (b:vscode:claude:aiActivity:magit/walkStart)
+         :help "Ask Claude for this session's uncommitted repos and open them here in turn"]
+        ["Commit Walk: Next Repo  -- b:vscode:claude:aiActivity:magit/walkNext"
+         (b:vscode:claude:aiActivity:magit/walkNext)
+         :active b:vscode:claude:aiActivity:walk:repos]
         ))
 
 ;;; Session
 
 (defun b:vscode:claude:menuItem:session|define ()
   (list "Session"
-        ["Confirm Root (Register)  -- b:vscode:claude/confirmRoot"
-         (call-interactively 'b:vscode:claude/confirmRoot)
-         :help "/bx-confirm-root dir= emacs= callback=yes to the session covering this buffer"]
-        ["Confirm Here  -- b:vscode:claude/confirmHere"
-         (call-interactively 'b:vscode:claude/confirmHere)
+        ["Choose Session  -- b:vscode:claude/sessionSelect"
+         (call-interactively 'b:vscode:claude/sessionSelect)
+         :help "Which running session this buffer's base dir prompts (C-u: this buffer only)"]
+        ["Forget The Choice  -- b:vscode:claude/sessionForget"
+         (call-interactively 'b:vscode:claude/sessionForget)]
+        "---"
+        ["Confirm Root (Register)  -- b:vscode:claude:aiActivity/confirmRoot"
+         (call-interactively 'b:vscode:claude:aiActivity/confirmRoot)
+         :help "/bx-confirm-root dir= emacs= register= to the session covering this buffer"]
+        ["Confirm Here  -- b:vscode:claude:aiActivity/confirmHere"
+         (call-interactively 'b:vscode:claude:aiActivity/confirmHere)
          :help "/bx-confirm-here <this activity dir> to its session"]
         ["Show Associations  -- b:vscode:claude/associationsShow"
          (b:vscode:claude/associationsShow)]))

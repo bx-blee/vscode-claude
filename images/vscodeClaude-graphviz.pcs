@@ -48,10 +48,11 @@ namedGraphsList = [
                "editor to Blee at the same line (planned)."),
     ng("vscodeClaudeLayers",
        func=lambda: vscodeClaudeLayers(),
-       title="The Layers of vscode-claude",
-       caption="Thin elisp over two small CSXUs, each over its CS-Unit; vscodeClaude_csu builds on "
-               "vscode_csu. The CSXUs are complete without Emacs: shells, Claude and VS Code use "
-               "them directly."),
+       title="The Six Layers of vscode-claude",
+       caption="Each layer is usable with only the layers below it, and a lower layer never names an "
+               "upper one: 0 the AI-Activity templates, 1 their executables, 2 VS Code, 3 Emacs and "
+               "VS Code, 4 Emacs and VS Code Claude, 5 the same plus AI-Activity. Python in bisos.vscodeClaude, elisp in this "
+               "package; the dashed arrows are what an upper layer supplies to a lower one."),
 ]
 
 graphvizSeed.setup(
@@ -198,73 +199,77 @@ def vscodeClaudeLayers(
 ####+END:
 ) -> graphviz.Digraph:
     """ #+begin_org
-** [[elisp:(org-cycle)][| *DocStr | ]  elisp -> CSXUs -> CS-Units -> VS Code, X tools, the session registry.
+** [[elisp:(org-cycle)][| *DocStr | ]  Six bands, layer 5 on top, layer 0 at the bottom; in each, its Python and its elisp.
     #+end_org """
 
     d = graphviz.Digraph()
-    d.attr(rankdir='TB', nodesep='0.35', ranksep='0.5')
-    d.attr('node', fontsize='11', shape='rectangle')
+    d.attr(rankdir='TB', nodesep='0.35', ranksep='0.3', newrank='true')
+    d.attr('node', fontsize='10', shape='rectangle', width='2.6')
 
-    layerLabels = [
-        ('lyr_users', 'Users'),
-        ('lyr_elisp', 'elisp\n(this package)'),
-        ('lyr_csxu', 'CSXUs\n(bisos.aiActivity)'),
-        ('lyr_csu', 'CS-Units\n(bisos.aiActivity)'),
-        ('lyr_ext', 'Underneath'),
+    aiNode = {'style': 'filled', 'fillcolor': 'thistle'}
+    templatesNode = {'style': 'filled', 'fillcolor': 'lavender'}
+    noteNode = {'shape': 'note', 'style': 'filled', 'fillcolor': 'white', 'fontsize': '9'}
+    supply = {'style': 'dashed', 'color': 'gray35', 'fontcolor': 'gray25', 'fontsize': '8'}
+
+    bands = [
+        ('cluster_l5', '5  Emacs <-> VS Code Claude + AI-Activity', optionalCluster, [
+            ('l5el', 'b:vscode:claude:aiActivity.el\nroot and here, the commit cycle,\nthe walk, /bx- menus', emacsNode),
+        ]),
+        ('cluster_l4', '4  Emacs <-> VS Code Claude', optionalCluster, [
+            ('l4el', 'b:vscode:claude.el\natPrompt, sessions, base dirs,\nsends, hooks, dispatch', emacsNode),
+            ('l4py', 'vscodeClaude.cs\nsessions, claudePrompt (--submit),\nhookToEmacs', pythonNode),
+        ]),
+        ('cluster_l3', '3  Emacs <-> VS Code', optionalCluster, [
+            ('l3el', 'b:vscode.el\ninit, fileOpen, partnerShow', emacsNode),
+            ('l3py', 'vscode.cs: vscodeEmacs_csu\npartner file, bleeOpenFile,\nbleeMagit', pythonNode),
+        ]),
+        ('cluster_l2', '2  VS Code', coreCluster, [
+            ('l2py', 'vscode.cs: vscode_csu\nopen, focus, diff, topology,\nextensions, URI', pythonNode),
+        ]),
+        ('cluster_l1', '1  AI-Activity executables', coreCluster, [
+            ('l1engine', 'aiActivity.cs, aiActivityAssemble.cs\ninitiate, refresh, assemble', aiNode),
+            ('l1setting', 'gitOpener setting\n(its value comes from above)', noteNode),
+        ]),
+        ('cluster_l0', '0  AI-Activity templates', coreCluster, [
+            ('l0tmpl', 'aiTemplates-workFlow, aiTemplates-DE\n/bx- commands, AI-WORKFLOW.org,\nskills; root and here', templatesNode),
+            ('l0setting', 'register= / walk= arguments\n(their values come from above)', noteNode),
+        ]),
     ]
-    for name, label in layerLabels:
-        d.node(name, label, shape='plaintext', fontsize='11', fontcolor='gray30')
-    for (upper, _), (lower, _) in zip(layerLabels, layerLabels[1:]):
+    for cname, label, style, nodes in bands:
+        with d.subgraph(name=cname) as c:
+            c.attr(label=label, labeljust='l', **style)
+            with c.subgraph() as r:
+                r.attr(rank='same')
+                for name, text, attrs in nodes:
+                    r.node(name, text, **attrs)
+
+    # Stack the bands: invisible edges top to bottom.
+    for upper, lower in [('l5el', 'l4el'), ('l4el', 'l3el'), ('l3py', 'l2py'), ('l2py', 'l1engine'), ('l1engine', 'l0tmpl')]:
         d.edge(upper, lower, style='invis')
 
-    def layer(labelNode: str, nodes: list) -> None:
-        with d.subgraph() as s:
-            s.attr(rank='same')
-            s.node(labelNode)
-            for name, label, attrs in nodes:
-                s.node(name, label, **attrs)
-            order = [labelNode] + [name for name, _, _ in nodes]
-            for left, right in zip(order, order[1:]):
-                s.edge(left, right, style='invis')
+    # Uses (solid): an upper layer calls a lower one.
+    d.edge('l5el', 'l4el')
+    d.edge('l4el', 'l4py', constraint='false')
+    d.edge('l4el', 'l3el')
+    d.edge('l4py', 'l3py')
+    d.edge('l3el', 'l3py', constraint='false')
+    d.edge('l3py', 'l2py')
+    d.edge('l1engine', 'l0tmpl')
 
-    layer('lyr_users', [
-        ('bleeUser', 'Blee user\n(keys, menus, org links)', emacsNode),
-        ('shellUser', 'shell, Claude,\nVS Code tasks', vscodeNode),
-    ])
-    with d.subgraph(name='cluster_elisp') as e:
-        e.attr(label='Optional: the Emacs layer', **optionalCluster)
-        with e.subgraph() as s:
-            s.attr(rank='same')
-            s.node('elVscode', 'b:vscode.el\nfileOpen (to wrap vscode.cs)', **emacsNode)
-            s.node('elClaude', 'b:vscode:claude.el\natPrompt, commitMsgGenerate,\nmagit hooks and x c', **emacsNode)
-            s.node('elMenu', 'b:vscode:claude:menu.el\nb:vscode-claude::pkg.el', **emacsNode)
-    layer('lyr_csxu', [
-        ('csVscode', 'vscode.cs', pythonNode),
-        ('csClaude', 'vscodeClaude.cs', pythonNode),
-    ])
-    layer('lyr_csu', [
-        ('csuVscode', 'vscode_csu.py\nopen file / folder / URI, diff,\nfocus, topology, extensions,\nclipboard and paste', pythonNode),
-        ('csuClaude', 'vscodeClaude_csu.py\nsession registry, prompt URI,\nclaudePrompt', pythonNode),
-    ])
-    layer('lyr_ext', [
-        ('code', 'code CLI and\ndesktop VS Code', vscodeNode),
-        ('xtools', 'xclip, xdotool\n(DISPLAY)', {'style': 'filled', 'fillcolor': 'white'}),
-        ('registry', '~/.claude/sessions/\n<pid>.json', fileNode),
-    ])
+    # What an upper layer supplies to a lower one (dashed, drawn back up from the lower).
+    d.edge('l4el', 'l5el', dir='back', constraint='false',
+           label=' supplies baseDir-function,\n event-hook handlers ', **supply)
 
-    d.edge('bleeUser', 'elVscode')
-    d.edge('bleeUser', 'elClaude')
-    d.edge('bleeUser', 'elMenu')
-    d.edge('elVscode', 'csVscode')
-    d.edge('elClaude', 'csClaude')
-    d.edge('shellUser', 'csVscode', color='navy', label=' without Emacs ', fontsize='9', fontcolor='navy')
-    d.edge('shellUser', 'csClaude', color='navy')
-    d.edge('csVscode', 'csuVscode')
-    d.edge('csClaude', 'csuClaude')
-    d.edge('csuClaude', 'csuVscode', label=' builds on ', fontsize='9', constraint='false')
-    d.edge('csuVscode', 'code')
-    d.edge('csuVscode', 'xtools')
-    d.edge('csuClaude', 'registry')
+    d.node('legend',
+           '<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3">'
+           '<TR><TD BGCOLOR="darkseagreen3">elisp (this package)</TD>'
+           '<TD BGCOLOR="lightsteelblue">Python (bisos.vscodeClaude)</TD>'
+           '<TD BGCOLOR="thistle">AI-Activity engine</TD>'
+           '<TD BGCOLOR="lavender">AI-Activity templates</TD></TR>'
+           '<TR><TD COLSPAN="4">solid = uses the layer below;  dashed = supplied by the layer above;'
+           '  dashed box = optional (Emacs)</TD></TR></TABLE>>',
+           shape='plaintext', fontsize='9', width='0')
+    d.edge('l0tmpl', 'legend', style='invis')
 
     return d
 

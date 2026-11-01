@@ -130,6 +130,7 @@ Decisions (Mohsen, 2026-10-29): prefix =b:= (not =bap:=); files as below; 2.4 do
 - Verified: =emacs-31.1 --batch= with Blee's straight build dir and stubs loads the package;
   =b:vscode:claude:magit|config= sets the hooks and =x=; the menu builds; =atPrompt='s error path works.
   Not yet verified in a restarted Blee.
+  2026-11-01: that particulars dblock body regenerated in Mohsen's Blee from outside Emacs (6.2).
 - Candidate skills (not written): =blee-pkg-authorship= (structure, naming, bnpa absorption,
   batch testing --- now in AI-Activity.org; extract when it grows).
 2026-10-31: written. aiTemplates-DE: new skill =blee-pkg-authorship= (layout, elisp-over-CSXU
@@ -318,8 +319,43 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 :BASE: this
 :FOUND: <2026-10-01 Thu 10:32>
 :END:
-- Improve the dblock skill if needed 
+- Improve the dblock skill if needed
+- Plan (2026-11-01, with Mohsen): not a vscode command --- dblock updating is Blee's.
+  - bx-dblock (bisos/blee bin, vis_thisEmacsClient in bleeLib.sh): optional -p emacsSocket=<path or
+    name>; used exactly when given (no fallback to the default server socket); without it, as before.
+  - org-dblock-update-file-bx (blee/env3 legacy/bx-dblock-lib.el), for every caller: refuse a buffer
+    with unsaved edits or out of date with its file; leave a buffer that was already open open;
+    leave global-auto-revert-mode alone; return updated / refused / error instead of ignore-errors.
+  - The caller supplies the socket (emacs= of a prompt, or the partner file); bx-dblock names no
+    upper layer. Test in a fresh Blee first: figProc.sh (bash), an AI-WorkPlan.org (org), a .cs.
 ----- Results: ------
+2026-11-01 (Claude): built as planned, plus what the tests found.
+- bisos/blee bin: bx-dblock declares emacsSocket (and an example); bleeLib.sh vis_thisEmacsClient
+  uses it when set: a path or a name, which must be a socket with an Emacs listening on it; the
+  emacsclient is matched to that Emacs (pid from ss), not to the one around the shell (from outside
+  Emacs that gave xfce4-terminal). Unset: unchanged.
+- blee/env3 legacy/bx-dblock-lib.el: org-dblock-update-file-bx as planned; called non-interactively
+  it binds debug-on-error and debug-on-signal to nil (Blee's debugger otherwise held the client in
+  *Backtrace*); on error, a buffer it opened is dropped unsaved; org's per-dblock failures (only
+  logged by org-map-dblocks) are counted from *Messages* into the result.
+- blee:buf:re-major-mode: a major-mode that is not a command falls back to auto-mode-alist. Bash
+  files carry "#major-mode: shellscript-mode" (safe in custom.el), so major-mode was a non-command
+  and every bash dblock update failed --- silently, under the old ignore-errors. The regenerated
+  end-of-file dblock now says sh-mode.
+- Tested in fresh Blees: both figProc.sh files (This File now the LibreOffice paths), the
+  aiActivity LibreOffice sub's AI-WorkPlan.org, vscodeClaude.cs (its only change, the csInfo
+  version stamp, restored); refused on unsaved edits; an open buffer updated and left open;
+  global-auto-revert-mode untouched; a missing writer reported. The path written is the one
+  passed: give /bxRepos/... paths. Not yet: bleeclient and emlVisit (share vis_thisEmacsClient,
+  unchanged when emacsSocket is unset).
+2026-11-01, in Mohsen's Blee (bx-dblock-lib.el loaded by him; socket from the partner file): the
+aiActivity LibreOffice sub's AI-WorkPlan.org (no change) and dblock-vscode-claude.el (its particulars
+now name this file, see 2.1), both open and unmodified there: updated in place, left open.
+Skills (aiTemplates-DE mother/_skills, 2026-11-01): bs-blee-emacs-server (bx-dblock -p emacsSocket=
+and its results, replacing the G_emacsServerPid recipe; the debugger trap; a stuck fresh Blee),
+dblock-authoring and comeega-authorship (regenerate through a Blee, not by hand), writing-cs-commands
+(classHead through bx-dblock; programs resolved without "." in PATH), cbm-authorship (induct
+capabilities; materialize= is only printed), readme-authorship (the :TOC: heading line).
 
 ** -
 
@@ -401,6 +437,12 @@ copy). Tested: batch, 18 checks; a fresh Blee, displayed widths 49 to 103.
 Then: choices separated by " | ", the |S| marker spaced wider; session-end commands in a row of
 their own, Close (git-uncommitted-list, session-verify), so every row fits 105 (Record would be 111);
 labels padded so the :: align. Fresh Blee: displayed widths 58 to 98.
+Then (Mohsen's layout): a revert-buffer control line, a VS Code row (Visit: b:vscode/fileOpen, by
+true path; Transient), select-session first in Session, every |S| bold (*|S|*), no legend line. The
+dblock moved to the top of a WorkPlan, before its particulars (this one's topPanelControls removed):
+in the seed (aiTemplates-workFlow mother/AI-WorkPlan.org) and, empty, in 41 existing WorkPlans; where
+the driver was a repo's only change, Claude committed and pushed it (26 repos, by Mohsen's one-time
+exception); the rest wait in repos with other work. Clicked in Mohsen's Blee: not yet.
 
 
 ** -

@@ -30,7 +30,7 @@
 * Commentary, Model and Terminology:
 The vscode layer: what Blee does with VS Code whether or not Claude is involved
 (a running VS Code, its =code= CLI, its URIs). The logic lives in Python, in =vscode.cs=
-(bisos.aiActivity, =vscode_csu=); this file only wraps it.
+(bisos.vscodeClaude, =vscode_csu=); this file only wraps it.
 The Claude layer is b:vscode:claude.el, over =vscodeClaude.cs=, which builds on this one.
 The partnership: b:vscode/init declares this Emacs the partner of the local VS Code (one to one) by
 writing /bisos/var/blee/vscode/partner-<user>.json, read by vscode.cs (bleeOpenFile: VS Code to Emacs)
@@ -59,7 +59,7 @@ and vscodeClaude.cs (hookToEmacs: Claude Code hooks). Optional: VS Code alone ne
 ;;;#+END:
 
 (defvar b:vscode:program "vscode.cs"
-  "The CLI (bisos.aiActivity) of the vscode layer: VS Code itself, and the partner Emacs.")
+  "The CLI (bisos.vscodeClaude) of the vscode layer: VS Code itself, and the partner Emacs.")
 
 (defvar b:vscode:outBuffer "*vscode*"
   "Buffer holding the last b:vscode:program run's output.")
@@ -124,6 +124,8 @@ Returns the output, without the framework's ALERT lines.
 ** DocStr: Open the current file in the local VS Code at point's line and column (vscodeOpenFile).
 In dired, the file at point; in a buffer without a file, its directory as a folder (vscodeOpenFolder).
 Remote (TRAMP) files are refused: VS Code here sees local paths only. Linux only, as Blee.
+Symlinks are resolved (file-truename): VS Code's watcher reports changes by the real path, so a
+tab opened through a link (/bxRepos/...) would not reload when Emacs saves the file.
 Was xah-open-in-vscode (WorkPlan 10.2, 10.12).
 #+end_org "
   (interactive)
@@ -134,11 +136,11 @@ Was xah-open-in-vscode (WorkPlan 10.2, 10.12).
       (user-error "Remote file: VS Code here opens local paths only (%s)" $target))
     (if (and $file (not (file-directory-p $file)))
         (b:vscode:program/runOrError
-         b:vscode:program b:vscode:outBuffer "-i" "vscodeOpenFile" (expand-file-name $file)
+         b:vscode:program b:vscode:outBuffer "-i" "vscodeOpenFile" (file-truename $file)
          (number-to-string (line-number-at-pos nil t))
          (number-to-string (1+ (current-column))))
       (b:vscode:program/runOrError
-       b:vscode:program b:vscode:outBuffer "-i" "vscodeOpenFolder" (expand-file-name $target)))
+       b:vscode:program b:vscode:outBuffer "-i" "vscodeOpenFolder" (file-truename $target)))
     (message "Opened in VS Code: %s" $target)))
 
 ;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "The Partnership" :extraInfo "One Emacs, one VS Code: the partner file"

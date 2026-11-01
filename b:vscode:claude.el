@@ -1,7 +1,7 @@
 ;;; b:vscode:claude.el --- Blee and VS Code Claude: the vscodeClaude layer  -*- lexical-binding: t; -*-
 
 (orgCmntBegin "
-* Summary: Blee to a local VS Code Claude session (prompts in, results back) --- thin over vscodeClaude.cs.
+* Summary: Layer 4, Emacs <-> VS Code Claude: prompts, sessions, context, submit, hooks --- thin over vscodeClaude.cs.
 " orgCmntEnd)
 
 ;;;#+BEGIN: b:elisp:file/copyLeftPlus :outLevel 1
@@ -29,22 +29,20 @@
 
 (orgCmntBegin "
 * Commentary, Model and Terminology:
-The vscodeClaude layer, on top of b:vscode.el. The design is README.org; in short:
-- Prompt in: b:vscode:claude/atPrompt puts a prompt (normally a /bx- command) in the input box of a
-  local VS Code Claude session. The user presses Enter, unless submit is asked for
-  (b:vscode:claude:submit?, C-u flips it; magit x x submits, x c does not).
-- Which session: the one associated with the buffer's activity dir (walk-up), recorded by
-  confirmRoot (and Claude's rootRegister callback) and confirmHere; else the one whose cwd covers the
-  buffer; else the latest local one.
-- Results back by file (.git/CLAUDE_COMMIT_MSG, offered in magit), by call (Claude runs emacsclient),
-  and by Claude Code hooks (vscodeClaude.cs -i hookToEmacs calls b:vscode:claude/hookHandle, which runs
-  b:vscode:claude:event-hook; the model is claude-code.el's claude-code-handle-hook).
-All the logic that can be is in Python (bisos.aiActivity vscodeClaude.cs); elisp stays thin. The Emacs
-layer is optional: VS Code alone is a complete AI-Activity.
+Layer 4 of the five (README.org, WorkPlan Stage 13): Blee driving the Claude of the local VS Code,
+with no knowledge of AI-Activity --- it names no /bx- command and no CLAUDE.md. Layer 5,
+b:vscode:claude:aiActivity.el, builds on it.
+- Prompt in: b:vscode:claude/atPrompt puts text in a session's input box (vscodeClaude.cs -i
+  claudePrompt); the user presses Enter unless submit is asked for (b:vscode:claude:submit?, C-u).
+- Which session: a one-shot choice (sessionSelect's new conversation), a buffer-local one, the
+  association of the buffer's base dir (walk-up; layer 5 makes the base dir the AI-Activity dir),
+  the running session whose folder covers the buffer, else the latest local one.
+- Sends with context: @file:line, the region, the file, the flymake/flycheck error at point.
+- Claude Code hooks: vscodeClaude.cs -i hookToEmacs calls b:vscode:claude/hookHandle, which runs
+  b:vscode:claude:event-hook (the model is claude-code.el's claude-code-handle-hook).
 * Relevant Panels:
 ** [[file:./README.org]] --- the design and documentation.
 * Planned Improvements:
-** TODO Stage 7: org command links in the b:ai:vscodeClaude/workflow dblock.
 " orgCmntEnd)
 
 ;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 0 :title "REQUIRES" :extraInfo "Imports"
@@ -66,7 +64,7 @@ layer is optional: VS Code alone is a complete AI-Activity.
 ;;;#+END:
 
 (defvar b:vscode:claude:program "vscodeClaude.cs"
-  "The CLI (bisos.aiActivity) that finds the local VS Code Claude sessions and prompts them.")
+  "The CLI (bisos.vscodeClaude) that finds the local VS Code Claude sessions and prompts them.")
 
 (defvar b:vscode:claude:outBuffer "*vscodeClaude*"
   "Buffer holding the last b:vscode:claude:program run's output (the commands it ran are on its stderr).")
@@ -78,23 +76,27 @@ layer is optional: VS Code alone is a complete AI-Activity.
   "Non-nil: prompts are submitted (Enter pressed in VS Code). A C-u prefix flips it for one send.")
 
 (defvar b:vscode:claude:associations nil
-  "Alist of (activity dir . sessionId): which session a buffer under that dir prompts.
-Recorded by confirmRoot / rootRegister and confirmHere. Dirs are true names ending in /.")
+  "Alist of (base dir . sessionId): which session a buffer under that dir prompts.
+Dirs are true names ending in /. Filled by sessionSelect, and by layer 5 (confirmRoot, confirmHere).")
 
-(defvar b:vscode:claude:commitMsg:requests nil
-  "Alist of (repo . time) of /bx-git-commit-msg requests not yet seen fulfilled (by the Stop hook).")
+(defvar-local b:vscode:claude:session:buffer nil
+  "A sessionId this buffer prompts, before any association (sessionSelect with C-u).")
 
-(defvar b:vscode:claude:magit:commitMsg:pending nil
-  "Path of the CLAUDE_COMMIT_MSG inserted into the commit buffer being edited, or nil.")
+(defvar b:vscode:claude:session:next nil
+  "A one-shot target for the next prompt: \"new\" (a new conversation), then cleared.")
+
+(defvar b:vscode:claude:baseDir-function #'b:vscode:claude:baseDir/default
+  "Function of no arguments: the base dir a choice of session applies to, for the current buffer.
+Layer 5 (b:vscode:claude:aiActivity) sets it to the buffer's AI-Activity dir.")
 
 (defvar b:vscode:claude:event-hook nil
   "Abnormal hook run, from a timer, on each Claude Code hook event hookHandle receives.
 Each function gets one plist: :type (\"Stop\", \"Notification\", ...), :session, :cwd, :data (the
 event's JSON as an alist). Its return value is ignored.")
 
-;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Sessions And Associations" :extraInfo "Which session a buffer prompts"
+;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Sessions" :extraInfo "The running sessions, and choosing one"
 (orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Sessions And Associations:* |]]  Which session a buffer prompts  [[elisp:(org-shifttab)][<)]] E|
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Sessions:* |]]  The running sessions, and choosing one  [[elisp:(org-shifttab)][<)]] E|
 " orgCmntEnd)
 ;;;#+END:
 
@@ -120,6 +122,54 @@ Each plist: :sessionId :instance :cwd :name :status :updatedAt :pid (vscodeClaud
                               :pid (nth 6 $f)))))
                   (split-string $out "\n" t)))))
 
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:session/describe" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:session/describe>>  --  -- A one-line description of session <s for a choice.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:session/describe (
+;;;#+END:
+                  <s)
+   " #+begin_org
+** DocStr: A one-line description of session <s for a choice.
+#+end_org "
+  (let* (($ms (string-to-number (or (plist-get <s :updatedAt) "0")))
+         ($ago (if (> $ms 0) (- (float-time) (/ $ms 1000.0)) 0)))
+    (format "%-24s %-8s %5s  %s  [%s]"
+            (truncate-string-to-width (or (plist-get <s :name) "") 24)
+            (or (plist-get <s :status) "")
+            (cond ((< $ago 90) (format "%ds" (round $ago)))
+                  ((< $ago 5400) (format "%dm" (round (/ $ago 60))))
+                  (t (format "%dh" (round (/ $ago 3600)))))
+            (abbreviate-file-name (or (plist-get <s :cwd) ""))
+            (truncate-string-to-width (or (plist-get <s :sessionId) "?") 8))))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:session/choose" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:session/choose>>  --  -- Ask which session: a sessionId, or new (a new conversation) when <newOk allows it.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:session/choose (
+;;;#+END:
+                  <sessions &optional <newOk <prompt)
+   " #+begin_org
+** DocStr: Ask which session: a sessionId, or new (a new conversation) when <newOk allows it.
+One session and no <newOk: that one, without asking. None and no <newOk: a user-error.
+#+end_org "
+  (let* (($choices (mapcar (lambda ($s) (cons (b:vscode:claude:session/describe $s)
+                                               (plist-get $s :sessionId)))
+                           <sessions))
+         ($new "(a new conversation)"))
+    (when <newOk (setq $choices (append $choices (list (cons $new "new")))))
+    (cond ((null $choices) (user-error "No running local VS Code Claude session"))
+          ((and (= (length $choices) 1) (not <newOk)) (cdar $choices))
+          (t (cdr (assoc (completing-read (or <prompt "Claude session: ") $choices nil t)
+                         $choices))))))
+
+;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Base Dirs And Associations" :extraInfo "Which session a buffer prompts"
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Base Dirs And Associations:* |]]  Which session a buffer prompts  [[elisp:(org-shifttab)][<)]] E|
+" orgCmntEnd)
+;;;#+END:
+
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:dir/canonical" :advice ()
 (orgCmntBegin "
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:dir/canonical>>  --  -- <dir as a true name ending in /.  [[elisp:(org-cycle)][| ]]
@@ -144,6 +194,47 @@ Each plist: :sessionId :instance :cwd :name :status :updatedAt :pid (vscodeClaud
 #+end_org "
   (string-prefix-p <base <dir))
 
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:baseDir/default" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:baseDir/default>>  --  -- The default base dir of this buffer: its git repo, else its directory.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:baseDir/default (
+;;;#+END:
+                  )
+   " #+begin_org
+** DocStr: The default base dir of this buffer: its git repo, else its directory.
+#+end_org "
+  (or (locate-dominating-file default-directory ".git") default-directory))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:baseDir" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:baseDir>>  --  -- The base dir a choice of session applies to, for this buffer (canonical).  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:baseDir (
+;;;#+END:
+                  )
+   " #+begin_org
+** DocStr: The base dir a choice of session applies to, for this buffer (canonical).
+#+end_org "
+  (b:vscode:claude:dir/canonical (funcall b:vscode:claude:baseDir-function)))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:sessions/covering" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:sessions/covering>>  --  -- The running sessions whose cwd is <dir or above it: deepest, then newest.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:sessions/covering (
+;;;#+END:
+                  <dir &optional <sessions)
+   " #+begin_org
+** DocStr: The running sessions whose cwd is <dir or above it: deepest, then newest.
+#+end_org "
+  (let (($dir (b:vscode:claude:dir/canonical <dir)))
+    ;; sessions/running is newest first and seq-sort is stable: deepest cwd, then newest.
+    (seq-sort (lambda ($a $b) (> (length (plist-get $a :cwd)) (length (plist-get $b :cwd))))
+              (seq-filter (lambda ($s) (b:vscode:claude:dir/within?
+                                        $dir (b:vscode:claude:dir/canonical (plist-get $s :cwd))))
+                          (or <sessions (b:vscode:claude:sessions/running))))))
+
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:session/covering" :advice ()
 (orgCmntBegin "
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:session/covering>>  --  -- The running session whose cwd is <dir or above it, deepest first.  [[elisp:(org-cycle)][| ]]
@@ -155,14 +246,7 @@ Each plist: :sessionId :instance :cwd :name :status :updatedAt :pid (vscodeClaud
 ** DocStr: The running session whose cwd is <dir or above it, deepest first.
 Among sessions with the same cwd, the most recently active. nil when none covers <dir.
 #+end_org "
-  (let* (($dir (b:vscode:claude:dir/canonical <dir))
-         ($covering (seq-filter
-                     (lambda ($s) (b:vscode:claude:dir/within?
-                                   $dir (b:vscode:claude:dir/canonical (plist-get $s :cwd))))
-                     (or <sessions (b:vscode:claude:sessions/running)))))
-    ;; sessions/running is newest first and seq-sort is stable: deepest cwd, then newest.
-    (car (seq-sort (lambda ($a $b) (> (length (plist-get $a :cwd)) (length (plist-get $b :cwd))))
-                   $covering))))
+  (car (b:vscode:claude:sessions/covering <dir <sessions)))
 
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:association/set" :advice ()
 (orgCmntBegin "
@@ -177,6 +261,21 @@ Among sessions with the same cwd, the most recently active. nil when none covers
   (let (($key (b:vscode:claude:dir/canonical <dir)))
     (setf (alist-get $key b:vscode:claude:associations nil nil #'string=) <sessionId)
     $key))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:association/forget" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:association/forget>>  --  -- Drop the association of exactly <dir; non-nil if there was one.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:association/forget (
+;;;#+END:
+                  <dir)
+   " #+begin_org
+** DocStr: Drop the association of exactly <dir; non-nil if there was one.
+#+end_org "
+  (let* (($key (b:vscode:claude:dir/canonical <dir))
+         ($had (assoc $key b:vscode:claude:associations)))
+    (setq b:vscode:claude:associations (delq $had b:vscode:claude:associations))
+    (and $had t)))
 
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:association/lookup" :advice ()
 (orgCmntBegin "
@@ -216,21 +315,110 @@ a message); else the session whose cwd covers <dir; else nil.
         (message "Session %s of %s is gone: association dropped" (cdr $assoc) (car $assoc)))
       (plist-get (b:vscode:claude:session/covering <dir $sessions) :sessionId)))))
 
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:session/forBuffer" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:session/forBuffer>>  --  -- The sessionId this buffer prompts: buffer-local, else by its directory.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:session/forBuffer (
+;;;#+END:
+                  )
+   " #+begin_org
+** DocStr: The sessionId this buffer prompts: buffer-local, else by its directory.
+#+end_org "
+  (or b:vscode:claude:session:buffer
+      (b:vscode:claude:session/forDir default-directory)))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude/sessionSelect" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude/sessionSelect>>  --  -- Choose the VS Code Claude session this buffer's base dir prompts.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude/sessionSelect (
+;;;#+END:
+                  &optional <bufferOnly)
+   " #+begin_org
+** DocStr: Choose the VS Code Claude session this buffer's base dir prompts.
+A picker over the running sessions (name, status, last active, folder) and a new conversation.
+The choice is recorded for the base dir (b:vscode:claude:baseDir: the git repo, or with layer 5
+the AI-Activity dir); with C-u (<bufferOnly), for this buffer only. A new conversation applies to
+the next prompt only, and drops the base dir's association so that the new session, once it runs,
+is found by its folder.
+#+end_org "
+  (interactive "P")
+  (let (($id (b:vscode:claude:session/choose (b:vscode:claude:sessions/running) t
+                                             "Claude session for this buffer: ")))
+    (cond
+     ((equal $id "new")
+      (setq b:vscode:claude:session:next "new")
+      (if <bufferOnly
+          (setq b:vscode:claude:session:buffer nil)
+        (b:vscode:claude:association/forget (b:vscode:claude:baseDir)))
+      (message "The next prompt starts a new conversation"))
+     (<bufferOnly
+      (setq b:vscode:claude:session:buffer $id)
+      (message "This buffer prompts session %s" $id))
+     (t
+      (let (($dir (b:vscode:claude:association/set (b:vscode:claude:baseDir) $id)))
+        (message "Buffers under %s prompt session %s" (abbreviate-file-name $dir) $id))))
+    $id))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude/sessionForget" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude/sessionForget>>  --  -- Back to the automatic choice of session for this buffer's base dir.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude/sessionForget (
+;;;#+END:
+                  &optional <bufferOnly)
+   " #+begin_org
+** DocStr: Back to the automatic choice of session for this buffer's base dir.
+Drops the base dir's association; with C-u (<bufferOnly), this buffer's own choice instead.
+#+end_org "
+  (interactive "P")
+  (if <bufferOnly
+      (progn (setq b:vscode:claude:session:buffer nil)
+             (message "This buffer's own session choice is dropped"))
+    (let (($dir (b:vscode:claude:baseDir)))
+      (message (if (b:vscode:claude:association/forget $dir)
+                   "Association of %s dropped: the session is chosen automatically"
+                 "%s had no association")
+               (abbreviate-file-name $dir)))))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:session/targetDescribe" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:session/targetDescribe>>  --  -- Where a prompt from this buffer would go, in one line.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:session/targetDescribe (
+;;;#+END:
+                  )
+   " #+begin_org
+** DocStr: Where a prompt from this buffer would go, in one line.
+#+end_org "
+  (condition-case nil
+      (cond
+       ((equal b:vscode:claude:session:next "new") "next prompt: a new conversation")
+       (t (let* (($sessions (b:vscode:claude:sessions/running))
+                 ($id (b:vscode:claude:session/forBuffer))
+                 ($s (and $id (seq-find (lambda ($x) (string= (plist-get $x :sessionId) $id))
+                                        $sessions))))
+            (cond ($s (concat "-> " (b:vscode:claude:session/describe $s)))
+                  ($sessions (concat "-> latest: " (b:vscode:claude:session/describe (car $sessions))))
+                  (t "no running local session")))))
+    (error "sessions unknown (vscodeClaude.cs failed)")))
+
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude/associationsShow" :advice ()
 (orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude/associationsShow>>  --  -- Show the recorded associations: activity dir and session.  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude/associationsShow>>  --  -- Show the recorded associations: base dir and session.  [[elisp:(org-cycle)][| ]]
 " orgCmntEnd)
 (cl-defun b:vscode:claude/associationsShow (
 ;;;#+END:
                   )
    " #+begin_org
-** DocStr: Show the recorded associations: activity dir and session.
+** DocStr: Show the recorded associations: base dir and session.
 #+end_org "
   (interactive)
   (with-current-buffer (get-buffer-create "*vscodeClaude associations*")
     (erase-buffer)
     (if (null b:vscode:claude:associations)
-        (insert "No associations: b:vscode:claude/confirmRoot, then confirmHere.\n")
+        (insert "No associations: b:vscode:claude/sessionSelect (or layer 5's confirmRoot).\n")
       (dolist ($a b:vscode:claude:associations)
         (insert (format "%s\t%s\n" (cdr $a) (car $a)))))
     (display-buffer (current-buffer))))
@@ -276,16 +464,17 @@ a message); else the session whose cwd covers <dir; else nil.
                   <text &optional <session (<submit b:vscode:claude:submit?))
    " #+begin_org
 ** DocStr: Put <text in the input box of a local VS Code Claude session.
-<session is a sessionId, \"new\" (a new conversation), or nil: the session of this buffer
-(b:vscode:claude:session/forDir), else the latest local one. With <submit, Enter is pressed too
-(interactively: C-u flips b:vscode:claude:submit?). A thin layer over =vscodeClaude.cs -i claudePrompt=,
-which holds all the logic: a running session is brought to the front and the text pasted (xclip,
-xdotool). DISPLAY is Emacs's.
+<session is a sessionId, \"new\" (a new conversation), or nil: this buffer's session --- the
+one-shot b:vscode:claude:session:next, else b:vscode:claude:session/forBuffer, else the latest local
+one. With <submit, Enter is pressed too (interactively: C-u flips b:vscode:claude:submit?). A thin
+layer over =vscodeClaude.cs -i claudePrompt=, which holds all the logic. DISPLAY is Emacs's.
 #+end_org "
   (interactive (list (read-string "Claude prompt: " nil 'b:vscode:claude:history)
                      nil
                      (b:vscode:claude:submit/fromPrefix current-prefix-arg)))
-  (let* (($session (or <session (b:vscode:claude:session/forDir default-directory)))
+  (let* (($session (or <session
+                       (prog1 b:vscode:claude:session:next (setq b:vscode:claude:session:next nil))
+                       (b:vscode:claude:session/forBuffer)))
          ($args (append (when $session (list (concat "--session=" $session)))
                         (when <submit (list "--submit=yes"))
                         (list "-i" "claudePrompt" <text))))
@@ -293,6 +482,12 @@ xdotool). DISPLAY is Emacs's.
     (message "Claude prompt %s%s: %s" (if <submit "submitted" "sent")
              (if $session (format " (%s)" $session) "") <text)
     $session))
+
+;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Sends With Context" :extraInfo "@file:line, the region, the file, the error at point"
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Sends With Context:* |]]  @file:line, the region, the file, the error at point  [[elisp:(org-shifttab)][<)]] E|
+" orgCmntEnd)
+;;;#+END:
 
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:context/fileRef" :advice ()
 (orgCmntBegin "
@@ -406,85 +601,6 @@ Asks for an instruction to go with it (empty: none).
              (or $ref "point") $errors)
      nil <submit)))
 
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude/bxSend" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude/bxSend>>  --  -- Send the /bx-<name> command, with optional <args.  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude/bxSend (
-;;;#+END:
-                  <name &optional <args <submit)
-   " #+begin_org
-** DocStr: Send the /bx-<name> command, with optional <args.
-#+end_org "
-  (b:vscode:claude/atPrompt (string-join (delq nil (list (concat "/bx-" <name) <args)) " ") nil <submit))
-
-;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Root And Here" :extraInfo "Confirming a session's AI-Activities, from Blee"
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Root And Here:* |]]  Confirming a session's AI-Activities, from Blee  [[elisp:(org-shifttab)][<)]] E|
-" orgCmntEnd)
-;;;#+END:
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude/confirmRoot" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude/confirmRoot>>  --  -- Confirm the root AI-Activity of the session covering this buffer.  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude/confirmRoot (
-;;;#+END:
-                  &optional <submit)
-   " #+begin_org
-** DocStr: Confirm the root AI-Activity of the session covering this buffer.
-Sends /bx-confirm-root dir=<root> emacs=<socket> callback=yes to the session whose cwd covers this
-buffer (the VS Code window's folder: the root). Claude checks it can reach this Emacs and calls back
-b:vscode:claude/rootRegister with its session id; the association is recorded now too.
-#+end_org "
-  (interactive (list (b:vscode:claude:submit/fromPrefix current-prefix-arg)))
-  (let* (($session (or (b:vscode:claude:session/covering default-directory)
-                       (user-error "No running session has %s in its folder: open its root in VS Code"
-                                   default-directory)))
-         ($root (directory-file-name (b:vscode:claude:dir/canonical (plist-get $session :cwd))))
-         ($id (plist-get $session :sessionId)))
-    (b:vscode:claude:association/set $root $id)
-    (b:vscode:claude/atPrompt
-     (format "/bx-confirm-root dir=%s emacs=%s callback=yes" $root (b:vscode:partner/socket))
-     $id <submit)))
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude/rootRegister" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude/rootRegister>>  --  -- Claude's callback of /bx-confirm-root: record <rootDir -> <sessionId.  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude/rootRegister (
-;;;#+END:
-                  <rootDir <sessionId)
-   " #+begin_org
-** DocStr: Claude's callback of /bx-confirm-root: record <rootDir -> <sessionId.
-Called by Claude through emacsclient; returns a short confirmation string for it to report.
-#+end_org "
-  (b:vscode:claude:association/set <rootDir <sessionId)
-  (message "VS Code Claude session %s registered for %s" <sessionId <rootDir)
-  (format "registered %s %s" <rootDir <sessionId))
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude/confirmHere" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude/confirmHere>>  --  -- Join this buffer's AI-Activity to its session: /bx-confirm-here <dir>.  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude/confirmHere (
-;;;#+END:
-                  &optional <dir <submit)
-   " #+begin_org
-** DocStr: Join this buffer's AI-Activity to its session: /bx-confirm-here <dir>.
-<dir: the nearest directory above with a CLAUDE.md. The session: that of the root above (its
-association), else the one covering <dir. The association <dir -> session is recorded.
-#+end_org "
-  (interactive (list nil (b:vscode:claude:submit/fromPrefix current-prefix-arg)))
-  (let* (($dir (directory-file-name
-                (b:vscode:claude:dir/canonical
-                 (or <dir (locate-dominating-file default-directory "CLAUDE.md")
-                     (user-error "No CLAUDE.md above %s: not an AI-Activity" default-directory)))))
-         ($id (or (b:vscode:claude:session/forDir $dir)
-                  (user-error "No session for %s: b:vscode:claude/confirmRoot in a buffer of its root" $dir))))
-    (b:vscode:claude:association/set $dir $id)
-    (b:vscode:claude/atPrompt (format "/bx-confirm-here %s" $dir) $id <submit)))
-
 ;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Claude Code Hooks" :extraInfo "Events from vscodeClaude.cs -i hookToEmacs"
 (orgCmntBegin "
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Claude Code Hooks:* |]]  Events from vscodeClaude.cs -i hookToEmacs  [[elisp:(org-shifttab)][<)]] E|
@@ -530,168 +646,27 @@ returns at once. Returns \"handled\"; a malformed <json still runs the hook, wit
              (abbreviate-file-name (or (plist-get <event :cwd) "?"))
              (or (alist-get 'message (plist-get <event :data)) "waiting for you"))))
 
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:magit:commitMsg/file" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:magit:commitMsg/file>>  --  -- The CLAUDE_COMMIT_MSG of <repo (in its git dir).  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude:magit:commitMsg/file (
-;;;#+END:
-                  <repo)
-   " #+begin_org
-** DocStr: The CLAUDE_COMMIT_MSG of <repo (in its git dir).
-#+end_org "
-  (let ((default-directory (file-name-as-directory <repo)))
-    (expand-file-name "CLAUDE_COMMIT_MSG"
-                      (if (fboundp 'magit-gitdir) (magit-gitdir) (expand-file-name ".git")))))
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:hook/commitMsgReady" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:hook/commitMsgReady>>  --  -- On Stop: a requested commit message is written: raise magit there.  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude:hook/commitMsgReady (
-;;;#+END:
-                  <event)
-   " #+begin_org
-** DocStr: On Stop: a requested commit message is written: raise magit there.
-For each /bx-git-commit-msg request (x c, x x) whose CLAUDE_COMMIT_MSG is newer than the request:
-forget the request, show that repo's magit status in a raised frame, and say so.
-#+end_org "
-  (when (equal (plist-get <event :type) "Stop")
-    (dolist ($req b:vscode:claude:commitMsg:requests)
-      (let (($file (ignore-errors (b:vscode:claude:magit:commitMsg/file (car $req)))))
-        (when (and $file (file-exists-p $file)
-                   (time-less-p (cdr $req) (file-attribute-modification-time (file-attributes $file))))
-          (setq b:vscode:claude:commitMsg:requests (delq $req b:vscode:claude:commitMsg:requests))
-          (when (fboundp 'magit-status-setup-buffer)
-            (magit-status-setup-buffer (car $req)))
-          (let (($frame (selected-frame)))
-            (raise-frame $frame)
-            (select-frame-set-input-focus $frame))
-          (message "Claude's commit message for %s is ready: c c" (car $req)))))))
-
 (add-hook 'b:vscode:claude:event-hook #'b:vscode:claude:hook/notification)
-(add-hook 'b:vscode:claude:event-hook #'b:vscode:claude:hook/commitMsgReady)
 
-;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Magit: Claude's Commit Message" :extraInfo "x c asks Claude, x x also submits; c c offers .git/CLAUDE_COMMIT_MSG"
+;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Transient" :extraInfo "b:vscode:claude/dispatch --- layer 5 adds its own entry"
 (orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Magit: Claude's Commit Message:* |]]  x c asks Claude, x x also submits; c c offers .git/CLAUDE_COMMIT_MSG  [[elisp:(org-shifttab)][<)]] E|
-" orgCmntEnd)
-;;;#+END:
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/commitMsgGenerate" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/commitMsgGenerate>>  --  -- Send /bx-git-commit-msg <repo> to this repo's VS Code Claude session.  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude:aiActivity/commitMsgGenerate (
-;;;#+END:
-                  &optional <submit)
-   " #+begin_org
-** DocStr: Send /bx-git-commit-msg <repo> to this repo's VS Code Claude session.
-x c: not submitted (press Enter in VS Code); x x: submitted. Then Claude writes the message; when the
-Claude Code hooks are installed, its Stop raises magit here. c c, and
-b:vscode:claude:magit:commitMsg/offer offers it. The repo is given as a path, so the session need not
-be working in it.
-#+end_org "
-  (interactive (list (b:vscode:claude:submit/fromPrefix current-prefix-arg)))
-  (let (($repo (magit-toplevel)))
-    (unless $repo
-      (user-error "Not in a git repository"))
-    (unless (magit-anything-staged-p)
-      (user-error "Nothing staged in %s" $repo))
-    (setq $repo (directory-file-name $repo))
-    (setf (alist-get $repo b:vscode:claude:commitMsg:requests nil nil #'string=) (current-time))
-    (b:vscode:claude/atPrompt (format "/bx-git-commit-msg %s" $repo) nil <submit)))
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/commitMsgGenerateSubmit" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/commitMsgGenerateSubmit>>  --  -- As commitMsgGenerate, submitted (magit x x).  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude:aiActivity/commitMsgGenerateSubmit (
-;;;#+END:
-                  )
-   " #+begin_org
-** DocStr: As commitMsgGenerate, submitted (magit x x).
-#+end_org "
-  (interactive)
-  (b:vscode:claude:aiActivity/commitMsgGenerate t))
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:magit:commitMsg/offer" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:magit:commitMsg/offer>>  --  -- In git-commit-setup-hook: offer <gitdir>/CLAUDE_COMMIT_MSG when the message is empty.  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude:magit:commitMsg/offer (
-;;;#+END:
-                  )
-   " #+begin_org
-** DocStr: In git-commit-setup-hook: offer <gitdir>/CLAUDE_COMMIT_MSG when the message is empty.
-Skipped when the buffer already has a message (amend, git commit -t, a reword).
-#+end_org "
-  (setq b:vscode:claude:magit:commitMsg:pending nil)
-  (let* (($gitDir (and buffer-file-name (file-name-directory buffer-file-name)))
-         ($msgFile (and $gitDir (expand-file-name "CLAUDE_COMMIT_MSG" $gitDir))))
-    (when (and $msgFile
-               (file-readable-p $msgFile)
-               (not (git-commit-buffer-message))
-               (y-or-n-p "Use Claude's commit message (.git/CLAUDE_COMMIT_MSG)? "))
-      (goto-char (point-min))
-      (insert-file-contents $msgFile)
-      (goto-char (point-min))
-      ;; git-commit-setup marks the buffer unmodified after this hook, and with-editor does
-      ;; not save an unmodified buffer: git would then read its own empty COMMIT_EDITMSG.
-      (add-hook 'with-editor-pre-finish-hook (lambda () (set-buffer-modified-p t)) nil t)
-      (setq b:vscode:claude:magit:commitMsg:pending $msgFile))))
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:magit:commitMsg/markUsed" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:magit:commitMsg/markUsed>>  --  -- In git-commit-post-finish-hook: rename the used message to CLAUDE_COMMIT_MSG.used,  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude:magit:commitMsg/markUsed (
-;;;#+END:
-                  )
-   " #+begin_org
-** DocStr: In git-commit-post-finish-hook: rename the used message to CLAUDE_COMMIT_MSG.used,
-so it is not offered again. Not run when the commit is aborted: the file then stays.
-#+end_org "
-  (when (and b:vscode:claude:magit:commitMsg:pending
-             (file-exists-p b:vscode:claude:magit:commitMsg:pending))
-    (rename-file b:vscode:claude:magit:commitMsg:pending
-                 (concat b:vscode:claude:magit:commitMsg:pending ".used") t))
-  (setq b:vscode:claude:magit:commitMsg:pending nil))
-
-;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Transients" :extraInfo "b:vscode:claude/dispatch, the magit x menu"
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Transients:* |]]  b:vscode:claude/dispatch, the magit x menu  [[elisp:(org-shifttab)][<)]] E|
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Transient:* |]]  b:vscode:claude/dispatch --- layer 5 adds its own entry  [[elisp:(org-shifttab)][<)]] E|
 " orgCmntEnd)
 ;;;#+END:
 
 (with-eval-after-load 'transient
-  (transient-define-prefix b:vscode:claude:bx/dispatch ()
-    "/bx- commands into this buffer's VS Code Claude session."
-    [["Session"
-      ("r" "/bx-confirm-root (+ register)" b:vscode:claude/confirmRoot)
-      ("h" "/bx-confirm-here this activity" b:vscode:claude/confirmHere)
-      ("s" "/bx-status-read" (lambda () (interactive) (b:vscode:claude/bxSend "status-read")))
-      ("v" "/bx-session-verify" (lambda () (interactive) (b:vscode:claude/bxSend "session-verify")))]
-     ["Record"
-      ("u" "/bx-status-update" (lambda () (interactive) (b:vscode:claude/bxSend "status-update")))
-      ("a" "/bx-archive-read" (lambda () (interactive) (b:vscode:claude/bxSend "archive-read")))
-      ("A" "/bx-archive-update" (lambda () (interactive) (b:vscode:claude/bxSend "archive-update")))
-      ("o" "/bx-ai-outputs" (lambda () (interactive) (b:vscode:claude/bxSend "ai-outputs")))]
-     ["Git"
-      ("g" "/bx-git-uncommitted-list" (lambda () (interactive) (b:vscode:claude/bxSend "git-uncommitted-list")))]])
-
   (transient-define-prefix b:vscode:claude/dispatch ()
-    "VS Code Claude, from Blee (vscode-claude). Prompts go to this buffer's session."
-    [["Send"
+    "VS Code Claude, from Blee (vscode-claude layer 4). Prompts go to this buffer's session."
+    [:description (lambda () (concat "VS Code Claude  " (b:vscode:claude:session/targetDescribe)))
+     ["Send"
       ("s" "Prompt" b:vscode:claude/atPrompt)
       ("x" "Prompt with @file:line" b:vscode:claude/sendWithContext)
       ("r" "Region" b:vscode:claude/sendRegion)
       ("o" "This file (@file)" b:vscode:claude/sendBufferFile)
-      ("e" "Fix error at point" b:vscode:claude/fixErrorAtPoint)
-      ("/" "/bx- commands" b:vscode:claude:bx/dispatch)]
+      ("e" "Fix error at point" b:vscode:claude/fixErrorAtPoint)]
      ["Session"
-      ("R" "Confirm root (register)" b:vscode:claude/confirmRoot)
-      ("H" "Confirm here" b:vscode:claude/confirmHere)
+      ("c" "Choose session (C-u: this buffer)" b:vscode:claude/sessionSelect :transient t)
+      ("F" "Forget the choice" b:vscode:claude/sessionForget :transient t)
       ("l" "Associations" b:vscode:claude/associationsShow)]
      ["VS Code"
       ("f" "Open this file in VS Code" b:vscode/fileOpen)
@@ -701,37 +676,6 @@ so it is not offered again. Not run when the commit is aborted: the file then st
      ["Options"
       ("S" b:vscode:claude/submitToggle :transient t
        :description (lambda () (format "Submit (%s)" (if b:vscode:claude:submit? "on" "off"))))]]))
-
-(with-eval-after-load 'magit
-  (transient-define-prefix b:vscode:claude:magit/dispatch ()
-    "Claude, in the local VS Code (vscodeClaude.cs)."
-    ["Claude (this repo's VS Code session)"
-     ("c" "Commit message for the staged changes (/bx-git-commit-msg)"
-      b:vscode:claude:aiActivity/commitMsgGenerate)
-     ("x" "Commit message, submitted"
-      b:vscode:claude:aiActivity/commitMsgGenerateSubmit)
-     ("d" "VS Code Claude menu" b:vscode:claude/dispatch)]))
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:magit|config" :advice ()
-(orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:magit|config>>  --  -- Hook Claude's commit message into magit: the commit hooks, x c and x x.  [[elisp:(org-cycle)][| ]]
-" orgCmntEnd)
-(cl-defun b:vscode:claude:magit|config (
-;;;#+END:
-                  )
-   " #+begin_org
-** DocStr: Hook Claude's commit message into magit: the commit hooks, x c and x x.
-Run after magit is loaded (b:npa:vscode-claude:config|main does so).
-#+end_org "
-  ;;; Offer Claude's .git/CLAUDE_COMMIT_MSG (written by /bx-git-commit-msg) in an empty commit buffer.
-  (add-hook 'git-commit-setup-hook #'b:vscode:claude:magit:commitMsg/offer t)
-  (add-hook 'git-commit-post-finish-hook #'b:vscode:claude:magit:commitMsg/markUsed)
-  ;;; x c / x x: ask this repo's VS Code Claude session for that message. x was magit-reset-quickly,
-  ;;; which stays reachable as X (magit-reset). Also in magit-dispatch, next to X.
-  (define-key magit-mode-map (kbd "x") #'b:vscode:claude:magit/dispatch)
-  (condition-case nil
-      (transient-append-suffix 'magit-dispatch "X" '("x" "Claude" b:vscode:claude:magit/dispatch))
-    (error (message "b:vscode:claude: magit-dispatch has no X: Claude (x) not added"))))
 
 ;;;#+BEGIN: b:elisp:file/provide :modName nil
 (provide 'b:vscode:claude)

@@ -2,7 +2,8 @@
 
 
 (require 'b:vscode)
-(require 'b:vscode:claude)
+(require 'b:vscode:claude)            ; layer 4
+(require 'b:vscode:claude:aiActivity) ; layer 5
 (require 'b:vscode:claude:menu)
 (require 'dblock-vscode-claude)
 

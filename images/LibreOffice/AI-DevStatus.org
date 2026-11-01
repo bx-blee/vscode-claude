@@ -1,0 +1,50 @@
+#+title: Development Status & Continuation Handoff
+#+TAGS: me ai aiAndMe
+
+# Provenance (installed once by aiActivity.cs --- not regenerated):
+#   Date:      2026-10-31T18:16:49+00:00
+#   User:      bystar
+#   Templates: /bisos/git/auth/bxRepos/bxexamples/aiActivityTemplates
+#   Command:   /bisos/venv/py3/devbin/aiActivity.cs -i initiateSub --activity=lcnt-libreoffice
+
+####+BEGIN: b:ai:file/particulars
+* AI Working Context
+  Working Directory: /bisos/git/auth/bxRepos/blee/vscode-claude/images/LibreOffice
+  File: /bisos/git/auth/bxRepos/blee/vscode-claude/images/LibreOffice/AI-DevStatus.org
+  Activity: lcnt-libreoffice
+  Companion Docs: AI-Activity.org, AI-DevStatus.org
+####+END:
+
+This file is a working-state handoff so development can continue on another
+machine (which has this repo but NOT the developer's =~=). It captures the
+architecture, what works, what is untested and the design decisions made so far.
+
+This file is maintained by Claude. Updates are typically triggered by the
+=/bx-status-update= slash command, after major interactions, or before a release.
+
+* Current State
+As of 2026-11-01. One figure, blee-aiActivity-layers (the layers 0-5 and their three uses A, B, C),
+shown by the package README ("The Layers and Their Uses"). Stage 2 made it; Stage 3 (3.1) wrote the
+shared lcnt-libreoffice AI-Activity.org and the libreoffice-draw-authoring skill.
+
+* Architecture
+- blee-aiActivity-layers.odg: the source; .png, .pdf, .ps made by figProc.sh -i odgConvert.
+- .title, .caption, .style, .tex, _pres.tex: for use in an LCNT LaTeX document later.
+- blee-aiActivity-layers.orig_odg: Mohsen's starting point, kept.
+- figProc.sh over /bisos/core/lcnt/bin/seedFigProc.sh.
+
+* What Works
+- figProc.sh -i odgConvert (png, pdf, ps) here.
+
+* What Is Untested
+- figProc.sh -i build: stops on lcnLcntInputProc.sh's unset frameMakerHost outside the LCNT setup.
+- The figure in a LaTeX document.
+
+* Key Design Decisions
+- The .odg is the source from now on: it was generated once from the .orig_odg (Claude's script, not
+  kept); later changes are made in Draw or by editing the .odg in place.
+- figProc.sh's FILE dblock still names the aiActivity copy it came from: regenerate in Blee.
+
+# Local Variables:
+# eval: (setq-local toc-org-max-depth 4)
+# End:

@@ -1,1 +1,1 @@
-Thin elisp over two small CSXUs, each over its CS-Unit; vscodeClaude_csu builds on vscode_csu. The CSXUs are complete without Emacs: shells, Claude and VS Code use them directly.
+Each layer is usable with only the layers below it, and a lower layer never names an upper one: 0 the AI-Activity templates, 1 their executables, 2 VS Code, 3 Emacs and VS Code, 4 Emacs and VS Code Claude, 5 the same plus AI-Activity. Python in bisos.vscodeClaude, elisp in this package; the dashed arrows are what an upper layer supplies to a lower one.

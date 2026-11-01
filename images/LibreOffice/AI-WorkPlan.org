@@ -1,0 +1,182 @@
+#+title: Work Plan
+#+DATE: <2026-06-10 Wed 13:54>
+#+AUTHOR: Mohsen BANAN
+#+OPTIONS: toc:4
+#+TAGS: me ai aiAndMe
+
+# Provenance (installed once by aiActivity.cs --- not regenerated):
+#   Date:      2026-10-31T18:16:49+00:00
+#   User:      bystar
+#   Templates: /bisos/git/auth/bxRepos/bxexamples/aiActivityTemplates
+#   Command:   /bisos/venv/py3/devbin/aiActivity.cs -i initiateSub --activity=lcnt-libreoffice
+
+####+BEGIN: b:ai:workflow/driver
+*  [[elisp:(org-cycle)][|#Control|]] :: [[elisp:(blee:bnsm:menu-back)][Back]] [[elisp:(toggle-read-only)][read/wr]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[elisp:(delete-other-windows)][(1)]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]] [[elisp:(save-buffer)][Save]] [[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]] [[elisp:(call-interactively 'b:rg:panels/all)][rg:panels/all]]  [[elisp:(org-cycle)][| ]]
+* AI Emacs VSCode-Claude Workflow
+
+  Working Directory: /bxRepos/bxexamples/aiTemplates-workFlow/mother
+  File: /bisos/git/auth/bxRepos/bxexamples/aiTemplates-workFlow/mother/AI-WorkPlan.org
+  Companion Docs: AI-WORKFLOW.org, AI-DevStatus.org
+
+####+END:
+
+####+BEGIN: b:ai:file/particulars
+* AI Working Context
+  Working Directory: /bisos/git/auth/bxRepos/blee/vscode-claude/images/LibreOffice
+  File: /bisos/git/auth/bxRepos/blee/vscode-claude/images/LibreOffice/AI-WorkPlan.org
+  Activity: lcnt-libreoffice
+  Companion Docs: AI-Activity.org, AI-DevStatus.org
+####+END:
+
+This Work Plan file drives the AI collaborative development.
+Interactions are broken down into "Stages". Each Stage has a set
+of TODOs that I work with Claude to accomplish.
+
+Note to a fresh Claude: read this file together with AI-WORKFLOW.org,
+AI-Activity.org and AI-DevStatus.org to orient yourself. The =<<Context Confirmation>>=
+TODO below is the standard first step, or use =/bx-confirm-root= as the automated equivalent.
+TODOs tagged =:ai:= are assigned to Claude. After completing a TODO, summarize results
+under =----- Results: ------= and mark it DONE.
+
+
+* Overview, Purpose and Context
+
+<<Overview>>
+
+The ./AI-Activity.org is just a starting point because this is the very first lcnt-libreoffice  that is being developed.
+Also it highly likely that additional skills will also be developed in the context of this activity.
+
+
+
+* Stage 0: Confirm AI's Understanding of This Repo's Context
+
+Goal: Confirm AI's understanding of the context and capture that in [[Context Confirmation]] TODO.
+
+
+* Stage 0 TODOs
+** +
+** LOOP [#A] <<Context Confirmation>> for AI (typically triggered by /bx-confirm-root) :aiAndMe:
+SCHEDULED: <2026-06-09 Tue>
+Must be repeated each time a new Claude instance is started here.
+Based on the series of files starting from CLAUDE.md in this repo,
+describe succinctly what you have understood.
+Enumerate explicitly which files you have imported and which you have considered.
+Prompt the user to confirm that the desired/appropriate model (/model) is being used for this project.
+Since this is to be repeated, leave the todo tag as LOOP.
+** -
+
+* Stage 1: Misc Place Holder 
+
+<<Stage 1>>
+
+Goal: A placeholder for misc ideas and TODOs
+
+
+* Stage 1 TODOs (Misc)
+** +
+** TODO [#C] A Placeholder
+** -
+
+
+* Stage 2: Produce a complete layering figure to direct README with
+
+<<Stage 2>>
+
+Goal: Produce ./blee-aiActivity-layers.odg
+
+
+* Stage 2 TODOs  -- In Progress
+** +
+** DONE [#A] <<2.1>> Starting from ./blee-aiActivity-layers.orig_odg edit the odg :aiAndMe:
+CLOSED: [2026-10-31 Sat 18:43] SCHEDULED: <2026-10-31 Sat 18:37>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-31 Sat 18:38>
+:END:
+Starting with ./blee-aiActivity-layers.orig_odg,
+I want you to understand what I am trying to communicate in this figure. The
+figure is meant to be comprehensive. So, the templates are also included. The
+arrows are important. Layer 1, can have more information such as list of
+executables. Layer 0 and layer 1 are to be the same color. Layer 2 a different
+color and layers 3, 4 and 5 of a similar color. Layer 2 shows that It can be
+paired with both layer 3 and layer 4. Layer 2 with Calude is repeated 3 times to
+show that it can be used purely on the left. That it can be just paiired with
+emacs and that it can be paired with emacs and aiActivity. Look at the figure
+again and tell me of ways of making the above more clear. The layerings that we
+have created and their potential uses are now all in one place without much
+detail other then their layerings. What do you think?
+----- Results: ------
+Claude then edited it and produced ./blee-aiActivity-layers.odg
+
+** TODO [#A] <<2.2>> On top of B and C of layer 2 add a narrow box saying "bisos.vscode-claude"
+SCHEDULED: <2026-10-31 Sat 18:37>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-31 Sat 18:38>
+:END:
+The executables such as vscode.cs  drive this.
+----- Results: ------
+2026-10-31 (Claude): added, named bisos.vscodeClaude (the repo was renamed from vscode-claude): a narrow
+box "bisos.vscodeClaude: vscode.cs · vscodeClaude.cs" on top of B's and C's VS Code. Layer 3's and
+layer 4's arrows now land on it, and from it reach the Claude extension. Layers 3 to 5 moved up to
+make room; Layer 2's row label reads "VS Code (+ Claude) and its CLI". Layer 1's note about vscode.cs
+shipping in bisos.aiActivity is gone (they moved to bisos.vscodeClaude). The .odg is generated by a
+script in Claude's scratchpad (genLayers.py), not by hand. Regenerated: .pdf and .png
+(figProc.sh -i odgToPdf, odgToPng). Not regenerated: .ps and the rest of -i build, which failed here
+on lcnLcntInputProc.sh's unset frameMakerHost; run it in your environment.
+
+** -
+
+* Stage 3: Improve this starting point lcnt-libreoffice AI-Activity
+
+<<Stage 3>>
+
+Goal: Produce lcnt-libreoffice AI-Activity for reuse
+
+
+* Stage 3 TODOs  -- In Progress
+** +
+** TODO [#A] <<3.1>> Understand and Cleanup The Starting Point and The AI-Activity :aiAndMe:
+SCHEDULED: <2026-10-31 Sat 18:37>
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: Medium
+:REPO: this
+:BASE: this
+:FOUND: <2026-10-31 Sat 18:38>
+:END:
+Consider the following as related and revistable -- Also read the rest of Stage 2 and other satges and [[Overview]]
+- This is mostly related to lodraw
+- The figures are usualy cadered in red as 16x9 for presentation usage
+- There is always a ./figProc.sh for converting the odg to there formats
+- The tex inclusion files are driven by the .title and .caption files.
+----- Results: ------
+2026-11-01 (Claude). 3.2 (the bisos.vscodeClaude box) was already done by [[2.2]] and is deleted.
+- The shared lcnt-libreoffice AI-Activity.org (bxObjects/aiTemplates-DE/lcnt-libreoffice/) rewritten;
+  it was a stub copied from blee-pkg. It covers: what such a directory is; the files of a figure (.odg
+  the source; .png, .pdf, .ps made from it; .title, .caption, .style, .tex and _pres.tex kept for use in
+  an LCNT LaTeX document, read by LCNT's LaTeX dblocks); figProc.sh and its verbs (odgConvert works
+  anywhere, build needs the LCNT environment); the conventions (16x9 page, the red frame, colour by
+  family, arrows as content); working rules for Claude; Draw or graphviz.
+- New skill libreoffice-draw-authoring (aiTemplates-DE/mother/_skills/) with tools/odgKit.py: list
+  and page (what is in an .odg), Figure (generate from a base: box, text, line, frame), repack. Built
+  from the generator used for 2.1 and 2.2; tested by listing both figures and building and rendering a
+  test figure. Added to aiActivity's aiEcosystemTree figure (re-rendered).
+- blee-aiActivity-layers.orig_odg kept (Mohsen): the starting point, and the worked example the skill
+  points to.
+- Not done: assemblyUpdate of the base for the new skill's two files (assemblyCheck: BEHIND, link=2).
+
+** -
+
+
+
+# Local Variables:
+# eval: (setq-local toc-org-max-depth 4)
+# eval: (setq-local org-log-done 'time)
+# End:

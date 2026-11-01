@@ -1,86 +1,82 @@
 digraph {
-	nodesep=0.35 rankdir=TB ranksep=0.5
-	node [fontsize=11 shape=rectangle]
-	lyr_users [label=Users fontcolor=gray30 fontsize=11 shape=plaintext]
-	lyr_elisp [label="elisp
-(this package)" fontcolor=gray30 fontsize=11 shape=plaintext]
-	lyr_csxu [label="CSXUs
-(bisos.aiActivity)" fontcolor=gray30 fontsize=11 shape=plaintext]
-	lyr_csu [label="CS-Units
-(bisos.aiActivity)" fontcolor=gray30 fontsize=11 shape=plaintext]
-	lyr_ext [label=Underneath fontcolor=gray30 fontsize=11 shape=plaintext]
-	lyr_users -> lyr_elisp [style=invis]
-	lyr_elisp -> lyr_csxu [style=invis]
-	lyr_csxu -> lyr_csu [style=invis]
-	lyr_csu -> lyr_ext [style=invis]
-	{
-		rank=same
-		lyr_users
-		bleeUser [label="Blee user
-(keys, menus, org links)" fillcolor=darkseagreen3 style=filled]
-		shellUser [label="shell, Claude,
-VS Code tasks" fillcolor=lightblue style=filled]
-		lyr_users -> bleeUser [style=invis]
-		bleeUser -> shellUser [style=invis]
-	}
-	subgraph cluster_elisp {
-		color=darkgreen fontcolor=darkgreen label="Optional: the Emacs layer" style=dashed
+	newrank=true nodesep=0.35 rankdir=TB ranksep=0.3
+	node [fontsize=10 shape=rectangle width=2.6]
+	subgraph cluster_l5 {
+		color=darkgreen fontcolor=darkgreen label="5  Emacs <-> VS Code Claude + AI-Activity" labeljust=l style=dashed
 		{
 			rank=same
-			elVscode [label="b:vscode.el
-fileOpen (to wrap vscode.cs)" fillcolor=darkseagreen3 style=filled]
-			elClaude [label="b:vscode:claude.el
-atPrompt, commitMsgGenerate,
-magit hooks and x c" fillcolor=darkseagreen3 style=filled]
-			elMenu [label="b:vscode:claude:menu.el
-b:vscode-claude::pkg.el" fillcolor=darkseagreen3 style=filled]
+			l5el [label="b:vscode:claude:aiActivity.el
+root and here, the commit cycle,
+the walk, /bx- menus" fillcolor=darkseagreen3 style=filled]
 		}
 	}
-	{
-		rank=same
-		lyr_csxu
-		csVscode [label="vscode.cs" fillcolor=lightsteelblue style=filled]
-		csClaude [label="vscodeClaude.cs" fillcolor=lightsteelblue style=filled]
-		lyr_csxu -> csVscode [style=invis]
-		csVscode -> csClaude [style=invis]
+	subgraph cluster_l4 {
+		color=darkgreen fontcolor=darkgreen label="4  Emacs <-> VS Code Claude" labeljust=l style=dashed
+		{
+			rank=same
+			l4el [label="b:vscode:claude.el
+atPrompt, sessions, base dirs,
+sends, hooks, dispatch" fillcolor=darkseagreen3 style=filled]
+			l4py [label="vscodeClaude.cs
+sessions, claudePrompt (--submit),
+hookToEmacs" fillcolor=lightsteelblue style=filled]
+		}
 	}
-	{
-		rank=same
-		lyr_csu
-		csuVscode [label="vscode_csu.py
-open file / folder / URI, diff,
-focus, topology, extensions,
-clipboard and paste" fillcolor=lightsteelblue style=filled]
-		csuClaude [label="vscodeClaude_csu.py
-session registry, prompt URI,
-claudePrompt" fillcolor=lightsteelblue style=filled]
-		lyr_csu -> csuVscode [style=invis]
-		csuVscode -> csuClaude [style=invis]
+	subgraph cluster_l3 {
+		color=darkgreen fontcolor=darkgreen label="3  Emacs <-> VS Code" labeljust=l style=dashed
+		{
+			rank=same
+			l3el [label="b:vscode.el
+init, fileOpen, partnerShow" fillcolor=darkseagreen3 style=filled]
+			l3py [label="vscode.cs: vscodeEmacs_csu
+partner file, bleeOpenFile,
+bleeMagit" fillcolor=lightsteelblue style=filled]
+		}
 	}
-	{
-		rank=same
-		lyr_ext
-		code [label="code CLI and
-desktop VS Code" fillcolor=lightblue style=filled]
-		xtools [label="xclip, xdotool
-(DISPLAY)" fillcolor=white style=filled]
-		registry [label="~/.claude/sessions/
-<pid>.json" fillcolor=white shape=note style=filled]
-		lyr_ext -> code [style=invis]
-		code -> xtools [style=invis]
-		xtools -> registry [style=invis]
+	subgraph cluster_l2 {
+		color=navy fontcolor=navy label="2  VS Code" labeljust=l style=solid
+		{
+			rank=same
+			l2py [label="vscode.cs: vscode_csu
+open, focus, diff, topology,
+extensions, URI" fillcolor=lightsteelblue style=filled]
+		}
 	}
-	bleeUser -> elVscode
-	bleeUser -> elClaude
-	bleeUser -> elMenu
-	elVscode -> csVscode
-	elClaude -> csClaude
-	shellUser -> csVscode [label=" without Emacs " color=navy fontcolor=navy fontsize=9]
-	shellUser -> csClaude [color=navy]
-	csVscode -> csuVscode
-	csClaude -> csuClaude
-	csuClaude -> csuVscode [label=" builds on " constraint=false fontsize=9]
-	csuVscode -> code
-	csuVscode -> xtools
-	csuClaude -> registry
+	subgraph cluster_l1 {
+		color=navy fontcolor=navy label="1  AI-Activity executables" labeljust=l style=solid
+		{
+			rank=same
+			l1engine [label="aiActivity.cs, aiActivityAssemble.cs
+initiate, refresh, assemble" fillcolor=thistle style=filled]
+			l1setting [label="gitOpener setting
+(its value comes from above)" fillcolor=white fontsize=9 shape=note style=filled]
+		}
+	}
+	subgraph cluster_l0 {
+		color=navy fontcolor=navy label="0  AI-Activity templates" labeljust=l style=solid
+		{
+			rank=same
+			l0tmpl [label="aiTemplates-workFlow, aiTemplates-DE
+/bx- commands, AI-WORKFLOW.org,
+skills; root and here" fillcolor=lavender style=filled]
+			l0setting [label="register= / walk= arguments
+(their values come from above)" fillcolor=white fontsize=9 shape=note style=filled]
+		}
+	}
+	l5el -> l4el [style=invis]
+	l4el -> l3el [style=invis]
+	l3py -> l2py [style=invis]
+	l2py -> l1engine [style=invis]
+	l1engine -> l0tmpl [style=invis]
+	l5el -> l4el
+	l4el -> l4py [constraint=false]
+	l4el -> l3el
+	l4py -> l3py
+	l3el -> l3py [constraint=false]
+	l3py -> l2py
+	l1engine -> l0tmpl
+	l4el -> l5el [label=" supplies baseDir-function,
+ event-hook handlers " color=gray35 constraint=false dir=back fontcolor=gray25 fontsize=8 style=dashed]
+	legend [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3"><TR><TD BGCOLOR="darkseagreen3">elisp (this package)</TD><TD BGCOLOR="lightsteelblue">Python (bisos.vscodeClaude)</TD><TD BGCOLOR="thistle">AI-Activity engine</TD><TD BGCOLOR="lavender">AI-Activity templates</TD></TR><TR><TD COLSPAN="4">solid = uses the layer below;  dashed = supplied by the layer above;  dashed box = optional (Emacs)</TD></TR></TABLE>> fontsize=9 shape=plaintext width=0]
+	l0tmpl -> legend [style=invis]
 }

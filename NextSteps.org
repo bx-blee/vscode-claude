@@ -1,0 +1,118 @@
+#+title: Next Steps --- A Critique of What Has Been Built
+#+DATE: <2026-11-01 Sun>
+#+AUTHOR: Mohsen BANAN
+#+OPTIONS: toc:2
+
+A step back over the whole of it: AI-Activity (layers 0-1), VS Code (2), Emacs and VS Code (3),
+Emacs and VS Code Claude (4), and AI-Activity under Emacs (5). Written by Claude on 2026-11-01, at
+Mohsen's request, from what went wrong or nearly wrong while building it. The design itself is in
+[[file:README.org][README.org]].
+
+* The Starting Point
+
+Mohsen's take:
+- AI-Activity is an effective model for working with AI, better than the chatbot and the other
+  existing models.
+- Layer 4 integrates the two most powerful usage environments, in both directions.
+- Layer 5 is AI-Activity in full, under Emacs.
+
+That holds up. AI-Activity is the strongest part, and the six-layer split is now real in the code, not
+only in the names. What follows is what to do better and what is missing, most important first.
+
+* Weak Foundations
+
+** 1. Prompting a Running Session Is Fragile
+
+- Layer 4 relies on two undocumented Claude Code internals: the session files in
+  =~/.claude/sessions/= and the extension's =/open= URI.
+- For a session that is already open, the prompt goes in by pasting with =xclip= and =xdotool=. That
+  depends on focus, timing and the VNC keyboard; the Ctrl+Alt+E problem was this kind of fragility.
+- Any Claude Code upgrade can break it without warning.
+- The more robust route is the one Claude Code supports: MCP. The VS Code extension already runs an
+  MCP server; a Claude session in VS Code has its =getDiagnostics= tool. Blee as an MCP server would
+  give typed, permissioned calls instead of =emacsclient --eval= through Bash.
+- "No MCP server in this phase" was decided on 2026-10-30. Revisit it before building more on top of
+  the keystroke path.
+
+** 2. Exit Codes Cannot Be Trusted
+
+- =g_csMain= (bisos.b) exits 0 even when a command fails. It showed up in the CBM status, in the sbom
+  runs, in =bx-dblock=, and in every =isProblematic()= check of a subprocess.
+- Each layer has had to work around it locally: parsing output, or the =updated= / =refused= /
+  =error= strings of =org-dblock-update-file-bx= (WorkPlan 6.2).
+- One fix in =bisos.b= would make every regression run and every =cbmProc.status= line truthful. Per
+  change, probably the most valuable fix available in BISOS.
+
+** 3. Claude's Reach Into Emacs Is Unrestricted
+
+- =emacsclient --eval= from a Claude session can run any code in the user's Emacs.
+- Two rules protect the user today: the user does the commits, and Claude touches the running Blee
+  only with the user's agreement. Both depend on Claude's memory and the conversation, not on
+  configuration.
+- Improvements:
+  - Encode the rules as Claude Code permissions: deny =git commit= and =git push=, and ask before any
+    =emacsclient=.
+  - Expose a small named elisp API (open magit, update dblocks, register a session) instead of
+    arbitrary eval.
+
+* Missing Pieces
+
+** 4. The Same Files Are Edited From Two Sides
+
+- The user edits WorkPlans in Emacs while Claude edits them on disk. VS Code missed changes made
+  through a symlink, and Blee buffers go stale.
+- A *PostToolUse* hook fixes this with channel 5 as it is: when Claude edits a file, Blee reverts that
+  file's buffer if it is unmodified, and warns if it has unsaved edits.
+- Cheap, and it removes a real hazard.
+
+** 5. More Hooks Would Replace the Manual Steps
+
+- A *SessionStart* hook could record the session's folder as its association automatically. That
+  removes most of the reason for the =confirmRoot= / =rootRegister= callback.
+- *UserPromptSubmit* and *PostToolUse* could show in Blee which TODO a session is working on.
+
+** 6. Tests Are Not Kept in the Repo
+
+- The batch tests (=logictest.el=, =layertest.el=, =drvtest.el=) lived in Claude's scratchpad and are
+  in no repo.
+- The fresh-Blee procedure (start it, find its socket, drive it, kill it) was rebuilt several times.
+- Both belong in the repo, with the fresh-Blee driver as a command and one test entry point per layer.
+- Meanwhile, the list of things never tried in real use grows faster than it shrinks: the hooks in a
+  real session, =--submit=, a click on a driver link, a full commit cycle (WorkPlan 8.3).
+
+* Process Friction
+
+** 7. Too Much Uncommitted Work, Across Too Many Repos
+
+- A single feature touched up to ten repos: vscode-claude, bisos-pip/vscodeClaude, aiActivity, three
+  bxObjects trees, blee/env3, bisos/blee, bro_rawBisos, bxGenesis/start.
+- Uncommitted work piles up, and another machine sees an inconsistent state. The commit walk
+  (=/bx-git-commit-walk=) helps, but only after the fact.
+- Commit per TODO, while the change is fresh. As of this writing bisos-pip/vscodeClaude has never been
+  committed.
+
+** 8. The WorkPlan Is Turning Into a Log
+
+- Results run to 20 lines per TODO.
+- CLAUDE.md imports the whole WorkPlan into every new session, so each session pays for that history.
+- AI-DevStatus has drifted out of date.
+- Keep Results to three or four lines, let the commit message carry the detail, archive DONE stages
+  regularly (=/bx-archive-update=), and run =/bx-context-trim= occasionally.
+
+* The Strategic Question
+
+** 9. Is VS Code Necessary for Layer 4?
+
+- Its value is the UI: the Claude panel and diffs.
+- Most of layer 4's difficulty exists because the extension has no API for sending it input.
+- Terminal Claude inside Emacs, with Emacs acting as the "IDE" over MCP (as claude-code-ide.el does),
+  would avoid the keystroke path entirely. It would also merge Blee's two Claude paths (claude-code.el
+  and vscode-claude) into one.
+- Not a reason to drop VS Code. But layers 4 and 5 should be written so that they could run over
+  either engine, and the layer-1 promise of engine-neutral content should be tested once against a
+  second engine.
+
+* Where to Start
+
+Items 2, 4 and 6: small, they protect everything built so far, and none needs a design decision.
+Items 1 and 9 are the big decisions, and they are Mohsen's.

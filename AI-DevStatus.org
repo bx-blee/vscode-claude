@@ -28,9 +28,10 @@ As of 2026-11-01. The Blee layer that joins Emacs and VS Code Claude for AI-Acti
 are layers 3 to 5 in elisp. Optional: VS Code alone is a complete AI-Activity. Built since 10-31:
 session selection (Stage 12), the aiActivity: org links and the b:ai:workflow/driver dblock (Stage 7),
 and dblock updates driven from outside Emacs (6.2, through bx-dblock -p emacsSocket=). A critique
-and the suggested next steps are in NextSteps.org. Committed: up to 9f3d30e (the WorkPlan); the code
-since 68faaf4, README, figures and NextSteps.org are not. Next: commit (bisos-pip/vscodeClaude
-first), then the commit cycle in a real session (8.3) and NextSteps.org items 2, 4 and 6.
+and the suggested next steps are in NextSteps.org. Everything is committed and pushed
+(bd9ae6c, 2026-11-01, with bisos-pip/vscodeClaude 308a526 and the other repos of the commit walk).
+Next, on another machine: the commit cycle in a real session (8.3), a click on a driver link, the
+hooks from a real session, the vscodeClaude CBM materialized; then NextSteps.org items 2, 4 and 6.
 
 * Architecture
 - Python, in bisos-pip/vscodeClaude (the logic; moved out of bisos-pip/aiActivity on 2026-10-31,

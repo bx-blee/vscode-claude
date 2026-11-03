@@ -59,7 +59,7 @@ with its TODO anchor in [[file:./AI-WorkPlan.org][AI-WorkPlan.org]].
   - [[#using-only-the-lower-layers][Using Only the Lower Layers]]
 - [[#the-model][The Model]]
   - [[#emacs-vs-code-windows-sessions-ai-activities][Emacs, VS Code, Windows, Sessions, AI-Activities]]
-  - [[#root-and-here][Root and Here]]
+  - [[#session-root-native-and-foreign][Session-Root, Native and Foreign]]
   - [[#the-partnership-and-the-associations][The Partnership and the Associations]]
 - [[#the-channels][The Channels]]
 - [[#commands-by-layer][Commands, by Layer]]
@@ -71,7 +71,7 @@ with its TODO anchor in [[file:./AI-WorkPlan.org][AI-WorkPlan.org]].
   - [[#from-blee-a-prompt-into-a-session][From Blee: a Prompt into a Session]]
   - [[#the-claude-magit-commit-cycle][The Claude-Magit Commit Cycle]]
   - [[#choosing-a-session][Choosing a Session]]
-  - [[#confirming-a-session-from-blee][Confirming a Session from Blee]]
+  - [[#starting-a-session-from-blee][Starting a Session from Blee]]
   - [[#committing-several-repos-the-commit-walk][Committing Several Repos: the Commit Walk]]
   - [[#from-vs-code-to-blee][From VS Code to Blee]]
   - [[#claude-code-hooks][Claude Code Hooks]]
@@ -112,8 +112,8 @@ the layering, left to right for the uses.
     No Emacs: a complete AI-Activity.
   - *B, Blee + VS Code Claude.* Blee prompts Claude (layer 4) and edits with VS Code (layer 3), in a
     project that is not an AI-Activity. There is no arrow down to layer 1.
-  - *C, Blee + VS Code Claude + AI-Activity.* All of it. Layer 5 adds, from Blee, root and here, the
-    commit cycle and the commit walk.
+  - *C, Blee + VS Code Claude + AI-Activity.* All of it. Layer 5 adds, from Blee, starting a session at
+    its Session-Root and reaching AI-Activities, the commit cycle and the commit walk.
 - *Layer 2 pairs with both 3 and 4.* In B and C, both reach VS Code through its command-line
   interface, =bisos.vscodeClaude= (=vscode.cs=, =vscodeClaude.cs=), the narrow box on top of VS Code:
   layer 3 for VS Code itself (files, magit, the partner file), layer 4 for its Claude extension
@@ -158,9 +158,9 @@ Top down, as in the figure:
 | 1 | AI-Activity executables  | =aiActivity.cs=, =aiActivityAssemble.cs= | with 0: any AI-Activity    |
 | 0 | AI-Activity templates    | =/bx-= commands, AI-WORKFLOW, skills     | what Claude reads          |
 
-- *5, + AI-Activity.* What Blee does because the work is an AI-Activity: root and here from Blee,
-  the commit cycle (=x c=, =x x=, the message offer, magit raised on Claude's Stop), the commit
-  walk, the =/bx-= menus.
+- *5, + AI-Activity.* What Blee does because the work is an AI-Activity: starting a session at a
+  buffer's home and reaching AI-Activities, native or foreign, the commit cycle (=x c=, =x x=, the
+  message offer, magit raised on Claude's Stop), the commit walk, the =/bx-= menus.
 - *4, Emacs <-> VS Code Claude.* Prompts into a session (and submitting them), choosing the session,
   sends with =@file:line= context, the Claude Code hooks. It knows nothing of AI-Activity: it names
   no =/bx-= command and no =CLAUDE.md=.
@@ -171,11 +171,11 @@ Top down, as in the figure:
 - *1, the AI-Activity executables.* =aiActivity.cs= installs a templates base into a project
   (=initiate=, =initiateSub=, =refresh=) and holds the user's settings (=gitOpener=);
   =aiActivityAssemble.cs= assembles a base from its inputs. No editor, no Claude.
-- *0, the AI-Activity templates.* What a session reads and runs: a session anchored in a root dir,
-  holding a hierarchy of AI-Activities (hierarchical or lateral, homogeneous or heterogeneous;
-  [[#root-and-here][Root and Here]]), the =CLAUDE.md= chain, the WorkPlan, the =/bx-= commands, the
-  skills. Content, not code, and neutral to the inference engine; in practice it runs in Claude, in a
-  terminal or in VS Code. It needs no editor.
+- *0, the AI-Activity templates.* What a session reads and runs: a session at its Session-Root, an
+  AI-Activity Root, reaching AI-Activities native or foreign to it (homogeneous or heterogeneous;
+  [[#session-root-native-and-foreign][Session-Root, Native and Foreign]]), the =CLAUDE.md= chain,
+  the WorkPlan, the =/bx-= commands, the skills. Content, not code, and neutral to the inference
+  engine; in practice it runs in Claude, in a terminal or in VS Code. It needs no editor.
 
 ** A Lower Layer Never Names an Upper One
 
@@ -184,10 +184,11 @@ variable, a setting or an argument, and the upper layer supplies it:
 
 | The lower layer asks for                           | The upper layer supplies                         |
 |----------------------------------------------------+--------------------------------------------------|
+| 3: =b:vscode:root-function= (a git repo)           | 5: the home (=aiActivity.cs -i activityReport=)  |
 | 4: =b:vscode:claude:baseDir-function= (a git repo) | 5: the AI-Activity dir (the nearest =CLAUDE.md=) |
 | 4: =b:vscode:claude:event-hook=                    | 5: the commit-message-ready handler              |
 | 4: the =b:vscode:claude/dispatch= transient        | 5: its =a= entry, the =/bx-= menu                |
-| 0: =/bx-confirm-root register=<function>=          | 5: =b:vscode:claude:aiActivity/rootRegister=     |
+| 0: =/bx-session-start register=<function>=         | 5: =b:vscode:claude:aiActivity/sessionRegister=  |
 | 0: =/bx-git-commit-walk walk=<function>=           | 5: =b:vscode:claude:aiActivity:magit/walk=       |
 | 1: the =gitOpener= setting (=aiActivity.cs=)       | 3: =vscode.cs -i bleeMagit=                      |
 
@@ -199,7 +200,7 @@ check that it defines nothing of layer 5.
 ** Using Only the Lower Layers
 
 - *Layers 0 and 1 alone*: open the activity's root folder in VS Code (or run =claude= there), start a
-  session, =/bx-confirm-root=, work. Nothing from this package.
+  session, =/bx-session-start=, work. Nothing from this package.
 - *Up to layer 2*: =vscode.cs= from a shell or a script --- open a file at a line, a diff, a URI.
 - *Up to layer 3*: Blee and VS Code editing the same files, each opening them in the other; no
   Claude involved.
@@ -233,23 +234,27 @@ The hierarchy, top down:
   session registers in =~/.claude/sessions/<pid>.json= with its =sessionId= and =cwd=, which is what
   =vscodeClaude.cs -i claudeSessionsList= reads.
 
-** Root and Here
+** Session-Root, Native and Foreign
 
-A Claude session holds a hierarchy of AI-Activities. In bisos.aiActivity this is the
-[[https://github.com/bisos-pip/aiActivity#ai-activity-topology-homogeneous-heterogeneous-hierarchical-lateral][AI-Activity Topology]]
-(hierarchical and lateral; homogeneous and heterogeneous), and AI-WORKFLOW.org's "The AI-Activities
-of a Session: Root and Here":
+Two kinds of root, kept apart (AI-WORKFLOW.org, "The AI-Activities of a Session"; the long form in
+bisos.aiActivity's ModelAndTerminology Blee panel):
 
-- *The root*: the session's working directory --- the VS Code window's folder --- with the top
-  =CLAUDE.md=, created by =aiActivity.cs -i initiate= and confirmed by =/bx-confirm-root=.
-- *Activities joined later* with =/bx-confirm-here <dir>=: an =initiateSub= sub of the root
-  (homogeneous, or heterogeneous from another templates tree), or a separately initiated activity
-  elsewhere (lateral).
+- *An AI-Activity Root*: a directory where =aiActivity.cs -i initiate= was run (=CLAUDE.md=,
+  =.claude/=, =AI-WORKFLOW.org=); it carries the tooling. A sub (=initiateSub=) has content only.
+  Every AI-Activity has one *home*, the AI-Activity Root it sits under.
+- *A session's Session-Root*: its working directory, the VS Code window's folder, fixed for its
+  life. It must be an AI-Activity Root: =/bx-session-start= checks (=aiActivity.cs -i
+  sessionRootCheck=), and so does Blee before it starts one.
+- *Native and foreign*: an AI-Activity is native to a session whose Session-Root is its home, and
+  foreign otherwise. A session reaches either with =/bx-activity-reach <dir>=: their content, never
+  their tooling. Two sessions on one AI-Activity may conflict --- accepted, and reported.
 
-An activity dir need not be a git repo; it is the directory that holds a =CLAUDE.md=.
+In Blee this means: the VS Code window for a buffer is opened on its home (layer 3's
+=b:vscode:root-function=, set by layer 5), so a new conversation started from Blee has the right
+Session-Root; and a window is brought forward when one already has that folder, never replaced.
 
-=/bx-confirm-root= takes optional arguments, for an editor. Without them it is the complete
-confirmation and does nothing editor-related:
+=/bx-session-start= takes optional arguments, for an editor. Without them it is the complete start
+and does nothing editor-related:
 
 | Argument         | Effect                                                                     |
 |------------------+----------------------------------------------------------------------------|
@@ -271,12 +276,14 @@ confirmation and does nothing editor-related:
   its git repo; with layer 5, its AI-Activity dir (the nearest =CLAUDE.md= above).
   - Layer 4 fills them by choice: =b:vscode:claude/sessionSelect=
     ([[#choosing-a-session][Choosing a Session]]).
-  - Layer 5 fills them by confirmation: =b:vscode:claude:aiActivity/confirmRoot= picks the session of
-    a root dir (asking when several share it) and sends it
-    =/bx-confirm-root dir=<root> emacs=<socket> register=b:vscode:claude:aiActivity/rootRegister=;
+  - Layer 5 fills them by starting and reaching: =b:vscode:claude:aiActivity/sessionStart= takes
+    the buffer's home, asks among the sessions already there (or a new one; none: a new
+    conversation in the home's window) and sends
+    =/bx-session-start dir=<home> emacs=<socket> register=b:vscode:claude:aiActivity/sessionRegister=;
     Claude calls that function back with its session id, which confirms that the prompt reached
-    that session and gives the id of a new conversation. =b:vscode:claude:aiActivity/confirmHere=
-    sends =/bx-confirm-here <dir>= and records dir → session.
+    that session and gives the id of a new conversation. =b:vscode:claude:aiActivity/activityReach=
+    asks which session reaches the buffer's AI-Activity (its own, then the native ones, then the
+    others), warns of a conflict, sends =/bx-activity-reach <dir>= and records dir → session.
   - From a buffer, the session is: a one-shot choice (a new conversation), else this buffer's own
     choice, else the association nearest above (walk-up), else the session whose cwd covers the
     buffer, else the latest local one.
@@ -363,24 +370,30 @@ tables. =vscode.cs= has two CS-Units, one per layer; =vscodeClaude.cs= builds on
 | =…/sessionSelect=                  | =c=   | choose the session for this base dir              |
 | =…/sessionForget=                  | =F=   | back to the automatic choice                      |
 | =…/associationsShow=               | =l=   | the recorded base dirs and sessions               |
+| =…/sessionNew=                     | =n=   | a new conversation in this root's window          |
 | =…/submitToggle=                   | =S=   | prompts submitted (Enter pressed) or not          |
 | =…/hookHandle=                     |       | receives Claude Code hook events                  |
-| =b:vscode/fileOpen=                | =f=   | this file in VS Code, at point (layer 3)          |
+| =b:vscode/fileOpen=                | =f=   | this file in its root's window, at point (3)      |
+| =b:vscode/rootOpen=                | =w=   | this root's window: focused, else opened (3)      |
 | =b:vscode/init=, =…/partnerShow=   | =p P= | this Emacs is the partner; show it (layer 3)      |
 
 ** elisp, Layer 5: b:vscode:claude:aiActivity
 
 =…= is =b:vscode:claude:aiActivity=. Its menu is =a= in layer 4's.
 
-| Function                         | Key   | Does                                                   |
-|----------------------------------+-------+--------------------------------------------------------|
-| =…/dispatch=                     | =a=   | the =/bx-= commands of this buffer's session           |
-| =…/confirmRoot=, =…/confirmHere= | =r h= | confirm the session's activities; associate            |
-| =…/rootRegister=                 |       | named in =/bx-confirm-root register==; Claude calls it |
-| =…/bxSend=                       |       | send =/bx-<name>=                                      |
-| =…/todoDo=, =…/todoDone=         | =t T= | =/bx-todo-do=, =/bx-todo-done=; ask the anchor         |
-| =…:link/follow=                  |       | follows an =aiActivity:= link                          |
-| =…/activityDir=                  |       | the base dir it gives layer 4                          |
+| Function                 | Key   | Does                                                 |
+|--------------------------+-------+------------------------------------------------------|
+| =…/dispatch=             | =a=   | the =/bx-= commands of this buffer's session         |
+| =…/sessionStart=         | =r=   | a session at this buffer's home; register            |
+| =…/activityReach=        | =h=   | reach this AI-Activity, native or foreign; associate |
+| =…/sessionReport=        | =p=   | =/bx-session-report=                                 |
+| =…/activityReport=       | =i=   | where this AI-Activity stands (C-u: ask Claude)      |
+| =…/sessionRegister=      |       | named in =register== of =/bx-session-start=          |
+| =…/home=                 |       | the home of a dir: the root it gives layer 3         |
+| =…/bxSend=               |       | send =/bx-<name>=                                    |
+| =…/todoDo=, =…/todoDone= | =t T= | =/bx-todo-do=, =/bx-todo-done=; ask the anchor       |
+| =…:link/follow=          |       | follows an =aiActivity:= link                        |
+| =…/activityDir=          |       | the base dir it gives layer 4                        |
 
 In magit, =x= is =…:magit/dispatch=:
 
@@ -394,7 +407,8 @@ In magit, =x= is =…:magit/dispatch=:
 
 =…:magit:commitMsg/offer= and =…/markUsed= are the commit-buffer hooks of channel 2;
 =…:hook/commitMsgReady= is the Stop handler. The menu (=b:vscode:claude:menu.el=) offers both
-layers: Prompt, Magit, Session, VS Code. Errors of the programs (=EH_Problem= in their output) are
+layers: Prompt, Magit, Session, VS Code; it is in Blee's Apps menu, with the aiplus entries
+(=b:vscode:claude:menu:plugin|install=, called from blee/env3's =apps-menu.el=), built once. Errors of the programs (=EH_Problem= in their output) are
 shown in the =*vscodeClaude*= and =*vscode*= buffers.
 
 * Use
@@ -402,7 +416,7 @@ shown in the =*vscodeClaude*= and =*vscode*= buffers.
 ** Pure VS Code
 
 Nothing from this package is needed. Open the activity's root folder in VS Code, start a Claude
-session, run =/bx-confirm-root=, and work. From a shell, =vscode.cs= and =vscodeClaude.cs= are there
+session, run =/bx-session-start=, and work. From a shell, =vscode.cs= and =vscodeClaude.cs= are there
 too: =vscodeClaude.cs -i claudePrompt --cwd=. "/bx-status-read"= puts a prompt into the session of
 this directory.
 
@@ -441,12 +455,18 @@ several do), else to the latest local one. To choose (layer 4):
 - =F= (=b:vscode:claude/sessionForget=) goes back to the automatic choice; =l= lists the choices.
 - The transient's title shows where a prompt from this buffer would go, before you send it.
 
-** Confirming a Session from Blee
+** Starting a Session from Blee
 
-=b:vscode:claude:aiActivity/confirmRoot= (=a r=) in a buffer of the root (the VS Code window's
-folder), and =b:vscode:claude:aiActivity/confirmHere= (=a h=) in a buffer of each activity joined.
-When several sessions share the root's folder, it asks which. After that, prompts from any buffer
-of an activity go to its session. The associations live in this Emacs only.
+=b:vscode:claude:aiActivity/sessionStart= (=a r=, or =session-start= in the driver) in any buffer of
+an AI-Activity: it finds the buffer's home and refuses when there is none. When sessions already
+run there, it asks which (or a new one); otherwise it brings forward the home's VS Code window, or
+opens one, and starts a new conversation there with =/bx-session-start=. Then
+=b:vscode:claude:aiActivity/activityReach= (=a h=, =activity-reach=) in a buffer of each further
+AI-Activity: native ones go to the session at their home; reaching a foreign one from another
+session is allowed, with a warning when a session at its home is running. After that, prompts from
+any buffer of an activity go to its session. The associations live in this Emacs only.
+=activityReport= (=a i=) shows where a buffer's AI-Activity stands: home, native or foreign to its
+session, the sessions at its home, the conflicts Blee can see.
 
 ** Committing Several Repos: the Commit Walk
 
@@ -486,8 +506,10 @@ An =aiActivity:= link sends a =/bx-= command to the session of the buffer's AI-A
 They work anywhere in an org buffer, e.g. inside a TODO: "then [[aiActivity:status-update]]". Without
 Blee they show as text that names the command.
 
-Some names do more than a plain send: =confirm-root= and =confirm-here= go through =confirmRoot= and
-=confirmHere= (the registration and the activity dir), =git-commit-msg= through =x c= (this repo, the
+Some names do more than a plain send: =session-start= and =activity-reach= go through
+=sessionStart= and =activityReach= (the home, the registration, the activity dir; the earlier
+=confirm-root= and =confirm-here= go there too), =activity-report= shows Blee's view (=C-u=: asks
+Claude), =git-commit-msg= through =x c= (this repo, the
 request recorded for the Stop hook), =git-commit-walk= through =x w=, and =todo-do= / =todo-done=
 without an anchor ask which open TODO of the activity's WorkPlan.
 
@@ -496,15 +518,27 @@ The =b:ai:workflow/driver= dblock, near the top of every =AI-WorkPlan.org=, is a
 (bold, =S== in their path) are submitted. A control line comes first, unless =:controls nil=:
 
 #+begin_example
---  Back read/wr | Show-All  Overview  Content | (1) | S&Q Save Quit Bury Magit
-* AI Workflow Driver :: /bx- commands into this activity's VS Code Claude session
-  Session :: select-session | confirm-root | confirm-here  |S|  confirm-root | confirm-here
-  Read    :: status-read | archive-read | ai-outputs  |S|  status-read | archive-read | ai-outputs
-  Work    :: todo-do | todo-done  |S|  todo-do | todo-done
-  Record  :: status-update | archive-update  |S|  status-update | archive-update
-  Git     :: git-commit-msg | git-commit-walk  |S|  git-commit-msg
-  Close   :: git-uncommitted-list | session-verify  |S|  git-uncommitted-list | session-verify
+*  revert-buffer | read/wr | Show-All  Overview  Content | (1) | S&Q Save Quit Bury Magit
+*  AI Workflow Driver :: /bx- commands    *After |S|: submitted*
+  newStart :: Panel | setup-check | setup | partner-init | partner-show | session-start
+  VS Code  :: Visit | root-window | Transient
+  Session  :: select-session | session-start | session-report  |S|  session-start
+  Activity :: activity-reach | activity-report  |S|  activity-reach
+  Read     :: status-read | archive-read | ai-outputs  |S|  status-read | archive-read | ai-outputs
+  Work     :: todo-do | todo-done  |S|  todo-do | todo-done
+  Record   :: status-update | archive-update  |S|  status-update | archive-update
+  Git      :: git-commit-msg | git-commit-walk  |S|  git-commit-msg
+  Close    :: git-uncommitted-list | session-verify  |S|  git-uncommitted-list | session-verify
 #+end_example
+
+The first two rows are for starting from scratch and for VS Code itself, not /bx- commands:
+newStart opens bisos.aiActivity's newStart panel (the steps of a start), runs
+=vscodeClaude-assemble.cs -i fullCheck= (=setup-check=, read-only) or =-i fullUpdate= (=setup=,
+once per platform, idempotent) as =bashRun:= links, and declares this Emacs VS Code's partner
+(=partner-init=: =b:vscode/init=; =partner-show=), and ends with =session-start=, a session at this
+WorkPlan's home. VS Code: =Visit= opens this file in its root's window (=b:vscode/fileOpen=),
+=root-window= brings that window forward or opens it (=b:vscode/rootOpen=), =Transient= is
+=b:vscode:claude/dispatch=.
 
 The seed WorkPlan (aiTemplates-workFlow) carries the dblock empty: layer 0 declares the slot, layer 5
 fills it. The earlier names =b:ai:vscodeClaude/workflow= and =…/workflowDriver= still work. The same
@@ -531,7 +565,7 @@ the [[file:./Emacs+VS-Code+Claude.org][design paper]].
   Emacs; commands verify from disk.
 - *Six layers, 0 to 5, each usable without those above*; a lower layer never names an upper one.
 - *Claude in Emacs: read freely, change only with agreement* (=bs-blee-emacs-server=). The
-  =register== of =/bx-confirm-root= and the opening done by =/bx-git-commit-walk= are changes asked
+  =register== of =/bx-session-start= and the opening done by =/bx-git-commit-walk= are changes asked
   for by the prompt.
 - *Python first.* Logic in =vscode.cs= / =vscodeClaude.cs=; elisp wraps.
 - *One place knows how to reach VS Code:* =vscode_csu= (the environment, =DISPLAY=, the desktop
@@ -591,7 +625,7 @@ Not tested; it needs Blee's libraries (=blee-libs=).
 - [[https://github.com/bisos-pip/vscodeClaude][bisos.vscodeClaude]]: =vscode.cs=, =vscodeClaude.cs=
   and =vscode-sbom.pcs= (layer 2, and the Python of layers 3 and 4).
 - AI-WORKFLOW.org (installed in every activity): the =/bx-= commands; "The AI-Activities of a
-  Session: Root and Here".
+  Session: Session-Root, Native and Foreign".
 - The skill =bs-blee-emacs-server=: Claude reaching the running Blee.
 - [[https://github.com/bx-blee/aiplus][aiplus]]: gptel and aidermacs in Blee, the sibling package this
   one is modelled on.
@@ -612,6 +646,13 @@ As of 2026-10-31:
 - After adding a file to this package, Blee needs =M-x straight-rebuild-package RET vscode-claude=
   (Blee does not check for modifications).
 - Built 2026-11-01 (Stage 7): the =aiActivity:= links and the =b:ai:workflow/driver= dblock.
+- Built 2026-11-02 (Stage 14): Session-Root, native and foreign. =b:vscode/rootOpen= (a window
+  brought forward by true name, else opened; never replaced); =fileOpen= opens the root's window
+  first; a new conversation starts in its root's window (=claudePrompt --folder=); layer 5's
+  =sessionStart=, =activityReach= (with conflict warnings), =activityReport=, =sessionReport=; the
+  driver's Session and Activity rows. Tested in batch (49 checks) and, on the desktop, the focus of an
+  open window and a new conversation landing at its Session-Root. Not yet: in Mohsen's Blee; a root
+  with no window yet (a new window opened, then the conversation).
 
 # ###+BEGIN: blee:bxPanel:footerOrgParams
 #+STARTUP: overview

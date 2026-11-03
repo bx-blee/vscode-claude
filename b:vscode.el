@@ -64,6 +64,11 @@ and vscodeClaude.cs (hookToEmacs: Claude Code hooks). Optional: VS Code alone ne
 (defvar b:vscode:outBuffer "*vscode*"
   "Buffer holding the last b:vscode:program run's output.")
 
+(defvar b:vscode:root-function #'b:vscode:root/default
+  "Function of one directory: the root a VS Code window for it is opened on (a true name), or nil.
+The default: the git repo above it. Layer 5 (b:vscode:claude:aiActivity) sets it to the
+directory's home, its AI-Activity Root: a window's folder is its Claude sessions' Session-Root.")
+
 (defvar b:vscode:partner:dir "/bisos/var/blee/vscode"
   "Where b:vscode/init writes the partner file, partner-<user>.json (read by vscode_csu.partnerRead).")
 
@@ -113,6 +118,57 @@ Returns the output, without the framework's ALERT lines.
 " orgCmntEnd)
 ;;;#+END:
 
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:root/default" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:root/default>>  --  -- The git repo above <dir, or nil.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:root/default (
+;;;#+END:
+                  <dir)
+   " #+begin_org
+** DocStr: The git repo above <dir (a true name), or nil. The default b:vscode:root-function.
+#+end_org "
+  (let (($top (locate-dominating-file <dir ".git")))
+    (and $top (directory-file-name (file-truename $top)))))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode/root" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode/root>>  --  -- The root a VS Code window for <dir is opened on, or nil.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode/root (
+;;;#+END:
+                  &optional <dir)
+   " #+begin_org
+** DocStr: The root a VS Code window for <dir (default: this buffer's directory) is opened on, or nil.
+Through b:vscode:root-function.
+#+end_org "
+  (funcall b:vscode:root-function (or <dir default-directory)))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode/rootOpen" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode/rootOpen>>  --  -- Bring forward the VS Code window of this buffer's root, else open one.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode/rootOpen (
+;;;#+END:
+                  &optional <dir)
+   " #+begin_org
+** DocStr: Bring forward the VS Code window whose folder is <dir's root, else open the root in a new one.
+<dir: this buffer's directory by default; its root by b:vscode/root. A window's folder is matched
+by true name (vscode.cs -i vscodeOpenFolder --window=focus); another window's folder is never
+replaced. Returns the root. Remote (TRAMP) directories are refused. (WorkPlan 10.3.)
+#+end_org "
+  (interactive)
+  (let* (($dir (or <dir default-directory))
+         ($root (progn
+                  (when (file-remote-p $dir)
+                    (user-error "Remote directory: VS Code here opens local paths only (%s)" $dir))
+                  (or (b:vscode/root $dir)
+                      (user-error "No root above %s for a VS Code window" $dir)))))
+    (b:vscode:program/runOrError
+     b:vscode:program b:vscode:outBuffer "-i" "vscodeOpenFolder" "--window=focus" $root)
+    (message "VS Code window: %s" $root)
+    $root))
+
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode/fileOpen" :advice ()
 (orgCmntBegin "
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode/fileOpen>>  --  -- Open the current file in the local VS Code at point's line and column.  [[elisp:(org-cycle)][| ]]
@@ -122,7 +178,9 @@ Returns the output, without the framework's ALERT lines.
                            )
    " #+begin_org
 ** DocStr: Open the current file in the local VS Code at point's line and column (vscodeOpenFile).
-In dired, the file at point; in a buffer without a file, its directory as a folder (vscodeOpenFolder).
+First the window of its root (b:vscode/rootOpen: focused, else opened), so the file lands in the
+window whose Claude sessions are at its root; with no root, the last active window.
+In dired, the file at point; in a buffer without a file, the root's window only.
 Remote (TRAMP) files are refused: VS Code here sees local paths only. Linux only, as Blee.
 Symlinks are resolved (file-truename): VS Code's watcher reports changes by the real path, so a
 tab opened through a link (/bxRepos/...) would not reload when Emacs saves the file.
@@ -131,16 +189,21 @@ Was xah-open-in-vscode (WorkPlan 10.2, 10.12).
   (interactive)
   (let* (($file (cond (buffer-file-name buffer-file-name)
                       ((derived-mode-p 'dired-mode) (dired-get-file-for-visit))))
-         ($target (or $file default-directory)))
+         ($target (or $file default-directory))
+         ($dir (if (file-directory-p $target) (file-name-as-directory $target)
+                 (file-name-directory $target))))
     (when (file-remote-p $target)
       (user-error "Remote file: VS Code here opens local paths only (%s)" $target))
-    (if (and $file (not (file-directory-p $file)))
+    (if (b:vscode/root $dir)
+        (b:vscode/rootOpen $dir)
+      (unless (and $file (not (file-directory-p $file)))
         (b:vscode:program/runOrError
-         b:vscode:program b:vscode:outBuffer "-i" "vscodeOpenFile" (file-truename $file)
-         (number-to-string (line-number-at-pos nil t))
-         (number-to-string (1+ (current-column))))
+         b:vscode:program b:vscode:outBuffer "-i" "vscodeOpenFolder" (file-truename $target))))
+    (when (and $file (not (file-directory-p $file)))
       (b:vscode:program/runOrError
-       b:vscode:program b:vscode:outBuffer "-i" "vscodeOpenFolder" (file-truename $target)))
+       b:vscode:program b:vscode:outBuffer "-i" "vscodeOpenFile" (file-truename $file)
+       (number-to-string (line-number-at-pos nil t))
+       (number-to-string (1+ (current-column)))))
     (message "Opened in VS Code: %s" $target)))
 
 ;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "The Partnership" :extraInfo "One Emacs, one VS Code: the partner file"

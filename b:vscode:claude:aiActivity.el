@@ -32,10 +32,13 @@
 Layer 5 of the five (README.org, WorkPlan Stage 13): what Blee does with VS Code Claude because the
 work is an AI-Activity. Built on layer 4 (b:vscode:claude.el), which knows nothing of AI-Activity.
 - The base dir of a buffer is its AI-Activity dir (the nearest CLAUDE.md above): this file sets
-  layer 4's b:vscode:claude:baseDir-function.
-- Root and here: confirmRoot sends /bx-confirm-root dir= emacs= register=<this file's rootRegister>,
-  so the layer-1 command names no Blee function; confirmHere sends /bx-confirm-here <dir>. Both fill
-  layer 4's associations.
+  layer 4's b:vscode:claude:baseDir-function. Its root (layer 3's b:vscode:root-function) is its
+  home, the AI-Activity Root at or above it (aiActivity.cs -i activityReport).
+- Session-Root, native and foreign (bisos.aiActivity's ModelAndTerminology panel): sessionStart
+  starts a session at the buffer's home and sends /bx-session-start dir= emacs=
+  register=<this file's sessionRegister>, so the layer-0 command names no Blee function;
+  activityReach sends /bx-activity-reach <dir>, warning of conflicts (rule 5). Both fill layer 4's
+  associations. activityReport and sessionReport report.
 - The commit cycle: x c / x x send /bx-git-commit-msg; the commit buffer offers CLAUDE_COMMIT_MSG; on
   Claude's Stop (layer 4's hook) magit is raised for a requested repo.
 - The commit walk: /bx-git-commit-walk walk=<this file's walk> hands Blee the repos; x n moves on.
@@ -75,6 +78,16 @@ work is an AI-Activity. Built on layer 4 (b:vscode:claude.el), which knows nothi
 (defvar b:vscode:claude:aiActivity:walk:index 0
   "Index in b:vscode:claude:aiActivity:walk:repos of the repo open now.")
 
+(defvar b:vscode:claude:aiActivity:program "aiActivity.cs"
+  "The CLI (bisos.aiActivity) of layer 1: activityReport and sessionRootCheck classify AI-Activities.")
+
+(defvar b:vscode:claude:aiActivity:outBuffer "*aiActivity*"
+  "Buffer holding the last b:vscode:claude:aiActivity:program run's output.")
+
+(defvar b:vscode:claude:aiActivity:home:cache (make-hash-table :test #'equal)
+  "Directory (true name) -> its home, the AI-Activity Root at or above it (\"\" for none).
+Homes change only when an AI-Activity is initiated or removed: b:vscode:claude:aiActivity:home/forget.")
+
 ;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "The AI-Activity Dir" :extraInfo "Layer 4's base dir, for an AI-Activity"
 (orgCmntBegin "
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *The AI-Activity Dir:* |]]  Layer 4's base dir, for an AI-Activity  [[elisp:(org-shifttab)][<)]] E|
@@ -96,78 +109,252 @@ work is an AI-Activity. Built on layer 4 (b:vscode:claude.el), which knows nothi
 
 (setq b:vscode:claude:baseDir-function #'b:vscode:claude:aiActivity/activityDir)
 
-;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Root And Here" :extraInfo "Confirming a session's AI-Activities, from Blee"
+;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "The Activity Model" :extraInfo "Home, native and foreign: aiActivity.cs -i activityReport"
 (orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Root And Here:* |]]  Confirming a session's AI-Activities, from Blee  [[elisp:(org-shifttab)][<)]] E|
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *The Activity Model:* |]]  Home, native and foreign: aiActivity.cs -i activityReport  [[elisp:(org-shifttab)][<)]] E|
 " orgCmntEnd)
 ;;;#+END:
-
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/confirmRoot" :advice ()
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/report" :advice ()
 (orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/confirmRoot>>  --  -- Confirm the root AI-Activity of the session covering this buffer.  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/report>>  --  -- The activityReport of <dir (relative to <sessionRoot), as a plist.  [[elisp:(org-cycle)][| ]]
 " orgCmntEnd)
-(cl-defun b:vscode:claude:aiActivity/confirmRoot (
+(cl-defun b:vscode:claude:aiActivity/report (
+;;;#+END:
+                  <dir &optional <sessionRoot)
+   " #+begin_org
+** DocStr: The activityReport of <dir, relative to <sessionRoot when given, as a plist.
+Keys as aiActivity.cs -i activityReport --format=json prints them: :dir :aiActivity :kind (\"root\",
+\"sub\", \"none\") :home :homogeneity :activityType :nestedIn :sessionRoot :sessionRootValid
+:relation (\"native\", \"foreign\") :warnings (a vector). Layer 1 computes it; this only reads it.
+#+end_org "
+  (json-parse-string
+   (apply #'b:vscode:program/runOrError
+          b:vscode:claude:aiActivity:program b:vscode:claude:aiActivity:outBuffer
+          (append (list "-i" "activityReport" "--format=json")
+                  (when <sessionRoot (list (concat "--sessionRoot=" (file-truename <sessionRoot))))
+                  (list (file-truename <dir))))
+   :object-type 'plist :null-object nil :false-object nil))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/home" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/home>>  --  -- The home of <dir: the AI-Activity Root at or above it, or nil.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:aiActivity/home (
+;;;#+END:
+                  <dir)
+   " #+begin_org
+** DocStr: The home of <dir: the AI-Activity Root at or above it (a true name, no trailing /), or nil.
+Cached per directory. Layer 3's b:vscode:root-function: the VS Code window for a buffer is opened on
+its home, so the window's Claude sessions have it as their Session-Root.
+#+end_org "
+  (let* (($key (directory-file-name (file-truename (or <dir default-directory))))
+         ($home (or (gethash $key b:vscode:claude:aiActivity:home:cache)
+                    (puthash $key (or (plist-get (b:vscode:claude:aiActivity/report $key) :home) "")
+                             b:vscode:claude:aiActivity:home:cache))))
+    (and (not (string-empty-p $home)) $home)))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity:home/forget" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity:home/forget>>  --  -- Forget the cached homes (after an initiate or a deClaudify).  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:aiActivity:home/forget (
+;;;#+END:
+                  )
+   " #+begin_org
+** DocStr: Forget the cached homes (after aiActivity.cs initiate, initiateSub or deClaudify).
+#+end_org "
+  (interactive)
+  (clrhash b:vscode:claude:aiActivity:home:cache)
+  (message "AI-Activity homes forgotten"))
+
+(setq b:vscode:root-function #'b:vscode:claude:aiActivity/home)
+
+;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Session-Root And Reach" :extraInfo "Starting a session at a home; reaching AI-Activities, native or foreign"
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Session-Root And Reach:* |]]  Starting a session at a home; reaching AI-Activities, native or foreign  [[elisp:(org-shifttab)][<)]] E|
+" orgCmntEnd)
+;;;#+END:
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/sessionStart" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/sessionStart>>  --  -- Start a session at this buffer's home: /bx-session-start, registered.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:aiActivity/sessionStart (
 ;;;#+END:
                   &optional <submit)
    " #+begin_org
-** DocStr: Confirm the root AI-Activity of the session covering this buffer.
-Sends /bx-confirm-root dir=<root> emacs=<socket> register=b:vscode:claude:aiActivity/rootRegister to
-the session whose cwd covers this buffer (the VS Code window's folder: the root); when several
-sessions share that folder, asks which (layer 4's picker). Claude checks it can reach this Emacs and
-calls the register function with its session id; the association is recorded now too.
+** DocStr: Start a session at this buffer's home, its AI-Activity Root: /bx-session-start, registered.
+Refuses when the buffer has no home (aiActivity.cs -i sessionRootCheck says why). When sessions
+already run at the home, asks: one of them, or a new one; none: a new conversation in the home's
+VS Code window (brought forward, else opened). The prompt is /bx-session-start dir=<home>
+emacs=<socket> register=b:vscode:claude:aiActivity/sessionRegister; Claude checks rule 1 itself too,
+and calls the register function with its session id. Replaces confirmRoot.
 #+end_org "
   (interactive (list (b:vscode:claude:submit/fromPrefix current-prefix-arg)))
-  (let* (($covering (b:vscode:claude:sessions/covering default-directory))
-         ($deepest (and $covering (plist-get (car $covering) :cwd)))
-         ($candidates (seq-filter (lambda ($s) (equal (plist-get $s :cwd) $deepest)) $covering))
-         ($id (if $candidates
-                  (b:vscode:claude:session/choose $candidates nil "Session to confirm the root in: ")
-                (user-error "No running session has %s in its folder: open its root in VS Code"
-                            default-directory)))
-         ($root (directory-file-name (b:vscode:claude:dir/canonical $deepest))))
-    (b:vscode:claude:association/set $root $id)
-    (b:vscode:claude/atPrompt
-     (format "/bx-confirm-root dir=%s emacs=%s register=b:vscode:claude:aiActivity/rootRegister"
-             $root (b:vscode:partner/socket))
-     $id <submit)))
+  (let* (($home (or (b:vscode:claude:aiActivity/home default-directory)
+                    (user-error "%s" (b:vscode:program/runOrError
+                                      b:vscode:claude:aiActivity:program
+                                      b:vscode:claude:aiActivity:outBuffer
+                                      "-i" "sessionRootCheck" (file-truename default-directory)))))
+         ($atHome (b:vscode:claude:sessions/atDir $home))
+         ($id (if $atHome
+                  (b:vscode:claude:session/choose
+                   $atHome t (format "Session at %s (or a new one): " (abbreviate-file-name $home)))
+                "new"))
+         ($prompt (format "/bx-session-start dir=%s emacs=%s register=b:vscode:claude:aiActivity/sessionRegister"
+                          $home (b:vscode:partner/socket))))
+    (if (equal $id "new")
+        (b:vscode:claude/sessionNew $prompt $home <submit)
+      (b:vscode:claude:association/set $home $id)
+      (b:vscode:claude/atPrompt $prompt $id <submit))))
 
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/rootRegister" :advice ()
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/sessionRegister" :advice ()
 (orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/rootRegister>>  --  -- Claude's call back from /bx-confirm-root: record <rootDir -> <sessionId.  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/sessionRegister>>  --  -- Claude's call back from /bx-session-start: record <rootDir -> <sessionId.  [[elisp:(org-cycle)][| ]]
 " orgCmntEnd)
-(cl-defun b:vscode:claude:aiActivity/rootRegister (
+(cl-defun b:vscode:claude:aiActivity/sessionRegister (
 ;;;#+END:
                   <rootDir <sessionId)
    " #+begin_org
-** DocStr: Claude's call back from /bx-confirm-root: record <rootDir -> <sessionId.
-Named in the prompt by confirmRoot (register=); returns a short confirmation string for Claude to
+** DocStr: Claude's call back from /bx-session-start: record <rootDir (its Session-Root) -> <sessionId.
+Named in the prompt by sessionStart (register=); returns a short confirmation string for Claude to
 report.
 #+end_org "
   (b:vscode:claude:association/set <rootDir <sessionId)
-  (message "VS Code Claude session %s registered for %s" <sessionId <rootDir)
+  (message "VS Code Claude session %s registered at its Session-Root %s" <sessionId <rootDir)
   (format "registered %s %s" <rootDir <sessionId))
 
-;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/confirmHere" :advice ()
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity:reach/conflicts" :advice ()
 (orgCmntBegin "
-*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/confirmHere>>  --  -- Join this buffer's AI-Activity to its session: /bx-confirm-here <dir>.  [[elisp:(org-cycle)][| ]]
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity:reach/conflicts>>  --  -- Lines warning of other sessions on <dir (rule 5), for session <id.  [[elisp:(org-cycle)][| ]]
 " orgCmntEnd)
-(cl-defun b:vscode:claude:aiActivity/confirmHere (
+(cl-defun b:vscode:claude:aiActivity:reach/conflicts (
+;;;#+END:
+                  <dir <home <id &optional <sessions)
+   " #+begin_org
+** DocStr: Lines warning that sessions other than <id work on the AI-Activity <dir (home <home): rule 5.
+Another session at its home (native to it); another session it is associated with. Blee's view: the
+running sessions and its associations.
+#+end_org "
+  (let* (($sessions (or <sessions (b:vscode:claude:sessions/running)))
+         ($others (seq-remove (lambda ($s) (equal (plist-get $s :sessionId) <id))
+                              (b:vscode:claude:sessions/atDir <home $sessions)))
+         ($assoc (b:vscode:claude:association/lookup <dir))
+         $lines)
+    (when $others
+      (push (format "%s is native to %d other running session(s) at %s: %s" (abbreviate-file-name <dir)
+                    (length $others) (abbreviate-file-name <home)
+                    (mapconcat (lambda ($s) (truncate-string-to-width (plist-get $s :sessionId) 8))
+                               $others " "))
+            $lines))
+    (when (and $assoc (not (equal (cdr $assoc) <id))
+               (seq-find (lambda ($s) (equal (plist-get $s :sessionId) (cdr $assoc))) $sessions)
+               (not (seq-find (lambda ($s) (equal (plist-get $s :sessionId) (cdr $assoc))) $others)))
+      (push (format "%s is associated with running session %s" (abbreviate-file-name (car $assoc))
+                    (truncate-string-to-width (cdr $assoc) 8))
+            $lines))
+    (nreverse $lines)))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/activityReach" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/activityReach>>  --  -- Reach this buffer's AI-Activity from a session: /bx-activity-reach <dir>.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:aiActivity/activityReach (
 ;;;#+END:
                   &optional <dir <submit)
    " #+begin_org
-** DocStr: Join this buffer's AI-Activity to its session: /bx-confirm-here <dir>.
-<dir: the nearest directory above with a CLAUDE.md. The session: that of the root above (its
-association), else the one covering <dir. The association <dir -> session is recorded.
+** DocStr: Reach this buffer's AI-Activity from a session: /bx-activity-reach <dir>.
+<dir: the nearest directory above with a CLAUDE.md. The session: asked among the running ones, this
+buffer's own first, then those at <dir's home (native), then the rest (foreign); one running: that
+one. Warns of a conflict (rule 5): other sessions at its home, or another session associated with
+it. Records the association <dir -> session. Replaces confirmHere.
 #+end_org "
   (interactive (list nil (b:vscode:claude:submit/fromPrefix current-prefix-arg)))
   (let* (($dir (directory-file-name
                 (b:vscode:claude:dir/canonical
                  (or <dir (locate-dominating-file default-directory "CLAUDE.md")
                      (user-error "No CLAUDE.md above %s: not an AI-Activity" default-directory)))))
-         ($id (or (b:vscode:claude:session/forDir $dir)
-                  (user-error "No session for %s: b:vscode:claude:aiActivity/confirmRoot in a buffer of its root" $dir))))
+         ($home (or (b:vscode:claude:aiActivity/home $dir)
+                    (user-error "%s has no AI-Activity Root above it" $dir)))
+         ($sessions (b:vscode:claude:sessions/running))
+         ($mine (b:vscode:claude:session/forBuffer))
+         ($native (b:vscode:claude:sessions/atDir $home $sessions))
+         ($ordered (seq-uniq (append (seq-filter (lambda ($s) (equal (plist-get $s :sessionId) $mine))
+                                                 $sessions)
+                                     $native $sessions)))
+         ($id (b:vscode:claude:session/choose
+               $ordered nil (format "Session to reach %s (home %s): " (abbreviate-file-name $dir)
+                                    (abbreviate-file-name $home))))
+         ($s (seq-find (lambda ($x) (equal (plist-get $x :sessionId) $id)) $sessions))
+         ($relation (if (string= (b:vscode:claude:dir/canonical $home)
+                                 (b:vscode:claude:dir/canonical (plist-get $s :cwd)))
+                        "native" "foreign"))
+         ($warnings (b:vscode:claude:aiActivity:reach/conflicts $dir $home $id $sessions)))
     (b:vscode:claude:association/set $dir $id)
-    (b:vscode:claude/atPrompt (format "/bx-confirm-here %s" $dir) $id <submit)))
+    (b:vscode:claude/atPrompt (format "/bx-activity-reach %s" $dir) $id <submit)
+    (message "%s: %s to session %s%s" (abbreviate-file-name $dir) $relation
+             (truncate-string-to-width $id 8)
+             (if $warnings (concat "; " (string-join $warnings "; ")) ""))))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/activityReport" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/activityReport>>  --  -- Show where this buffer's AI-Activity stands: Blee's view, or C-u: ask Claude.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:aiActivity/activityReport (
+;;;#+END:
+                  &optional <dir <askClaude)
+   " #+begin_org
+** DocStr: Show where this buffer's AI-Activity stands, in *aiActivity report*; with C-u (<askClaude), send
+/bx-activity-report <dir> to this buffer's session instead.
+Blee's view: aiActivity.cs -i activityReport relative to this buffer's session's Session-Root, the
+running sessions at its home, its association, and the conflicts (rule 5) Blee can see.
+#+end_org "
+  (interactive (list nil current-prefix-arg))
+  (let* (($dir (directory-file-name
+                (b:vscode:claude:dir/canonical
+                 (or <dir (locate-dominating-file default-directory "CLAUDE.md") default-directory)))))
+    (if <askClaude
+        (b:vscode:claude:aiActivity/bxSend "activity-report" $dir)
+      (let* (($sessions (b:vscode:claude:sessions/running))
+             ($id (b:vscode:claude:session/forBuffer))
+             ($s (seq-find (lambda ($x) (equal (plist-get $x :sessionId) $id)) $sessions))
+             ($root (and $s (plist-get $s :cwd))))
+        (with-current-buffer (get-buffer-create "*aiActivity report*")
+          (erase-buffer)
+          (insert (apply #'b:vscode:program/runOrError
+                         b:vscode:claude:aiActivity:program b:vscode:claude:aiActivity:outBuffer
+                         (append (list "-i" "activityReport")
+                                 (when $root (list (concat "--sessionRoot=" $root)))
+                                 (list $dir)))
+                  "\n\n")
+          (insert (format "this buffer's session: %s\n"
+                          (if $s (b:vscode:claude:session/describe $s) "none running")))
+          (let (($home (b:vscode:claude:aiActivity/home $dir)))
+            (when $home
+              (insert (format "sessions at its home: %d\n"
+                              (length (b:vscode:claude:sessions/atDir $home $sessions))))
+              (dolist ($w (b:vscode:claude:aiActivity:reach/conflicts $dir $home $id $sessions))
+                (insert (format "conflict: %s\n" $w)))))
+          (display-buffer (current-buffer)))))))
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/sessionReport" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:aiActivity/sessionReport>>  --  -- Send /bx-session-report to this buffer's session.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:aiActivity/sessionReport (
+;;;#+END:
+                  &optional <submit)
+   " #+begin_org
+** DocStr: Send /bx-session-report to this buffer's session.
+#+end_org "
+  (interactive (list (b:vscode:claude:submit/fromPrefix current-prefix-arg)))
+  (b:vscode:claude:aiActivity/bxSend "session-report" nil <submit))
+
+(defalias 'b:vscode:claude:aiActivity/confirmRoot #'b:vscode:claude:aiActivity/sessionStart
+  "The earlier name (/bx-confirm-root); will be removed.")
+(defalias 'b:vscode:claude:aiActivity/confirmHere #'b:vscode:claude:aiActivity/activityReach
+  "The earlier name (/bx-confirm-here); will be removed.")
+(defalias 'b:vscode:claude:aiActivity/rootRegister #'b:vscode:claude:aiActivity/sessionRegister
+  "The earlier register function: a /bx-confirm-root prompt sent before the rename still names it.")
 
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:aiActivity/bxSend" :advice ()
 (orgCmntBegin "
@@ -492,7 +679,9 @@ Interactively, asks which open TODO of this activity's WorkPlan.
 <path is \"<name> <args>\", e.g. \"status-read\" or \"todo-do 7.1\". \"S=<name> <args>\" is
 submitted (the links after |S| in the workflow driver); otherwise a prefix <arg (C-u C-c C-o) flips
 whether it is. Commands that need more than a plain send go through their own
-functions: confirm-root (dir=, emacs=, register=), confirm-here (the activity dir), git-commit-msg
+functions: session-start (dir=, emacs=, register=), activity-reach (the activity dir; the earlier
+names confirm-root and confirm-here go to these two), activity-report (Blee's view; C-u asks
+Claude), git-commit-msg
 (this repo, the request recorded), git-commit-walk (walk=), todo-do and todo-done (ask the anchor).
 #+end_org "
   (let* (($forced (string-prefix-p "S=" <path))
@@ -501,8 +690,9 @@ functions: confirm-root (dir=, emacs=, register=), confirm-here (the activity di
          ($args (and (cdr $words) (string-join (cdr $words) " ")))
          ($submit (or $forced (b:vscode:claude:submit/fromPrefix <arg))))
     (pcase $name
-      ("confirm-root" (b:vscode:claude:aiActivity/confirmRoot $submit))
-      ("confirm-here" (b:vscode:claude:aiActivity/confirmHere $args $submit))
+      ((or "session-start" "confirm-root") (b:vscode:claude:aiActivity/sessionStart $submit))
+      ((or "activity-reach" "confirm-here") (b:vscode:claude:aiActivity/activityReach $args $submit))
+      ("activity-report" (b:vscode:claude:aiActivity/activityReport $args <arg))
       ("git-commit-msg" (b:vscode:claude:aiActivity/commitMsgGenerate $submit))
       ("git-commit-walk" (b:vscode:claude:aiActivity:magit/walkStart))
       ("todo-do" (b:vscode:claude:aiActivity/todoDo $args $submit))
@@ -545,8 +735,10 @@ functions: confirm-root (dir=, emacs=, register=), confirm-here (the activity di
   (transient-define-prefix b:vscode:claude:aiActivity/dispatch ()
     "AI-Activity commands into this buffer's VS Code Claude session (vscode-claude layer 5)."
     [["Session"
-      ("r" "/bx-confirm-root (+ register)" b:vscode:claude:aiActivity/confirmRoot)
-      ("h" "/bx-confirm-here this activity" b:vscode:claude:aiActivity/confirmHere)
+      ("r" "/bx-session-start at this home (+ register)" b:vscode:claude:aiActivity/sessionStart)
+      ("h" "/bx-activity-reach this activity" b:vscode:claude:aiActivity/activityReach)
+      ("p" "/bx-session-report" b:vscode:claude:aiActivity/sessionReport)
+      ("i" "Activity report (Blee; C-u: Claude)" b:vscode:claude:aiActivity/activityReport)
       ("s" "/bx-status-read" (lambda () (interactive) (b:vscode:claude:aiActivity/bxSend "status-read")))
       ("v" "/bx-session-verify" (lambda () (interactive) (b:vscode:claude:aiActivity/bxSend "session-verify")))]
      ["Work"

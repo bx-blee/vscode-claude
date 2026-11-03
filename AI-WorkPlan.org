@@ -560,8 +560,7 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 2026-10-30: b:vscode/fileOpen now runs vscode.cs -i vscodeOpenFile <file> <line> <col> at point (in
 dired: the file at point; no file: the directory, vscodeOpenFolder), through b:vscode:program/run.
 
-** DONE [#C] <<10.3>> Open the repo (project root) as a VS Code folder
-CLOSED: [2026-10-30 Fri 18:10]
+** TODO [#A] <<10.3>> Open the repo (project root) as a VS Code folder
 :PROPERTIES:
 :ORIGIN: Claude
 :IMPORTANCE: Medium
@@ -577,6 +576,15 @@ CLOSED: [2026-10-30 Fri 18:10]
 <dir>, --window=reuse|new. Elisp not yet.
 2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
 stays in vscode.cs for shell use. Revisit if a use from Blee appears.
+2026-11-02: reopened at [#A] (Mohsen): it is part of the workflow after all. A VS Code window's
+folder is the Claude session's working directory, and in our model Claude starts at the root
+(usually a repo); nothing enforces that yet. Found starting from scratch on a VM (the bisos.aiActivity
+newStart panel). To be designed with root enforcement in the session choice and confirmRoot.
+2026-11-02: built with [[14.1]]: =b:vscode/rootOpen= over =vscode.cs -i vscodeOpenFolder --window=focus=
+(the new default). VS Code matches a folder by the spelling it was opened with (/bxRepos/... and its
+true name are two folders to it; found on the desktop, where a plain =code <truename>= opened a second
+window): =vscode_csu.windowsOpen= reads the open windows from its storage.json, and =windowFocus=
+passes the open window's own spelling, else opens a new window and waits for it.
 
 ** DONE [#C] <<10.4>> Add a folder to the current VS Code window: code --add
 CLOSED: [2026-10-30 Fri 18:10]
@@ -709,6 +717,10 @@ Mohsen's files.
 ----- Results: ------
 2026-10-30: b:vscode:claude:menu.el has Prompt, Magit, Session and VS Code submenus; and a transient,
 b:vscode:claude/dispatch (also magit x d).
+2026-11-02: the menu is in Blee's Apps menu: blee/env3 legacy/apps-menu.el calls
+b:vscode:claude:menu:plugin|install (guarded by fboundp; added and tested by Mohsen). Its install no
+longer adds an (empty) function to menu-bar-update-hook: menus are built once. Stage 14 added
+Session Start, Activity Reach, Session Report, Activity Report and This Root's Window to it.
 
 ** TODO [#B] <<10.12>> Make b:vscode/fileOpen robust: local process, TRAMP paths, Linux only
 :PROPERTIES:
@@ -1066,6 +1078,54 @@ executables; 1 to 5 keep their earlier meaning), and tables top down, layer 5 fi
   follow; re-rendered. The PyPI and package cells are plain URLs, so the table aligns by raw width.
 
 
+** -
+
+* Stage 14: Session-Root, Native and Foreign
+
+<<Stage 14>>
+
+Goal: the model of bisos.aiActivity's ModelAndTerminology panel (agreed with Mohsen, 2026-11-02) in
+layers 2 to 5: a VS Code window per Session-Root, an AI-Activity Root; sessions started there from
+Blee; AI-Activities reached, native or foreign, with conflicts warned. Layers 0 and 1 are
+aiTemplates-workFlow 6.1 (the commands) and bisos-pip/aiActivity 23.1 (=activityModel_csu=).
+
+* Stage 14 TODOs
+** +
+** TODO [#A] <<14.1>> Layers 2 to 5 and the driver for Session-Root, native and foreign :aiAndMe:
+:PROPERTIES:
+:ORIGIN: Mohsen
+:IMPORTANCE: High
+:REPO: this
+:BASE: this
+:FOUND: <2026-11-02 Mon>
+:END:
+----- Results: ------
+2026-11-02 (Claude):
+- Layer 2 (bisos-pip/vscodeClaude vscode_csu): =windowsOpen=, =windowFolderFor=, =windowFocus=;
+  =vscodeOpenFolder --window=focus= (default; =new=, =reuse= kept); new =vscodeWindows=.
+- Layer 4 Python (vscodeClaude_csu): =claudePrompt --folder=<dir>= focuses (else opens) that window
+  first: the /open URI goes to the last active window. Tested on the desktop: a new conversation
+  started at vscode-claude (an unsubmitted prompt).
+- Layer 3 (b:vscode.el): =b:vscode:root-function= (default: the git repo), =b:vscode/root=,
+  =b:vscode/rootOpen= ([[10.3]]); =fileOpen= opens the root's window, then the file.
+- Layer 4 (b:vscode:claude.el): a new conversation gets =--folder= = this buffer's root;
+  =sessions/atDir=; =sessionNew= (transient =n=; =w= for the root's window); the target line says
+  when the session is not at the buffer's root.
+- Layer 5 (b:vscode:claude:aiActivity.el): =report= and =home= (aiActivity.cs -i activityReport,
+  cached; sets layer 3's root function); =sessionStart= (refuses without a home; asks among the
+  sessions at the home, or a new one in its window; =/bx-session-start ... register=sessionRegister=),
+  =sessionRegister=, =activityReach= (asks the session: the buffer's, the native ones, the others;
+  native or foreign; conflict warnings, rule 5), =activityReport= (Blee's view; C-u asks Claude),
+  =sessionReport=; =confirmRoot=, =confirmHere=, =rootRegister= kept as aliases; the links
+  =session-start=, =activity-reach=, =activity-report= (and the old names); transient and menu.
+- Driver (dblock-vscode-claude.el): =newStart= ends with session-start; =VS Code= has root-window;
+  =Session= (select-session, session-start, session-report) and =Activity= (activity-reach,
+  activity-report) rows. Widest displayed line 101.
+- README.org: "Session-Root, Native and Foreign", "Starting a Session from Blee", the tables, the
+  driver, Status.
+- Tested: batch, 49 checks (layer 4 alone first; layer 5 with the real aiActivity.cs on a scratch
+  tree), 0 failures. Not yet: in Mohsen's Blee (load the three files, Update Buf Dblocks); a root
+  with no window yet; /bx-session-start into a real new session (with emacs= register=).
 ** -
 
 # Local Variables:

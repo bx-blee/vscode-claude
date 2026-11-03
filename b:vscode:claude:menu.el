@@ -17,14 +17,7 @@
    (b:vscode:claude:menu|define :active t)
    <menuDelimiter
    )
-
-  (add-hook 'menu-bar-update-hook 'b:vscode:claude:menu|update-hook)
-  )
-
-(defun b:vscode:claude:menu|update-hook ()
-  "This is to be added to menu-bar-update-hook.
-It runs everytime any menu is invoked.
-As such what happens below should be exactly what is necessary and no more."
+  ;; Built once: nothing on menu-bar-update-hook, which runs on nearly every redisplay.
   )
 
 ;;
@@ -132,12 +125,18 @@ As such what happens below should be exactly what is necessary and no more."
         ["Forget The Choice  -- b:vscode:claude/sessionForget"
          (call-interactively 'b:vscode:claude/sessionForget)]
         "---"
-        ["Confirm Root (Register)  -- b:vscode:claude:aiActivity/confirmRoot"
-         (call-interactively 'b:vscode:claude:aiActivity/confirmRoot)
-         :help "/bx-confirm-root dir= emacs= register= to the session covering this buffer"]
-        ["Confirm Here  -- b:vscode:claude:aiActivity/confirmHere"
-         (call-interactively 'b:vscode:claude:aiActivity/confirmHere)
-         :help "/bx-confirm-here <this activity dir> to its session"]
+        ["Session Start (Register)  -- b:vscode:claude:aiActivity/sessionStart"
+         (call-interactively 'b:vscode:claude:aiActivity/sessionStart)
+         :help "A session at this buffer's home (its AI-Activity Root): /bx-session-start dir= emacs= register="]
+        ["Activity Reach  -- b:vscode:claude:aiActivity/activityReach"
+         (call-interactively 'b:vscode:claude:aiActivity/activityReach)
+         :help "/bx-activity-reach <this activity dir>, native or foreign, from a session you choose"]
+        ["Session Report  -- b:vscode:claude:aiActivity/sessionReport"
+         (call-interactively 'b:vscode:claude:aiActivity/sessionReport)
+         :help "/bx-session-report to this buffer's session"]
+        ["Activity Report  -- b:vscode:claude:aiActivity/activityReport"
+         (call-interactively 'b:vscode:claude:aiActivity/activityReport)
+         :help "Where this AI-Activity stands: home, native or foreign, conflicts (C-u: ask Claude)"]
         ["Show Associations  -- b:vscode:claude/associationsShow"
          (b:vscode:claude/associationsShow)]))
 
@@ -146,7 +145,11 @@ As such what happens below should be exactly what is necessary and no more."
 (defun b:vscode:claude:menuItem:vscode|define ()
   (list "VS Code"
         ["Open This File In VS Code  -- b:vscode/fileOpen"
-         (b:vscode/fileOpen)]
+         (b:vscode/fileOpen)
+         :help "In the window of its root (brought forward, else opened), at point"]
+        ["This Root's Window  -- b:vscode/rootOpen"
+         (b:vscode/rootOpen)
+         :help "Bring forward the VS Code window of this buffer's root, else open one; never replaces a window's folder"]
         ["This Emacs Is The Partner  -- b:vscode/init"
          (b:vscode/init)
          :help "Write the partner file: VS Code to Emacs and Claude Code hooks reach this Emacs"]

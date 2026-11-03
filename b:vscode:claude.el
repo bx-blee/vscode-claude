@@ -77,7 +77,7 @@ b:vscode:claude:aiActivity.el, builds on it.
 
 (defvar b:vscode:claude:associations nil
   "Alist of (base dir . sessionId): which session a buffer under that dir prompts.
-Dirs are true names ending in /. Filled by sessionSelect, and by layer 5 (confirmRoot, confirmHere).")
+Dirs are true names ending in /. Filled by sessionSelect, and by layer 5 (sessionStart, activityReach).")
 
 (defvar-local b:vscode:claude:session:buffer nil
   "A sessionId this buffer prompts, before any association (sessionSelect with C-u).")
@@ -235,6 +235,20 @@ One session and no <newOk: that one, without asking. None and no <newOk: a user-
                                         $dir (b:vscode:claude:dir/canonical (plist-get $s :cwd))))
                           (or <sessions (b:vscode:claude:sessions/running))))))
 
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:sessions/atDir" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:sessions/atDir>>  --  -- The running sessions whose cwd (Session-Root) is exactly <dir.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude:sessions/atDir (
+;;;#+END:
+                  <dir &optional <sessions)
+   " #+begin_org
+** DocStr: The running sessions whose cwd --- their Session-Root, the window's folder --- is <dir, newest first.
+#+end_org "
+  (let (($dir (b:vscode:claude:dir/canonical <dir)))
+    (seq-filter (lambda ($s) (string= $dir (b:vscode:claude:dir/canonical (plist-get $s :cwd))))
+                (or <sessions (b:vscode:claude:sessions/running)))))
+
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:session/covering" :advice ()
 (orgCmntBegin "
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude:session/covering>>  --  -- The running session whose cwd is <dir or above it, deepest first.  [[elisp:(org-cycle)][| ]]
@@ -352,7 +366,8 @@ is found by its folder.
       (if <bufferOnly
           (setq b:vscode:claude:session:buffer nil)
         (b:vscode:claude:association/forget (b:vscode:claude:baseDir)))
-      (message "The next prompt starts a new conversation"))
+      (message "The next prompt starts a new conversation, in the VS Code window of %s"
+               (or (b:vscode/root) "the last active window")))
      (<bufferOnly
       (setq b:vscode:claude:session:buffer $id)
       (message "This buffer prompts session %s" $id))
@@ -394,12 +409,21 @@ Drops the base dir's association; with C-u (<bufferOnly), this buffer's own choi
 #+end_org "
   (condition-case nil
       (cond
-       ((equal b:vscode:claude:session:next "new") "next prompt: a new conversation")
+       ((equal b:vscode:claude:session:next "new")
+        (format "next prompt: a new conversation, at %s"
+                (abbreviate-file-name (or (b:vscode/root) "the last active window"))))
        (t (let* (($sessions (b:vscode:claude:sessions/running))
                  ($id (b:vscode:claude:session/forBuffer))
                  ($s (and $id (seq-find (lambda ($x) (string= (plist-get $x :sessionId) $id))
                                         $sessions))))
-            (cond ($s (concat "-> " (b:vscode:claude:session/describe $s)))
+            (cond ($s (concat "-> " (b:vscode:claude:session/describe $s)
+                              (let (($root (b:vscode/root)))
+                                (if (and $root (not (string= (b:vscode:claude:dir/canonical $root)
+                                                             (b:vscode:claude:dir/canonical
+                                                              (plist-get $s :cwd)))))
+                                    (format "  (not at this buffer's root, %s)"
+                                            (abbreviate-file-name $root))
+                                  ""))))
                   ($sessions (concat "-> latest: " (b:vscode:claude:session/describe (car $sessions))))
                   (t "no running local session")))))
     (error "sessions unknown (vscodeClaude.cs failed)")))
@@ -418,7 +442,7 @@ Drops the base dir's association; with C-u (<bufferOnly), this buffer's own choi
   (with-current-buffer (get-buffer-create "*vscodeClaude associations*")
     (erase-buffer)
     (if (null b:vscode:claude:associations)
-        (insert "No associations: b:vscode:claude/sessionSelect (or layer 5's confirmRoot).\n")
+        (insert "No associations: b:vscode:claude/sessionSelect (or layer 5's sessionStart).\n")
       (dolist ($a b:vscode:claude:associations)
         (insert (format "%s\t%s\n" (cdr $a) (car $a)))))
     (display-buffer (current-buffer))))
@@ -466,8 +490,10 @@ Drops the base dir's association; with C-u (<bufferOnly), this buffer's own choi
 ** DocStr: Put <text in the input box of a local VS Code Claude session.
 <session is a sessionId, \"new\" (a new conversation), or nil: this buffer's session --- the
 one-shot b:vscode:claude:session:next, else b:vscode:claude:session/forBuffer, else the latest local
-one. With <submit, Enter is pressed too (interactively: C-u flips b:vscode:claude:submit?). A thin
-layer over =vscodeClaude.cs -i claudePrompt=, which holds all the logic. DISPLAY is Emacs's.
+one. With <submit, Enter is pressed too (interactively: C-u flips b:vscode:claude:submit?). A new
+conversation starts in the VS Code window of this buffer's root (b:vscode/root: that window is
+brought forward, else opened), so its Session-Root is that root. A thin layer over
+=vscodeClaude.cs -i claudePrompt=, which holds all the logic. DISPLAY is Emacs's.
 #+end_org "
   (interactive (list (read-string "Claude prompt: " nil 'b:vscode:claude:history)
                      nil
@@ -475,7 +501,9 @@ layer over =vscodeClaude.cs -i claudePrompt=, which holds all the logic. DISPLAY
   (let* (($session (or <session
                        (prog1 b:vscode:claude:session:next (setq b:vscode:claude:session:next nil))
                        (b:vscode:claude:session/forBuffer)))
+         ($root (and (equal $session "new") (b:vscode/root)))
          ($args (append (when $session (list (concat "--session=" $session)))
+                        (when $root (list (concat "--folder=" $root)))
                         (when <submit (list "--submit=yes"))
                         (list "-i" "claudePrompt" <text))))
     (apply #'b:vscode:program/runOrError b:vscode:claude:program b:vscode:claude:outBuffer $args)
@@ -488,6 +516,26 @@ layer over =vscodeClaude.cs -i claudePrompt=, which holds all the logic. DISPLAY
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Sends With Context:* |]]  @file:line, the region, the file, the error at point  [[elisp:(org-shifttab)][<)]] E|
 " orgCmntEnd)
 ;;;#+END:
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude/sessionNew" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:vscode:claude/sessionNew>>  --  -- Start a new conversation in the VS Code window of <dir's root, with <text.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:vscode:claude/sessionNew (
+;;;#+END:
+                  <text &optional <dir (<submit b:vscode:claude:submit?))
+   " #+begin_org
+** DocStr: Start a new conversation in the VS Code window of <dir's root (default: this buffer's), with <text.
+The window is brought forward, else opened (b:vscode/rootOpen), so the new session's Session-Root is
+that root. The generic start: layer 5's sessionStart sends /bx-session-start through it.
+#+end_org "
+  (interactive (list (read-string "Prompt for a new conversation: " nil 'b:vscode:claude:history)
+                     nil
+                     (b:vscode:claude:submit/fromPrefix current-prefix-arg)))
+  (let ((default-directory (file-name-as-directory (or <dir default-directory))))
+    (unless (b:vscode/root)
+      (user-error "No root above %s: a new conversation needs a VS Code window folder" default-directory))
+    (b:vscode:claude/atPrompt <text "new" <submit)))
 
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:vscode:claude:context/fileRef" :advice ()
 (orgCmntBegin "
@@ -667,9 +715,11 @@ returns at once. Returns \"handled\"; a malformed <json still runs the hook, wit
      ["Session"
       ("c" "Choose session (C-u: this buffer)" b:vscode:claude/sessionSelect :transient t)
       ("F" "Forget the choice" b:vscode:claude/sessionForget :transient t)
-      ("l" "Associations" b:vscode:claude/associationsShow)]
+      ("l" "Associations" b:vscode:claude/associationsShow)
+      ("n" "New conversation at this root" b:vscode:claude/sessionNew)]
      ["VS Code"
       ("f" "Open this file in VS Code" b:vscode/fileOpen)
+      ("w" "This root's window" b:vscode/rootOpen)
       ("p" "Partner: this Emacs (init)" b:vscode/init)
       ("P" "Partner: show" b:vscode/partnerShow)
       ("t" "Topology" b:vscode/topology)]

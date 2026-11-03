@@ -54,6 +54,10 @@ aiActivity: links that send /bx- commands to VS Code Claude (WorkPlan Stage 7).
 
 (require 'dblock-comeega-elisp)
 
+(defvar b:ai:workflow/driver:newStartPanel
+  "/bisos/panels/bisos-core/bisos-pip/bisos.aiActivity/newStart/_nodeBase_"
+  "The newStart panel (starting from scratch), opened by the driver's newStart row.")
+
 ;;;#+BEGIN: blee:bxPanel:foldingSection :outLevel 1 :title "Variables And Constants" :extraInfo "defvar, defcustom"
 (orgCmntBegin "
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*       [[elisp:(outline-show-subtree+toggle)][| *Variables And Constants:* |]]  defvar, defcustom  [[elisp:(org-shifttab)][<)]] E|
@@ -94,7 +98,9 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
              ($link (lambda (<cmnd &optional <submit)
                       (format "[[aiActivity:%s%s][%s]]" (if <submit "S=" "") <cmnd <cmnd)))
              ;; Each row: its label, the commands, and those also offered submitted (after |S|).
-             ($rows '(("Session" ("confirm-root" "confirm-here") ("confirm-root" "confirm-here"))
+             ;; Session: this session, at its Session-Root; Activity: the AI-Activities it reaches.
+             ($rows '(("Session" ("session-start" "session-report") ("session-start"))
+                      ("Activity" ("activity-reach" "activity-report") ("activity-reach"))
                       ("Read" ("status-read" "archive-read" "ai-outputs")
                        ("status-read" "archive-read" "ai-outputs"))
                       ("Work" ("todo-do" "todo-done") ("todo-do" "todo-done"))
@@ -113,12 +119,26 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
                   "[[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]]\n"))
         (insert (format "%s  [[elisp:(org-cycle)][AI Workflow Driver :: /bx- commands]]    *After |S|: submitted*\n"
                         (make-string <outLevel ?*)))
-        (insert (format "  %-7s :: %s | %s\n" "VS Code"
+        ;; Starting from scratch (bisos.aiActivity's newStart panel): setup is vscodeClaude's CBM
+        ;; assemble, once per platform and idempotent; partner-init is b:vscode/init (layer 3);
+        ;; session-start starts a session at this buffer's home, in its window (layer 5).
+        (insert (format "  %-8s :: %s\n" "newStart"
+                        (string-join
+                         (list (format "[[elisp:(blee:bnsm:panel-goto \"%s\")][Panel]]"
+                                       b:ai:workflow/driver:newStartPanel)
+                               "[[bashRun:vscodeClaude-assemble.cs -i fullCheck][setup-check]]"
+                               "[[bashRun:vscodeClaude-assemble.cs -i fullUpdate][setup]]"
+                               "[[elisp:(b:vscode/init)][partner-init]]"
+                               "[[elisp:(b:vscode/partnerShow)][partner-show]]"
+                               (funcall $link "session-start"))
+                         " | ")))
+        (insert (format "  %-8s :: %s | %s | %s\n" "VS Code"
                         "[[elisp:(b:vscode/fileOpen)][Visit]]"
+                        "[[elisp:(b:vscode/rootOpen)][root-window]]"
                         "[[elisp:(b:vscode:claude/dispatch)][Transient]]"))
         (dolist ($row $rows)
           (let (($session (equal (car $row) "Session")))
-            (insert (format "  %-7s :: %s%s%s\n" (car $row)
+            (insert (format "  %-8s :: %s%s%s\n" (car $row)
                             (if $session
                                 "[[elisp:(b:vscode:claude/sessionSelect)][select-session]] | " "")
                             (mapconcat $link (nth 1 $row) " | ")

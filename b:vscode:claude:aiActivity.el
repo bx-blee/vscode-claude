@@ -507,10 +507,13 @@ forget the request, show that repo's magit status in a raised frame, and say so.
 ;;;#+END:
                   <repo)
    " #+begin_org
-** DocStr: Show <repo's magit status in a raised frame.
+** DocStr: Show <repo's magit status in a raised frame, in the selected window.
+For the commit walk: the next repo's magit replaces the previous one's in its window instead of
+splitting the frame (magit-display-buffer-same-window-except-diff-v1, for this call only).
 #+end_org "
   (when (fboundp 'magit-status-setup-buffer)
-    (magit-status-setup-buffer (file-name-as-directory <repo)))
+    (let ((magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+      (magit-status-setup-buffer (file-name-as-directory <repo))))
   (let (($frame (selected-frame)))
     (raise-frame $frame)
     (select-frame-set-input-focus $frame)))

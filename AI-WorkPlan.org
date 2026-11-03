@@ -13,13 +13,15 @@
 ####+BEGIN: b:ai:workflow/driver
 *  [[elisp:(revert-buffer)][revert-buffer]] | [[elisp:(toggle-read-only)][read/wr]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[elisp:(delete-other-windows)][(1)]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]] [[elisp:(save-buffer)][Save]] [[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]]
 *  [[elisp:(org-cycle)][AI Workflow Driver :: /bx- commands]]    *After |S|: submitted*
-  VS Code :: [[elisp:(b:vscode/fileOpen)][Visit]] | [[elisp:(b:vscode:claude/dispatch)][Transient]]
-  Session :: [[elisp:(b:vscode:claude/sessionSelect)][select-session]] | [[aiActivity:confirm-root][confirm-root]] | [[aiActivity:confirm-here][confirm-here]]  *|S|*  [[aiActivity:S=confirm-root][confirm-root]] | [[aiActivity:S=confirm-here][confirm-here]]
-  Read    :: [[aiActivity:status-read][status-read]] | [[aiActivity:archive-read][archive-read]] | [[aiActivity:ai-outputs][ai-outputs]]  *|S|*  [[aiActivity:S=status-read][status-read]] | [[aiActivity:S=archive-read][archive-read]] | [[aiActivity:S=ai-outputs][ai-outputs]]
-  Work    :: [[aiActivity:todo-do][todo-do]] | [[aiActivity:todo-done][todo-done]]  *|S|*  [[aiActivity:S=todo-do][todo-do]] | [[aiActivity:S=todo-done][todo-done]]
-  Record  :: [[aiActivity:status-update][status-update]] | [[aiActivity:archive-update][archive-update]]  *|S|*  [[aiActivity:S=status-update][status-update]] | [[aiActivity:S=archive-update][archive-update]]
-  Git     :: [[aiActivity:git-commit-msg][git-commit-msg]] | [[aiActivity:git-commit-walk][git-commit-walk]]  *|S|*  [[aiActivity:S=git-commit-msg][git-commit-msg]]
-  Close   :: [[aiActivity:git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:session-verify][session-verify]]  *|S|*  [[aiActivity:S=git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:S=session-verify][session-verify]]
+  newStart :: [[elisp:(blee:bnsm:panel-goto "/bisos/panels/bisos-core/bisos-pip/bisos.aiActivity/newStart/_nodeBase_")][Panel]] | [[bashRun:vscodeClaude-assemble.cs -i fullCheck][setup-check]] | [[bashRun:vscodeClaude-assemble.cs -i fullUpdate][setup]] | [[elisp:(b:vscode/init)][partner-init]] | [[elisp:(b:vscode/partnerShow)][partner-show]] | [[aiActivity:session-start][session-start]]
+  VS Code  :: [[elisp:(b:vscode/fileOpen)][Visit]] | [[elisp:(b:vscode/rootOpen)][root-window]] | [[elisp:(b:vscode:claude/dispatch)][Transient]]
+  Session  :: [[elisp:(b:vscode:claude/sessionSelect)][select-session]] | [[aiActivity:session-start][session-start]] | [[aiActivity:session-report][session-report]]  *|S|*  [[aiActivity:S=session-start][session-start]]
+  Activity :: [[aiActivity:activity-reach][activity-reach]] | [[aiActivity:activity-report][activity-report]]  *|S|*  [[aiActivity:S=activity-reach][activity-reach]]
+  Read     :: [[aiActivity:status-read][status-read]] | [[aiActivity:archive-read][archive-read]] | [[aiActivity:ai-outputs][ai-outputs]]  *|S|*  [[aiActivity:S=status-read][status-read]] | [[aiActivity:S=archive-read][archive-read]] | [[aiActivity:S=ai-outputs][ai-outputs]]
+  Work     :: [[aiActivity:todo-do][todo-do]] | [[aiActivity:todo-done][todo-done]]  *|S|*  [[aiActivity:S=todo-do][todo-do]] | [[aiActivity:S=todo-done][todo-done]]
+  Record   :: [[aiActivity:status-update][status-update]] | [[aiActivity:archive-update][archive-update]]  *|S|*  [[aiActivity:S=status-update][status-update]] | [[aiActivity:S=archive-update][archive-update]]
+  Git      :: [[aiActivity:git-commit-msg][git-commit-msg]] | [[aiActivity:git-commit-walk][git-commit-walk]]  *|S|*  [[aiActivity:S=git-commit-msg][git-commit-msg]]
+  Close    :: [[aiActivity:git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:session-verify][session-verify]]  *|S|*  [[aiActivity:S=git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:S=session-verify][session-verify]]
 
   ####+END:
 
@@ -1126,6 +1128,16 @@ aiTemplates-workFlow 6.1 (the commands) and bisos-pip/aiActivity 23.1 (=activity
 - Tested: batch, 49 checks (layer 4 alone first; layer 5 with the real aiActivity.cs on a scratch
   tree), 0 failures. Not yet: in Mohsen's Blee (load the three files, Update Buf Dblocks); a root
   with no window yet; /bx-session-start into a real new session (with emacs= register=).
+2026-11-03, from the commit walk (Mohsen): the walk's next repo replaces the previous one's
+magit in its window (=magit/show= binds =magit-display-buffer-function= to
+=magit-display-buffer-same-window-except-diff-v1= for that call) instead of splitting the frame.
+Found too: a Blee started before Stage 13 still had magit's =x= on the old
+=b:vscode:claude:magit/dispatch= (no =x n=); a restart, or one =define-key=, fixes it.
+2026-11-03: a root with no window yet now works (bisos-pip/vscodeClaude 5.1): =windowFocus= also
+recognizes the new window by its X title, so =sessionStart= in a buffer whose home has no window
+opens one and starts the conversation there (it had timed out). Tested on the desktop with
+vscodeOpenFolder; not yet through sessionStart. This session registered with the restarted Blee
+(pid 2215093) through =/bx-session-start ... register=sessionRegister=: works.
 ** -
 
 # Local Variables:

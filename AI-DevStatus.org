@@ -31,8 +31,8 @@ tooling) apart from a session's Session-Root (its window's folder), which must b
 foreign AI-Activities --- as rootOpen, sessionStart, activityReach and the driver's Session and
 Activity rows, over the new layer-0 commands (/bx-session-start, /bx-activity-reach, the two reports)
 and layer 1's activityReport. Before: the aiActivity: links and the driver (Stage 7), session
-selection (12), dblock updates from outside Emacs (6.2). Uncommitted since bd9ae6c; NextSteps.org
-has the earlier critique. Next: try Stage 14 in Mohsen's Blee (load the three .el files, Update Buf
+selection (12), dblock updates from outside Emacs (6.2). Committed and pushed (b0a405f, 2026-11-02);
+NextSteps.org has the earlier critique. Next: try Stage 14 in Mohsen's Blee (load the three .el files, Update Buf
 Dblocks, session-start), then the commit cycle in a real session (8.3).
 
 * Architecture

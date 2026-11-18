@@ -76,6 +76,8 @@ with its TODO anchor in [[file:./AI-WorkPlan.org][AI-WorkPlan.org]].
   - [[#from-vs-code-to-blee][From VS Code to Blee]]
   - [[#claude-code-hooks][Claude Code Hooks]]
   - [[#org-links-and-the-workflow-driver][Org Links and the Workflow Driver]]
+-  [[#revert-buffer--readwr--show-all--overview--content--1--sq-save-quit-bury-magit][revert-buffer | read/wr | Show-All  Overview  Content | (1) | S&Q Save Quit Bury Magit]]
+-  [[#ai-workflow-driver--bx--commands----after-s-submitted][AI Workflow Driver :: /bx- commands    *After |S|: submitted*]]
 - [[#deployment-topologies][Deployment Topologies]]
 - [[#design-principles][Design Principles]]
 - [[#vscode-claude-installation][vscode-claude Installation]]
@@ -604,18 +606,18 @@ Not tested; it needs Blee's libraries (=blee-libs=).
 
 * Files of This Package
 
-| File                                            | What                                             |
-|-------------------------------------------------+--------------------------------------------------|
+| File                                          | What                                             |
+|-----------------------------------------------+--------------------------------------------------|
 | =b:vscode-claude::pkg.el=                       | the entry point: requires the modules, the group |
-| =b:vscode.el=                                   | layer 3's elisp, over =vscode.cs=                |
-| =b:vscode:claude.el=                            | layer 4, over =vscodeClaude.cs=                  |
+| =b:vscode.el=                                   | layer 3's elisp, over =vscode.cs=                  |
+| =b:vscode:claude.el=                            | layer 4, over =vscodeClaude.cs=                    |
 | =b:vscode:claude:aiActivity.el=                 | layer 5, over layer 4                            |
 | =b:vscode:claude:menu.el=                       | the menu, both elisp layers                      |
-| =dblock-vscode-claude.el=                       | the =b:ai:workflow/driver= dblock                |
+| =dblock-vscode-claude.el=                       | the =b:ai:workflow/driver= dblock                  |
 | =images/vscodeClaude-graphviz.pcs=              | the generated figures of this README             |
 | =images/LibreOffice/blee-aiActivity-layers.odg= | the layers and their uses (Draw)                 |
 | =Emacs+VS-Code+Claude.org=                      | the design paper of 2026-10-27                   |
-| =AI-WorkPlan.org=, =AI-DevStatus.org=           | the AI-Activity of this package                  |
+| =AI-WorkPlan.org=, =AI-DevStatus.org=             | the AI-Activity of this package                  |
 | =NextSteps.org=                                 | a critique and suggested next steps (2026-11-01) |
 
 * Related

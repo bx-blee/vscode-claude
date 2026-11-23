@@ -23,34 +23,49 @@ This file is maintained by Claude. Updates are typically triggered by the
 =/bx-status-update= slash command, after major interactions, or before a release.
 
 * Current State
-As of 2026-11-02. The Blee layer that joins Emacs and VS Code Claude for AI-Activity: designed
-(README.org) and built through Stage 14, as six layers (0-5), each usable without those above; here
-are layers 3 to 5 in elisp. Optional: VS Code alone is a complete AI-Activity. Built on 11-02 (Stage
-14): the model of bisos.aiActivity's ModelAndTerminology panel --- an AI-Activity Root (carries the
-tooling) apart from a session's Session-Root (its window's folder), which must be one; native and
-foreign AI-Activities --- as rootOpen, sessionStart, activityReach and the driver's Session and
-Activity rows, over the new layer-0 commands (/bx-session-start, /bx-activity-reach, the two reports)
-and layer 1's activityReport. Before: the aiActivity: links and the driver (Stage 7), session
-selection (12), dblock updates from outside Emacs (6.2). Committed and pushed (b0a405f, 2026-11-02);
-NextSteps.org has the earlier critique. Next: try Stage 14 in Mohsen's Blee (load the three .el files, Update Buf
-Dblocks, session-start), then the commit cycle in a real session (8.3).
+As of 2026-11-23. The Blee layer that joins Emacs and VS Code Claude for AI-Activity, as six
+layers (0-5), each usable without those above; here are layers 3 to 5 in elisp. Optional: VS Code
+alone is a complete AI-Activity. Stages 2-7, 9 and 13 are done and archived
+(=AI-WorkPlan.org_archive=); most of 10-12 too. In daily use: sessions are started and driven from
+Mohsen's Blee (=/bx-session-start ... register==, =/bx-activity-reach <dir>=, the commit walk).
+
+Latest (2026-11-23, WorkPlan 7.3 to 7.5, uncommitted): the workflow driver restructured --- four
+kinds of action, each after a marker (=|E|= Emacs, =|V|= VS Code, =|P|= prompt, =|S|= submitted); an
+Info row (Refresh, the newStart Panel, the Transient, partner-show, the two READMEs); a State line
+that Refresh fills with an overlay; new links context-trim, skills-improve, git-pull-list-add; Close
+in its order; and a last row, =newResume= (7.5), where the work continues on another machine:
+=outputs-pull=, =pull-list=, =pipPkgsStatus=, and the new =/bx-newResume-confirm= (aiTemplates-workFlow;
+the templates base is re-assembled). Close, then newResume: the cycle across machines. Tested in batch
+only (38 checks). Next: in Mohsen's Blee, reload =dblock-vscode-claude.el=, Update Buf Dblocks in a
+WorkPlan, follow Refresh; then a real cycle --- Close here, newResume on another host.
+
+Open: 10.1/10.10 (one owner for "open in VS Code": =blee/open-in= still binds =b:open-in/vscode= to
+its own =xah-open-in-vscode=, which bypasses =vscode.cs=); 11.4/11.5 (a hook from a real session seen
+in Blee); 12.4 (the transient opened interactively); 14.1 (=sessionStart= into a root with no window
+yet); Stage 8 is a LOOP (the full Claude-magit cycle).
 
 * Architecture
-- Python, in bisos-pip/vscodeClaude (the logic; moved out of bisos-pip/aiActivity on 2026-10-31,
-  its AI-WorkPlan 2.1): =vscode.cs= over =vscode_csu.py= (layer 2: VS Code itself) and
-  =vscodeEmacs_csu.py= (layer 3: the partner file, bleeOpenFile, bleeMagit, vscodeBleeLinkInstall),
-  and =vscodeClaude.cs= over =vscodeClaude_csu.py= (layer 4: sessions from =~/.claude/sessions/=,
-  claudePrompt with --submit, hookToEmacs, hooksInstall). The whole setup is one BISOS capability
-  there: =vscodeClaude-cbs.pcs=, its CBM leaf =collective/induct/vscodeClaude= (its WorkPlan 4.1).
-- elisp, here: =b:vscode.el= (layer 3: runner =b:vscode:program/run=, rootOpen and fileOpen (the
-  root's window first), =b:vscode/init= and the partner file
-  =/bisos/var/blee/vscode/partner-<user>.json=); =b:vscode:claude.el= (layer 4: atPrompt, sessions,
-  base dirs and associations, sessionSelect, sends, submit, sessionNew (a new conversation in its
-  root's window), hookHandle and =b:vscode:claude:event-hook=, its transient; names no /bx-
-  command); =b:vscode:claude:aiActivity.el= (layer 5: home, sessionStart / sessionRegister,
-  activityReach and the reports, the commit cycle, the walk, the /bx- transient, the =aiActivity:=
-  link type); =b:vscode:claude:menu.el=, =b:vscode-claude::pkg.el=, =dblock-vscode-claude.el=
-  (=b:ai:workflow/driver=).
+- Python, in bisos-pip/vscodeClaude (the logic; moved out of bisos-pip/aiActivity on 2026-10-31):
+  =vscode.cs= over =vscode_csu.py= (layer 2: VS Code itself) and =vscodeEmacs_csu.py= (layer 3: the
+  partner file, bleeOpenFile, bleeMagit, vscodeBleeLinkInstall), and =vscodeClaude.cs= over
+  =vscodeClaude_csu.py= (layer 4: sessions from =~/.claude/sessions/=, claudePrompt with --submit and
+  --folder, hookToEmacs, hooksInstall). One BISOS capability: =vscodeClaude-cbs.pcs=, CBM leaf
+  =collective/induct/vscodeClaude=.
+- elisp, here:
+  - =b:vscode.el= (layer 3): runner =b:vscode:program/run=; =b:vscode:root-function=, rootOpen,
+    fileOpen (the root's window first); =b:vscode/init= and the partner file
+    =/bisos/var/blee/vscode/partner-<user>.json=.
+  - =b:vscode:claude.el= (layer 4): atPrompt, sessions, base dirs and associations, sessionSelect,
+    sends, submit, sessionNew, =session/targetDescribe=, hookHandle and =b:vscode:claude:event-hook=,
+    its transient. Names no /bx- command.
+  - =b:vscode:claude:aiActivity.el= (layer 5): home and report (=aiActivity.cs -i activityReport=),
+    sessionStart / sessionRegister, activityReach and the reports, the commit cycle (x c, x x, the
+    Stop handler), the walk (x w, x n), the /bx- transient, the =aiActivity:= link type.
+  - =b:vscode:claude:menu.el= (in Blee's Apps menu), =b:vscode-claude::pkg.el=.
+  - =dblock-vscode-claude.el=: the =b:ai:workflow/driver= dblock (rows as a table:
+    =(label :e :v :p :s :tail)=, labels padded to =…:labelWidth= 9), =b:ai:workflow/driver/refresh= and
+    =…:state/text= (the State overlay), =b:ai:workflow/driver/pullListVisit= (newResume's =pull-list=:
+    AI-Outputs.org at the last pull entry still TODO).
 - Adoption: =blee/env3/plus/bnpa:vscode-claude.el=, from =plus-init.el= after =bnpa:aiplus=.
 - Channels (README.org): 1 prompt in (/open URI, xclip paste, optional Enter); 2 results by file
   (.git/CLAUDE_COMMIT_MSG); 3 by call (emacsclient); 4 VS Code to Emacs (bleeOpenFile); 5 Claude Code
@@ -58,59 +73,91 @@ Dblocks, session-start), then the commit cycle in a real session (8.3).
 - Figures: =images/vscodeClaude-graphviz.pcs= (hierarchy, channels, the six layers).
 
 * What Works
-- atPrompt, x c, x x, the commit-message offer in magit (verified by Mohsen in his Blee).
-- confirmRoot and the rootRegister callback, from Mohsen's Blee into this session (2026-10-30).
-- The transient's /bx- commands (Mohsen, 2026-10-30).
-- Batch Emacs: the layer test (31 checks, layer 4 loaded alone first), the link and driver tests
-  (12 and 18 checks); scratchpad files, not kept in the repo (NextSteps.org item 6).
-- A fresh Blee driven by its socket: the partner file written and removed at exit, hookToEmacs
-  delivering Stop and Notification, rootRegister, bleeOpenFile at line and column, the driver dblock.
+- atPrompt, x c, x x, the commit-message offer in magit (Mohsen, in his Blee).
+- Sessions from Blee: =/bx-session-start dir= emacs= register=b:vscode:claude:aiActivity/sessionRegister=
+  (Claude checks =(emacs-pid)= on the socket and registers), 2026-11-03 and 2026-11-22; activity-reach
+  of a foreign AI-Activity with its dir (2026-11-22).
+- The commit walk driven by Claude (2026-11-03): x n replaces the previous repo's magit in its window.
+- VS Code to Blee: Ctrl+K Ctrl+E opens the file in Blee at its line (Mohsen, 2026-11-01).
+- Dblock updates from outside Emacs, in Mohsen's Blee (6.2, 2026-11-01).
+- The driver dblock (the 2026-11-01 layout) in Mohsen's Blee; its links in daily use.
+- Installed for Mohsen: the partner (=vscodePartner= live, his Blee) and the Stop and Notification
+  hooks in =~/.claude/settings.json=.
+- Batch tests (scratchpad files, not kept in the repo): the layer test (49 checks, layer 4 alone
+  first), and the new driver (25 checks: layout, widths, the overlay leaves text and modified flag
+  unchanged, evaporates on rewrite).
 - hookToEmacs with no partner or a stale one: exit 0, no output, about 0.4 s.
-- The commit walk (2026-10-31), made into =/bx-git-commit-walk=; its Blee-side form is WorkPlan 12.5.
-- VS Code to Blee (10.9): the task and key installed by vscodeBleeLinkInstall; Ctrl+K Ctrl+E opens
-  the file in Blee at its line (Mohsen, 2026-11-01).
-- The driver dblock in Mohsen's Blee; dblock updates from outside Emacs, in Mohsen's Blee (6.2,
-  2026-11-01: the aiActivity LibreOffice sub's WorkPlan and dblock-vscode-claude.el).
 
 * What Is Untested
-- Stage 14 in Mohsen's Blee: session-start (a new session in the home's window, registered),
-  activity-reach native and foreign, activity-report; a root with no window yet (opened, waited for).
-- The hooks from a real Claude session (installed in ~/.claude/settings.json on 2026-11-01; read
-  only by sessions started afterwards): the magit raise on Stop, the Notification message (11.4,
-  11.5, 8.3).
-- --submit into a new conversation, and a submitted prompt that starts with =/=.
-- A click on a driver link (aiActivity:) into a real session (7.1, 7.2).
-- confirmHere with a real sub-activity; several sessions in one window; the transient opened
-  interactively (Stage 12).
-- The bnpa adoption in a restarted Blee: loaded in fresh Blees, not yet after a restart of Mohsen's.
+- The 7.4 driver in Mohsen's Blee (reload, Update Buf Dblocks, Refresh).
+- A hook from a real session reaching Blee: no "VS Code Claude (...)" Notification line in Blee's
+  =*Messages*= (only the last 1000 lines are kept); the magit raise on Stop after x c (11.4).
+- A session with the hooks installed and Blee not running (11.5).
+- =sessionStart= into a root with no VS Code window: =windowFocus= recognizes the new window by its X
+  title (bisos-pip/vscodeClaude 5.1), tested only through =vscodeOpenFolder= (14.1).
+- The transient opened interactively, its target line (12.4); several sessions in one window.
+- --submit into a new conversation; a submitted prompt that starts with =/=.
 
 * Key Design Decisions
 - Session-Root, native and foreign (2026-11-02; bisos.aiActivity's ModelAndTerminology panel): a
-  window's folder is its sessions' Session-Root and must be an AI-Activity Root (CLAUDE.md, .claude/,
-  AI-WORKFLOW.org); a buffer's window is opened on its home; a window is focused by true name (VS Code
-  matches spellings) and never replaced; conflicts between sessions are warned, not refused.
-- The Emacs layer is optional and does not interfere: Claude reaches Emacs only when a prompt names
-  it (=emacs=<socket>=) or the user asks; hookToEmacs does nothing without a live partner.
-- Layers: a lower layer never names an upper one (Stage 13); layer 0 states a contract (register=,
-  walk=, gitOpener) instead of naming Blee code.
-- One Emacs partners with one VS Code; a window's folder is a root dir; sessions hold a hierarchy of
-  AI-Activities (root by /bx-confirm-root, more by /bx-confirm-here). Associations: activity dir to
-  session, by walk-up; a base-dir need not be a repo.
-- Python first; one CSXU per elisp layer.
-- You press Enter, unless asked (x x, C-u, the S toggle; after |S| in the driver).
-- b:vscode/init is run by hand, not at startup: a second (test) Blee must not take the partner role.
-- VS Code only: claude-code.el stays Blee's separate terminal-Claude path. No MCP server in this
-  phase (channel 3 is emacsclient); NextSteps.org item 1 suggests revisiting that.
-- Dblock updating from outside Emacs belongs to Blee, not to vscode: =bx-dblock -p emacsSocket== (6.2).
-- The vscode-claude menu is in Blee's Apps menu (blee/env3 legacy/apps-menu.el calls
-  =b:vscode:claude:menu:plugin|install=, guarded); built once, nothing on menu-bar-update-hook.
-- Pointers outside this repo's import chain: the VSCode Blee panel (blee-binders/blee-core
-  =VSCode/_nodeBase_=: VS Code concepts mapped to Emacs); bisos.aiActivity's ModelAndTerminology and
-  newStart panels; NextSteps.org (here, not imported); the design paper =Emacs+VS-Code+Claude.org=
-  (superseded by README.org); the /bx-session-start and /bx-activity-reach commands and
-  "Session-Root, Native and Foreign" in aiTemplates-workFlow (its 6.1); the =blee-pkg-authorship=
-  skill in aiTemplates-DE (WorkPlan 2.1, 2.3); the 6.2 changes in bisos/blee (bin/bx-dblock,
-  bin/bleeLib.sh) and blee/env3 (legacy/bx-dblock-lib.el).
+  window's folder is its sessions' Session-Root and must be an AI-Activity Root; a buffer's window is
+  opened on its home; a window is focused by true name and never replaced; conflicts between sessions
+  are warned, not refused. Working across several AI-Activities in one session is normal.
+- Layers: a lower layer never names an upper one (Stage 13); layer 0 states a contract (=register==,
+  =walk==, gitOpener) instead of naming Blee code. Python first; one CSXU per elisp layer.
+- The Emacs layer is optional and does not interfere: Claude reaches Emacs only when a prompt names it
+  (=emacs=<socket>=) or the user asks; hookToEmacs does nothing without a live partner.
+- One Emacs partners with one VS Code; =b:vscode/init= is run by hand, not at startup (a second, test
+  Blee must not take the partner role).
+- You press Enter, unless asked (x x, C-u, the =S== links).
+- The driver (2026-11-23, 7.3/7.4): actions in E, V, P, S order on every row, within 105 displayed
+  characters; P links where you may type (a P =ai-outputs= with the defect after it is a capture, so no
+  separate capture link); S only where nothing is typed (git-commit-walk, git-pull-list-add); Close in
+  the order of a session's end --- session-verify and skills-improve first (they change files), then
+  the walk, then the pull list (it needs pushed commits). =initiate= stays out: the driver lives in a
+  WorkPlan, which exists only after it. Link prefix =aiActivity:=, not =bx:= (too generic).
+- Moment-to-moment state is shown, not written: the State line is an overlay (=display= over a fixed
+  placeholder), so a Refresh never modifies the WorkPlan or reaches git; per Emacs, per buffer, gone
+  on revert or rewrite. Writing it as text was rejected: churn in 41 committed WorkPlans, meaningless
+  on another machine, and a modified buffer after every Refresh.
+- The newResume row (Mohsen, 2026-11-23, 7.5): named to pair with =newStart=, both rows for the
+  machine you have just come to (=Resume=, =Continue=, =ReNew= considered). Its command is
+  =newResume-confirm=, not =session-resume=: the new session has nothing to do with the one that
+  closed --- only the work continues --- and "session-resume" would say otherwise. Read-only: it
+  checks the pull list and recommends; pulling, reinstalling, releasing, rebuilding are the user's.
+  The repo of the pull lists is pulled first (=outputs-pull=); the pull list itself is the record
+  (its entry marked DONE once pulled).
+- No elisp for =code --add= and =code --diff= (10.4, 10.5; Mohsen 2026-10-30): not part of the Blee
+  workflow; =vscodeAddFolder= and =vscodeDiff= stay in vscode.cs for the shell. Revisit if a use from
+  Blee appears. Likewise no =b:vscode/openUrl= (10.6): Blee reaches VS Code only through vscode.cs.
+- Dblock updating from outside Emacs is Blee's, not vscode's: =bx-dblock -p emacsSocket== uses exactly
+  the socket given, no fallback (6.2).
+- VS Code only: claude-code.el stays Blee's separate terminal-Claude path. No MCP server in this phase
+  (channel 3 is emacsclient).
+- Menus are built once; nothing on =menu-bar-update-hook= (a rebuild there made Blee slow, 2026-10-31).
+
+Found the hard way:
+- Blee sets =straight-check-for-modifications= to nil: a new =.el= file needs its link in straight's
+  build dir (a =straight-rebuild-package=), else Blee's startup stops (13.1).
+- A Blee started before Stage 13 kept magit's =x= on the old =b:vscode:claude:magit/dispatch= (no x n);
+  a restart, or one =define-key=, fixes it.
+- VS Code matches a folder by the spelling it was opened with: =/bxRepos/...= and its true name are two
+  folders to it (a plain =code <truename>= opened a second window); =windowFocus= passes the open
+  window's own spelling (from its storage.json).
+- Bash files that declare =major-mode: shellscript-mode= made every bash dblock update fail silently
+  (fixed in =blee:buf:re-major-mode=); =org-dblock-update-file-bx= binds =debug-on-error= to nil when
+  called non-interactively, else Blee's debugger holds the client in =*Backtrace*= (6.2).
+- An org-mode archive in Blee saves the archive file at once but leaves the WorkPlan buffer modified:
+  editing the WorkPlan on disk meanwhile loses one side (2026-11-22; it left 4.1 archived twice). Check
+  for unsaved buffers before writing a WorkPlan.
+
+Pointers outside this repo's import chain: the VSCode Blee panel (blee-binders/blee-core
+=VSCode/_nodeBase_=); bisos.aiActivity's ModelAndTerminology and newStart panels; NextSteps.org (here,
+not imported); the design paper =Emacs+VS-Code+Claude.org= (superseded by README.org); the
+/bx-session-start and /bx-activity-reach commands and "Session-Root, Native and Foreign" in
+aiTemplates-workFlow (its 6.1); the =blee-pkg-authorship= skill in aiTemplates-DE (its WorkPlan 2.1,
+2.3); the 6.2 changes in bisos/blee (bin/bx-dblock, bin/bleeLib.sh) and blee/env3
+(legacy/bx-dblock-lib.el); archived TODOs in =AI-WorkPlan.org_archive= (=/bx-archive-read=).
 
 # Local Variables:
 # eval: (setq-local toc-org-max-depth 4)

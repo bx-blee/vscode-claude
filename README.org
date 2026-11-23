@@ -76,8 +76,6 @@ with its TODO anchor in [[file:./AI-WorkPlan.org][AI-WorkPlan.org]].
   - [[#from-vs-code-to-blee][From VS Code to Blee]]
   - [[#claude-code-hooks][Claude Code Hooks]]
   - [[#org-links-and-the-workflow-driver][Org Links and the Workflow Driver]]
--  [[#revert-buffer--readwr--show-all--overview--content--1--sq-save-quit-bury-magit][revert-buffer | read/wr | Show-All  Overview  Content | (1) | S&Q Save Quit Bury Magit]]
--  [[#ai-workflow-driver--bx--commands----after-s-submitted][AI Workflow Driver :: /bx- commands    *After |S|: submitted*]]
 - [[#deployment-topologies][Deployment Topologies]]
 - [[#design-principles][Design Principles]]
 - [[#vscode-claude-installation][vscode-claude Installation]]
@@ -516,31 +514,58 @@ request recorded for the Stop hook), =git-commit-walk= through =x w=, and =todo-
 without an anchor ask which open TODO of the activity's WorkPlan.
 
 The =b:ai:workflow/driver= dblock, near the top of every =AI-WorkPlan.org=, is a panel of them;
-=Update Buf Dblocks= in Blee fills it. Each label is the command it sends; the links after =|S|=
-(bold, =S== in their path) are submitted. A control line comes first, unless =:controls nil=:
+=Update Buf Dblocks= in Blee fills it. Each label is the command it sends. Its actions are of four
+kinds, each after its bold marker, always in this order: =|E|= Emacs (elisp, or a shell command run
+from Blee), =|V|= VS Code, =|P|= a =/bx-= prompt pasted for you to complete and send, =|S|= the same
+prompt submitted (=S== in its path). A control line comes first, unless =:controls nil=:
 
 #+begin_example
-*  revert-buffer | read/wr | Show-All  Overview  Content | (1) | S&Q Save Quit Bury Magit
-*  AI Workflow Driver :: /bx- commands    *After |S|: submitted*
-  newStart :: Panel | setup-check | setup | partner-init | partner-show | session-start
-  VS Code  :: Visit | root-window | Transient
-  Session  :: select-session | session-start | session-report  |S|  session-start
-  Activity :: activity-reach | activity-report  |S|  activity-reach
-  Read     :: status-read | archive-read | ai-outputs  |S|  status-read | archive-read | ai-outputs
-  Work     :: todo-do | todo-done  |S|  todo-do | todo-done
-  Record   :: status-update | archive-update  |S|  status-update | archive-update
-  Git      :: git-commit-msg | git-commit-walk  |S|  git-commit-msg
-  Close    :: git-uncommitted-list | session-verify  |S|  git-uncommitted-list | session-verify
+ *  revert-buffer | read/wr | Show-All  Overview  Content | (1) | S&Q Save Quit Bury Magit
+ *  AI Workflow Driver :: /bx- commands  --  |E| Emacs  |V| VS Code  |P| prompt  |S| submitted
+  State     :: (Refresh, on the Info line, shows the session)
+  Info      :: |E| Refresh | Panel | Transient | partner-show | vscode-claude-README | aiActivity-README
+  newStart  :: |E| setup-check | setup | partner-init  |P| session-start  |S| session-start
+  VS Code   :: |V| Visit | root-window   <- Ctrl+K Ctrl+E: this file in Blee, at its line
+  Session   :: |E| select-session  |P| session-start | session-report  |S| session-start
+  Activity  :: |P| activity-reach | activity-report  |S| activity-reach
+  Read      :: |P| status-read | archive-read | ai-outputs  |S| status-read | archive-read | ai-outputs
+  Work      :: |P| todo-do | todo-done  |S| todo-do | todo-done
+  Record    :: |P| status-update | archive-update | context-trim  |S| status-update | archive-update
+  Git       :: |P| git-uncommitted-list | git-commit-msg  |S| git-uncommitted-list | git-commit-msg
+  Close     :: |P| session-verify | skills-improve  |S| git-commit-walk | git-pull-list-add
+  newResume :: |E| outputs-pull | pull-list | pipPkgsStatus  |P| newResume-confirm  |S| newResume-confirm
 #+end_example
 
-The first two rows are for starting from scratch and for VS Code itself, not /bx- commands:
-newStart opens bisos.aiActivity's newStart panel (the steps of a start), runs
-=vscodeClaude-assemble.cs -i fullCheck= (=setup-check=, read-only) or =-i fullUpdate= (=setup=,
-once per platform, idempotent) as =bashRun:= links, and declares this Emacs VS Code's partner
-(=partner-init=: =b:vscode/init=; =partner-show=), and ends with =session-start=, a session at this
-WorkPlan's home. VS Code: =Visit= opens this file in its root's window (=b:vscode/fileOpen=),
-=root-window= brings that window forward or opens it (=b:vscode/rootOpen=), =Transient= is
-=b:vscode:claude/dispatch=.
+- State, after Refresh (the first item of Info), shows over its placeholder:
+  : State     :: 2026-11-23 10:42  -> <session> (idle, 2m ago) at <folder>  --  partner: this Emacs
+  the time of the Refresh, the session a prompt from this buffer goes to (as the transient's title
+  says it, with a note when it is not at this buffer's root), and whether this Emacs is VS Code's
+  partner. It is an Emacs overlay, not text: the file and the buffer's text do not change, so a
+  Refresh leaves nothing to save or commit, and the state is gone when the buffer is closed or the
+  dblock rewritten --- Refresh again (=b:ai:workflow/driver/refresh=).
+- Info: Refresh, bisos.aiActivity's newStart panel (the steps of a start), the transient
+  (=b:vscode:claude/dispatch=), the partner Emacs (=b:vscode/partnerShow=), and the READMEs of this
+  package and of bisos.aiActivity.
+- newStart, for starting from scratch: =vscodeClaude-assemble.cs -i fullCheck= (=setup-check=,
+  read-only) or =-i fullUpdate= (=setup=, once per platform, idempotent) as =bashRun:= links, this
+  Emacs declared VS Code's partner (=partner-init=: =b:vscode/init=), then =session-start=, a
+  session at this WorkPlan's home.
+- VS Code: =Visit= opens this file in its root's window (=b:vscode/fileOpen=), =root-window= brings
+  that window forward or opens it (=b:vscode/rootOpen=); the way back is a key in VS Code (see "From
+  VS Code to Blee").
+- Read: =ai-outputs= lists =AI-Outputs.org='s index; as a prompt, with the defect typed after it,
+  it captures one.
+- Git commits at any time: what is uncommitted, a commit message for this repo.
+- Close is the end of a session, in its order: =session-verify= and =skills-improve= first (they may
+  change files), then the commit walk, then the pull list for other hosts (it needs the commits
+  pushed).
+- newResume is where the work continues, on another machine, in a new session: the pair of newStart.
+  =outputs-pull= pulls the repo of =AI-Outputs.org= (=/bxRepos/blee-binders/evolution=), which holds the
+  pull lists; =pull-list= opens it at the latest list still to pull (its "All of them" pulls the
+  repos; =b:ai:workflow/driver/pullListVisit=); =pipPkgsStatus= shows which pip packages need a
+  reinstall or a PyPI release; =newResume-confirm= has Claude check that the list arrived (each repo at
+  its commit) and say what needs a reinstall, a release, a CBM rebuild. Close, then newResume: the
+  cycle across machines.
 
 The seed WorkPlan (aiTemplates-workFlow) carries the dblock empty: layer 0 declares the slot, layer 5
 fills it. The earlier names =b:ai:vscodeClaude/workflow= and =…/workflowDriver= still work. The same

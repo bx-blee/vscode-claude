@@ -12,16 +12,18 @@
 
 ####+BEGIN: b:ai:workflow/driver
 *  [[elisp:(revert-buffer)][revert-buffer]] | [[elisp:(toggle-read-only)][read/wr]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[elisp:(delete-other-windows)][(1)]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]] [[elisp:(save-buffer)][Save]] [[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]]
-*  [[elisp:(org-cycle)][AI Workflow Driver :: /bx- commands]]    *After |S|: submitted*
-  newStart :: [[elisp:(blee:bnsm:panel-goto "/bisos/panels/bisos-core/bisos-pip/bisos.aiActivity/newStart/_nodeBase_")][Panel]] | [[bashRun:vscodeClaude-assemble.cs -i fullCheck][setup-check]] | [[bashRun:vscodeClaude-assemble.cs -i fullUpdate][setup]] | [[elisp:(b:vscode/init)][partner-init]] | [[elisp:(b:vscode/partnerShow)][partner-show]] | [[aiActivity:session-start][session-start]]
-  VS Code  :: [[elisp:(b:vscode/fileOpen)][Visit]] | [[elisp:(b:vscode/rootOpen)][root-window]] | [[elisp:(b:vscode:claude/dispatch)][Transient]]
-  Session  :: [[elisp:(b:vscode:claude/sessionSelect)][select-session]] | [[aiActivity:session-start][session-start]] | [[aiActivity:session-report][session-report]]  *|S|*  [[aiActivity:S=session-start][session-start]]
-  Activity :: [[aiActivity:activity-reach][activity-reach]] | [[aiActivity:activity-report][activity-report]]  *|S|*  [[aiActivity:S=activity-reach][activity-reach]]
-  Read     :: [[aiActivity:status-read][status-read]] | [[aiActivity:archive-read][archive-read]] | [[aiActivity:ai-outputs][ai-outputs]]  *|S|*  [[aiActivity:S=status-read][status-read]] | [[aiActivity:S=archive-read][archive-read]] | [[aiActivity:S=ai-outputs][ai-outputs]]
-  Work     :: [[aiActivity:todo-do][todo-do]] | [[aiActivity:todo-done][todo-done]]  *|S|*  [[aiActivity:S=todo-do][todo-do]] | [[aiActivity:S=todo-done][todo-done]]
-  Record   :: [[aiActivity:status-update][status-update]] | [[aiActivity:archive-update][archive-update]]  *|S|*  [[aiActivity:S=status-update][status-update]] | [[aiActivity:S=archive-update][archive-update]]
-  Git      :: [[aiActivity:git-commit-msg][git-commit-msg]] | [[aiActivity:git-commit-walk][git-commit-walk]]  *|S|*  [[aiActivity:S=git-commit-msg][git-commit-msg]]
-  Close    :: [[aiActivity:git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:session-verify][session-verify]]  *|S|*  [[aiActivity:S=git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:S=session-verify][session-verify]]
+*  [[elisp:(org-cycle)][AI Workflow Driver :: /bx- commands]]  --  *|E|* Emacs  *|V|* VS Code  *|P|* prompt  *|S|* submitted
+  State    :: (Refresh, on the Info line, shows the session)
+  Info     :: *|E|* [[elisp:(b:ai:workflow/driver/refresh)][Refresh]] | [[elisp:(blee:bnsm:panel-goto "/bisos/panels/bisos-core/bisos-pip/bisos.aiActivity/newStart/_nodeBase_")][Panel]] | [[elisp:(b:vscode:claude/dispatch)][Transient]] | [[elisp:(b:vscode/partnerShow)][partner-show]] | [[file:/bisos/git/bxRepos/blee/vscode-claude/README.org][vscode-claude-README]] | [[file:/bisos/git/bxRepos/bisos-pip/aiActivity/README.org][aiActivity-README]]
+  newStart :: *|E|* [[bashRun:vscodeClaude-assemble.cs -i fullCheck][setup-check]] | [[bashRun:vscodeClaude-assemble.cs -i fullUpdate][setup]] | [[elisp:(b:vscode/init)][partner-init]]  *|P|* [[aiActivity:session-start][session-start]]  *|S|* [[aiActivity:S=session-start][session-start]]
+  VS Code  :: *|V|* [[elisp:(b:vscode/fileOpen)][Visit]] | [[elisp:(b:vscode/rootOpen)][root-window]]   <- Ctrl+K Ctrl+E: this file in Blee, at its line
+  Session  :: *|E|* [[elisp:(b:vscode:claude/sessionSelect)][select-session]]  *|P|* [[aiActivity:session-start][session-start]] | [[aiActivity:session-report][session-report]]  *|S|* [[aiActivity:S=session-start][session-start]]
+  Activity :: *|P|* [[aiActivity:activity-reach][activity-reach]] | [[aiActivity:activity-report][activity-report]]  *|S|* [[aiActivity:S=activity-reach][activity-reach]]
+  Read     :: *|P|* [[aiActivity:status-read][status-read]] | [[aiActivity:archive-read][archive-read]] | [[aiActivity:ai-outputs][ai-outputs]]  *|S|* [[aiActivity:S=status-read][status-read]] | [[aiActivity:S=archive-read][archive-read]] | [[aiActivity:S=ai-outputs][ai-outputs]]
+  Work     :: *|P|* [[aiActivity:todo-do][todo-do]] | [[aiActivity:todo-done][todo-done]]  *|S|* [[aiActivity:S=todo-do][todo-do]] | [[aiActivity:S=todo-done][todo-done]]
+  Record   :: *|P|* [[aiActivity:status-update][status-update]] | [[aiActivity:archive-update][archive-update]] | [[aiActivity:context-trim][context-trim]]  *|S|* [[aiActivity:S=status-update][status-update]] | [[aiActivity:S=archive-update][archive-update]]
+  Git      :: *|P|* [[aiActivity:git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:git-commit-msg][git-commit-msg]]  *|S|* [[aiActivity:S=git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:S=git-commit-msg][git-commit-msg]]
+  Close    :: *|P|* [[aiActivity:session-verify][session-verify]] | [[aiActivity:skills-improve][skills-improve]]  *|S|* [[aiActivity:S=git-commit-walk][git-commit-walk]] | [[aiActivity:S=git-pull-list-add][git-pull-list-add]]
 
   ####+END:
 
@@ -94,168 +96,24 @@ Goal: A placeholder for misc ideas and TODOs
 
 * Stage 2: Capture and Clean Up The Starting Point
 
-Goal: This directory is a starting point copy from /bxRepos/blee/mtdt-names/ plus various other copies and renames
+Goal: Create a starting point based on this directory as a starting point copy from /bxRepos/blee/mtdt-names/ plus various other copies and renames
 
 
-* Stage 2 TODOs
+* Stage 2 TODOs --- Accomplished -- Archived.
 ** +
-** TODO [#A] <<2.1>> Understand and Cleanup The Starting Point and The AI-Activity :aiAndMe:
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-Consider the following as related and revistable -- Also read the rest of Stage 2 and other satges and [[Overview]]
-- All the elisp files are  /bxRepos/blee/mtdt-names/ . They need to be renamed and rewritten.
-- The Blee Package AI-Activity.org needs to be improved/re-written and maintained as we move forward.
-- Likely new skills need to be developed as we move forward.
-- This package is the central place for maintenance in blee of all things vscode and claude. Dblocks, yasnipets, menus
------ Results: ------
-Decisions (Mohsen, 2026-10-29): prefix =b:= (not =bap:=); files as below; 2.4 done together with 2.1.
-- Elisp, rewritten (the mtdt/bbdb content is gone):
-  - =b:vscode.el= --- the vscode layer; a skeleton until vscodeClaude.cs has a vscode layer (Stage 4).
-  - =b:vscode:claude.el= --- the vscodeClaude layer: =b:vscode:claude/atPrompt=,
-    =b:vscode:claude:aiActivity/commitMsgGenerate= (x c), =b:vscode:claude:magit:commitMsg/offer=,
-    =…/markUsed=, the transient =b:vscode:claude:magit/dispatch=, =b:vscode:claude:magit|config=.
-  - =b:vscode:claude:menu.el= --- replaces =b:vscode:menu.el= (deleted).
-  - =b:vscode-claude::pkg.el= --- entry point, as =b:aiplus::pkg.el=.
-  - =dblock-vscode-claude.el= --- now only =b:ai:vscodeClaude/workflow=; the copies of
-    =b:prog:file/proclamations= and =…/particulars= (which would have overridden env3's) are removed.
-    Its =b:prog:file/particulars= dblock body still names dblock-comeega-prog.el: regenerate in Blee.
-- =package.recipe= → =vscode-claude= / =bx-blee/vscode-claude=; =mtdt-README.org= deleted (README is
-  [[2.3]]).
-- =AI-Activity.org= (shared: =bxexamples/aiTemplates-DE/blee-pkg/=) rewritten: what a blee-pkg is,
-  structure, naming, bnpa absorption, conventions, skills.
-- Verified: =emacs-31.1 --batch= with Blee's straight build dir and stubs loads the package;
-  =b:vscode:claude:magit|config= sets the hooks and =x=; the menu builds; =atPrompt='s error path works.
-  Not yet verified in a restarted Blee.
-  2026-11-01: that particulars dblock body regenerated in Mohsen's Blee from outside Emacs (6.2).
-- Candidate skills (not written): =blee-pkg-authorship= (structure, naming, bnpa absorption,
-  batch testing --- now in AI-Activity.org; extract when it grows).
-2026-10-31: written. aiTemplates-DE: new skill =blee-pkg-authorship= (layout, elisp-over-CSXU
-layering and the runner, COMEEGA by hand, menus built once, transients and magit, bnpa, batch and
-fresh-Blee tests, the three-repo commit order); blee-pkg AI-Activity.org gained rules (one layer per
-CSXU, menus built once, fresh-Blee testing, the commit order, the README frame);
-=bs-blee-emacs-server= gained the socket sources, "Test in a fresh Blee" and "Diagnose a slow Blee";
-=writing-cs-commands= (opResults=None, argsMin and parChoices not enforced, exit 0 on refusal, a
-command run by another program), =readme-authorship= (several READMEs: one owner per table, anchors),
-=graphviz-authoring= (the vanishing cluster, duplicate style). aiTemplates-workFlow:
-=bx-ai-commands-authorship= (rename by alias; new commands need a new session). The skills figure
-(aiActivity's aiEcosystemTree) has a Blee group. Needs assemblyUpdate of the base.
-
-** TODO [#A] <<2.2>> Setup /bisos/blee/env3/plus/bnpa:vscode-claude.el - it is a copy of bnpa:aiplus.el
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-This is how a blee pkg is absorbed into blee.
-It needs to be captured in AI-Activity.org and prehaps a skill as well.
------ Results: ------
-Partly done with [[2.4]] (2026-10-29): =bnpa:vscode-claude.el= adapted from the aiplus copy
-(=config|main= requires =b:vscode-claude::pkg= and runs =b:vscode:claude:magit|config= after magit);
-=plus-init.el= runs it after =bnpa:aiplus=. Captured in AI-Activity.org, "How a Package Is Absorbed".
-Open: verify in a restarted Blee; whether a skill is warranted.
-
-** TODO [#A] <<2.3>> Write a README.org that describes what we are doing here
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-- Look at README.org of sibling blee packages
-- Combine 
------ Results: ------
-2026-10-30: README.org written as both design and documentation, in the frame of aiplus/README.org
-(panel line, Overview, TOC, Installation, footer). The design between: the model (Emacs, one VS Code,
-windows, Claude sessions, the AI-Activity hierarchy of root and here), the partnership (b:vscode/init,
-partner file /bisos/var/blee/vscode/partner-<user>.json) and associations (activity dir → session,
-by walk-up; the optional /bx-confirm-root callback), the four channels, the layers and the command
-tables of vscode.cs / vscodeClaude.cs, use, topologies, principles. "The Emacs layer is optional" is
-stated first. Unbuilt parts are marked (planned).
-- Figures: images/vscodeClaude-graphviz.pcs (hierarchy, channels, layers), all formats rendered;
-  images/README.org lists them.
-- Emacs+VS-Code+Claude.org: a line at the top saying README.org supersedes it as the design.
-- With it, in aiTemplates-workFlow: /bx-confirm0 renamed /bx-confirm-root (optional dir=, emacs=,
-  callback=yes; bx-confirm0 kept as an alias), AI-WORKFLOW.org's "Root and Here" section, base → root.
-- Not yet TODOs: b:vscode/init and the partner file, confirmRoot / confirmHere / rootRegister,
-  bleeOpenFile and vscodeBleeLinkSnippet (10.9). The README's dblock-free TOC is hand-written; toc-org
-  regenerates it on save in Blee.
-2026-10-30, after Mohsen's review: the Overview opens on AI-Activity (beyond the chatbot model,
-pure VS Code Claude can be used with it, described in bisos.aiActivity) and this package as the Blee
-layer that augments it. Every table under 105 (orgTableAlign.py); the full command tables now live
-only in aiActivity's README, which this one links to. aiActivity's README: its VS Code section split
-into one table per CSXU, a "Root and Here" subsection under its topology, and links back here (also
-part of [[9.1]]).
-
-** TODO [#A] <<2.4>> Move code from /bisos/blee/env3/plus/bcpg:claudePlus.el to this package
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-And also perhaps bcpg:magitPlus.el
------ Results: ------
-Done with [[2.1]] (2026-10-29). In =blee/env3=:
-- =bcpg:claudePlus.el=: the "VS Code Claude Prompt" section (=bap:claudeSessions/prompt=, its vars)
-  removed;
-  the claude-code.el adoption (terminal Claude, ghostel shim) stays --- it is not VS Code.
-- =bcpg:magitPlus.el=: the "Claude's Commit Message" section and the x/hook lines of =config|main=
-  removed;
-  the 69/90 commit settings stay (general BISOS, not Claude).
-- Renames: =bap:claudeSessions/prompt= → =b:vscode:claude/atPrompt=;
-  =bap:magit:claudeCommitMsg/request= → =b:vscode:claude:aiActivity/commitMsgGenerate=;
-  =bap:magit:claudeCommitMsg/{offer,markUsed}= → =b:vscode:claude:magit:commitMsg/{offer,markUsed}=;
-  =bap:magit:claudeDispatch= → =b:vscode:claude:magit/dispatch=. Behaviour unchanged (still
-  =claudeSessions.cs -i prompt=).
-- Needed [[2.2]]'s wiring so x c keeps working: =bnpa:vscode-claude.el= adapted and added to
-  =plus-init.el=.
-- Historical mentions of the =bap:= names remain in bisos-pip/aiActivity's AI-WorkPlan/AI-DevStatus.
-
 ** -
 
 * Stage 4: Go to bisos.aiActivity and do the renamings from claudeSessions.cs to vscodeClaude.cs 
 
 <<Stage 4>>
 
-Goal: Functionality wont be changed. Just renamed
+Goal: Functionality wont be changed. Just renamed from claudeSessions.cs to vscodeClaude.cs 
 
+b:vscode:claude/atPrompt is a thin layer over bisos.aiActivity vscodeClaude.cs -i claudePrompt
 
-* Stage 4 TODOs b:vscode:claude/atPrompt is a thin layer over bisos.aiActivity vscodeClaude.cs -i claudePrompt
+* Stage 4 TODOs --- Accomplished -- Archived.
 ** +
-** TODO [#A] <<4.1>> Renamings from claudeSessions.cs to vscodeClaude.cs
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: High
-:REPO: /bxRepos/bisos-pip/aiActivity
-:BASE: /bxRepos/bisos-pip/aiActivity/py3
-:FOUND: <2026-10-29 Thu 17:02>
-:END:
-- Do the work at /bxRepos/bisos-pip/aiActivity/AI-WorkPlan.org, as its 22.1 (Stage 22).
-- Decided 2026-10-29: two CSUs, =vscode_csu.py= (the vscode layer) and =vscodeClaude_csu.py=
-  (the Claude layer), each with its own examples; the CSXU =vscodeClaude.cs= stays small.
------ Results: ------
-2026-10-29: done in bisos-pip/aiActivity, recorded under its 22.1. Here: =b:vscode:claude.el= runs
-=vscodeClaude.cs -i claudePrompt= (=b:vscode:claude:program=); needs aiActivity reinstalled first.
-The vscode layer's first command, =vscodeOpenUri=, is the Python half of [[10.6]].
-Revised 2026-10-29: one CSXU per layer --- =vscode.cs= under =b:vscode.el=, =vscodeClaude.cs= under
-=b:vscode:claude.el=.
-
 ** -
-
 
 * Stage 5: Verify that b:vscodeClaude:atPrompt Works
 
@@ -263,34 +121,10 @@ Goal: After having rearranged and restructured the code, the primary (emacs -> v
 
 It has an optional sessionId
 
+b:vscode:claude/atPrompt is a thin layer over bisos.aiActivity vscodeClaude.cs -i claudePrompt
 
-* Stage 5 TODOs b:vscode:claude/atPrompt is a thin layer over bisos.aiActivity vscodeClaude.cs -i claudePrompt
+* Stage 5 TODOs --- Accomplished - Archived.
 ** +
-** TODO [#A] <<5.1>> Implement and test b:vscode:claude/atPrompt
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-- Verify that exisiting functional code that has been rearranged still works.
-- Test it as a command.
------ Results: ------
-
-** TODO [#A] <<5.2>> Go back to [[Stage 4]] and its examples and add invokation of Cmnd through Emacs
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: /bxRepos/bisos-pip/aiActivity
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-- That would test the full integration
------ Results: ------
-
 ** -
 
 * Stage 6: With b:vscode:claude/atPrompt Tell Claude Running Emacs's Server Socket Name -- b:vscode:claude/thisEmacsServer
@@ -298,154 +132,198 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 Goal: Make the  vscodeClaude and Blee/Emacs  communication bidirectional
 
 
-* Stage 6 TODOs 
+* Stage 6 TODOs --- Accomplished -- Archived.
 ** +
-** TODO [#A] <<6.1>> Implement b:vscode:claude/thisEmacsServer and Associated Claude Skills
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-- We give Claude our socket and ask it to run an emacsclient with it to verify that Claude can access us
------ Results: ------
-
-** TODO [#A] <<6.2>> Verify that Claude can Update Dblocks Through Emacs
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-- Improve the dblock skill if needed
-- Plan (2026-11-01, with Mohsen): not a vscode command --- dblock updating is Blee's.
-  - bx-dblock (bisos/blee bin, vis_thisEmacsClient in bleeLib.sh): optional -p emacsSocket=<path or
-    name>; used exactly when given (no fallback to the default server socket); without it, as before.
-  - org-dblock-update-file-bx (blee/env3 legacy/bx-dblock-lib.el), for every caller: refuse a buffer
-    with unsaved edits or out of date with its file; leave a buffer that was already open open;
-    leave global-auto-revert-mode alone; return updated / refused / error instead of ignore-errors.
-  - The caller supplies the socket (emacs= of a prompt, or the partner file); bx-dblock names no
-    upper layer. Test in a fresh Blee first: figProc.sh (bash), an AI-WorkPlan.org (org), a .cs.
------ Results: ------
-2026-11-01 (Claude): built as planned, plus what the tests found.
-- bisos/blee bin: bx-dblock declares emacsSocket (and an example); bleeLib.sh vis_thisEmacsClient
-  uses it when set: a path or a name, which must be a socket with an Emacs listening on it; the
-  emacsclient is matched to that Emacs (pid from ss), not to the one around the shell (from outside
-  Emacs that gave xfce4-terminal). Unset: unchanged.
-- blee/env3 legacy/bx-dblock-lib.el: org-dblock-update-file-bx as planned; called non-interactively
-  it binds debug-on-error and debug-on-signal to nil (Blee's debugger otherwise held the client in
-  *Backtrace*); on error, a buffer it opened is dropped unsaved; org's per-dblock failures (only
-  logged by org-map-dblocks) are counted from *Messages* into the result.
-- blee:buf:re-major-mode: a major-mode that is not a command falls back to auto-mode-alist. Bash
-  files carry "#major-mode: shellscript-mode" (safe in custom.el), so major-mode was a non-command
-  and every bash dblock update failed --- silently, under the old ignore-errors. The regenerated
-  end-of-file dblock now says sh-mode.
-- Tested in fresh Blees: both figProc.sh files (This File now the LibreOffice paths), the
-  aiActivity LibreOffice sub's AI-WorkPlan.org, vscodeClaude.cs (its only change, the csInfo
-  version stamp, restored); refused on unsaved edits; an open buffer updated and left open;
-  global-auto-revert-mode untouched; a missing writer reported. The path written is the one
-  passed: give /bxRepos/... paths. Not yet: bleeclient and emlVisit (share vis_thisEmacsClient,
-  unchanged when emacsSocket is unset).
-2026-11-01, in Mohsen's Blee (bx-dblock-lib.el loaded by him; socket from the partner file): the
-aiActivity LibreOffice sub's AI-WorkPlan.org (no change) and dblock-vscode-claude.el (its particulars
-now name this file, see 2.1), both open and unmodified there: updated in place, left open.
-Skills (aiTemplates-DE mother/_skills, 2026-11-01): bs-blee-emacs-server (bx-dblock -p emacsSocket=
-and its results, replacing the G_emacsServerPid recipe; the debugger trap; a stuck fresh Blee),
-dblock-authoring and comeega-authorship (regenerate through a Blee, not by hand), writing-cs-commands
-(classHead through bx-dblock; programs resolved without "." in PATH), cbm-authorship (induct
-capabilities; materialize= is only printed), readme-authorship (the :TOC: heading line).
-
 ** -
 
 * Stage 7: With b:vscode:claude/atPrompt Create a set of org Commands in b:ai:vscodeClaude/workflow dblock
 
-A starting point but irrelevant starting point for  b:ai:vscodeClaude/workflow is in  ./dblock-vscode-claude.el
+Current dblcok is: 
 
-As an example of how org commands in a dblock work see::  blee:bxPanel:topPanelControls
+ b:ai:workflow/driver
+ [[elisp:(revert-buffer)][revert-buffer]] | [[elisp:(toggle-read-only)][read/wr]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[elisp:(delete-other-windows)][(1)]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]] [[elisp:(save-buffer)][Save]] [[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]]
+ [[elisp:(org-cycle)][AI Workflow Driver :: /bx- commands]]    *After |S|: submitted*
+  newStart :: [[elisp:(blee:bnsm:panel-goto "/bisos/panels/bisos-core/bisos-pip/bisos.aiActivity/newStart/_nodeBase_")][Panel]] | [[bashRun:vscodeClaude-assemble.cs -i fullCheck][setup-check]] | [[bashRun:vscodeClaude-assemble.cs -i fullUpdate][setup]] | [[elisp:(b:vscode/init)][partner-init]] | [[elisp:(b:vscode/partnerShow)][partner-show]] | [[aiActivity:session-start][session-start]]
+  VS Code  :: [[elisp:(b:vscode/fileOpen)][Visit]] | [[elisp:(b:vscode/rootOpen)][root-window]] | [[elisp:(b:vscode:claude/dispatch)][Transient]]
+  Session  :: [[elisp:(b:vscode:claude/sessionSelect)][select-session]] | [[aiActivity:session-start][session-start]] | [[aiActivity:session-report][session-report]]  *|S|*  [[aiActivity:S=session-start][session-start]]
+  Activity :: [[aiActivity:activity-reach][activity-reach]] | [[aiActivity:activity-report][activity-report]]  *|S|*  [[aiActivity:S=activity-reach][activity-reach]]
+  Read     :: [[aiActivity:status-read][status-read]] | [[aiActivity:archive-read][archive-read]] | [[aiActivity:ai-outputs][ai-outputs]]  *|S|*  [[aiActivity:S=status-read][status-read]] | [[aiActivity:S=archive-read][archive-read]] | [[aiActivity:S=ai-outputs][ai-outputs]]
+  Work     :: [[aiActivity:todo-do][todo-do]] | [[aiActivity:todo-done][todo-done]]  *|S|*  [[aiActivity:S=todo-do][todo-do]] | [[aiActivity:S=todo-done][todo-done]]
+  Record   :: [[aiActivity:status-update][status-update]] | [[aiActivity:archive-update][archive-update]]  *|S|*  [[aiActivity:S=status-update][status-update]] | [[aiActivity:S=archive-update][archive-update]]
+  Git      :: [[aiActivity:git-commit-msg][git-commit-msg]] | [[aiActivity:git-commit-walk][git-commit-walk]]  *|S|*  [[aiActivity:S=git-commit-msg][git-commit-msg]]
+  Close    :: [[aiActivity:git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:session-verify][session-verify]]  *|S|*  [[aiActivity:S=git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:S=session-verify][session-verify]]
 
-Each cmnd just sends a b:vscode:claude/atPrompt with a bx-command
+The next dblock should look like this:
 
-What is below is just a start and will evolve.
-<<The order and scope of commands>>  can be:
+b:ai:workflow/driver
+ [[elisp:(revert-buffer)][revert-buffer]] | [[elisp:(toggle-read-only)][read/wr]] | [[elisp:(show-all)][Show-All]]  [[elisp:(org-shifttab)][Overview]]  [[elisp:(progn (org-shifttab) (org-content))][Content]] | [[elisp:(delete-other-windows)][(1)]] | [[elisp:(progn (save-buffer) (kill-buffer))][S&Q]] [[elisp:(save-buffer)][Save]] [[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]]
+ [[elisp:(org-cycle)][AI Workflow Driver :: /bx- commands]]  --   *After |V|: VSCode --  *After |P|: prompt* --  *After |S|: submitted*
+  newStart :: [[elisp:(blee:bnsm:panel-goto "/bisos/panels/bisos-core/bisos-pip/bisos.aiActivity/newStart/_nodeBase_")][Panel]] | [[bashRun:vscodeClaude-assemble.cs -i fullCheck][setup-check]] | [[bashRun:vscodeClaude-assemble.cs -i fullUpdate][setup]] | [[elisp:(b:vscode/init)][partner-init]] | [[elisp:(b:vscode/partnerShow)][partner-show]] *|P|* [[aiActivity:session-start][session-start]]  *|S|*  [[aiActivity:S=session-start][session-start]]
+  VS Code  :: [[elisp:(b:vscode/fileOpen)][Visit]] | [[elisp:(b:vscode/rootOpen)][root-window]] | [[elisp:(b:vscode:claude/dispatch)][Transient]]
+  Session  :: [[elisp:(b:vscode:claude/sessionSelect)][select-session]] | [[aiActivity:session-start][session-start]] | [[aiActivity:session-report][session-report]]  *|S|*  [[aiActivity:S=session-start][session-start]]
+  Activity :: [[aiActivity:activity-reach][activity-reach]] | [[aiActivity:activity-report][activity-report]]  *|S|*  [[aiActivity:S=activity-reach][activity-reach]]
+  Read     :: [[aiActivity:status-read][status-read]] | [[aiActivity:archive-read][archive-read]] | [[aiActivity:ai-outputs][ai-outputs]]  *|S|*  [[aiActivity:S=status-read][status-read]] | [[aiActivity:S=archive-read][archive-read]] | [[aiActivity:S=ai-outputs][ai-outputs]]
+  Work     :: [[aiActivity:todo-do][todo-do]] | [[aiActivity:todo-done][todo-done]]  *|S|*  [[aiActivity:S=todo-do][todo-do]] | [[aiActivity:S=todo-done][todo-done]]
+  Record   :: [[aiActivity:status-update][status-update]] | [[aiActivity:archive-update][archive-update]]  *|S|*  [[aiActivity:S=status-update][status-update]] | [[aiActivity:S=archive-update][archive-update]]
+  Git      :: *|[[aiActivity:git-commit-msg][P|* git-commit-msg]] | [[aiActivity:git-commit-walk][git-commit-walk]]  *|S|*  [[aiActivity:S=git-commit-msg][git-commit-msg]]
+  Close    :: *|P|*  [[aiActivity:git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:session-verify][session-verify]]  *|S|*  [[aiActivity:S=git-uncommitted-list][git-uncommitted-list]] | [[aiActivity:S=session-verify][session-verify]]
 
-- [[Select Claude Session]]  ||  [[bx-confirm-repo]]   || [[bx-confirm-here]]
-- [[This Emacs Server]]  -- Perhaps can also be added to bx-confirm
-- bx-archive-read || bx-status-read || bx-ai-outputs || bx-task-do || bx-task-done
-- bx-session-verify || bx-status-update || bx-archive-update
-- bx-git-commit-msg || bx-git-uncommited-list 
 
 
-* Stage 7 TODOs 
+* Stage 7 TODOs --- Continuation
 ** +
-** TODO [#A] <<7.1>> Build a generalized org command string model
-SCHEDULED: <2026-10-28 Wed 22:50>
+** [#A] <<7.3>> List additional claude /bx-  commands that could be added to the above b:ai:workflow/driver dblock :aiAndMe:
+SCHEDULED: <2026-11-22 Sun 23:46>
+----- Results: ------
+2026-11-23 (Claude, decided with Mohsen). Of the 23 =/bx-= commands in
+=mother/_claude/commands/=, the driver has 15; 4 are aliases being removed (=confirm-here=,
+=confirm-root=, =confirm0=, =done=) and stay out. Of the other 4, and one more use of an existing one:
+
+| Command                | Arguments       | Decision | Link kind | Row (see 7.4)                      |
+|------------------------+-----------------+----------+-----------+------------------------------------|
+| =git-pull-list-add=    | none            | add      | S         | Git, after git-commit-walk         |
+| =skills-improve=       | none            | add      | P and S   | Close, before session-verify       |
+| =context-trim=         | optional budget | add      | P         | Record, beside status-update       |
+| =ai-outputs= (capture) | the defect text | add      | P         | Read, beside ai-outputs (index)    |
+| =initiate=             | activity type   | leave out| ---       | the newStart panel, not the driver |
+
+- =git-pull-list-add=: the step after the commit walk (needs the commits pushed); nothing to edit
+  before sending, so S only, like git-commit-walk.
+- =skills-improve=: a session-end step; P to steer it toward a lesson, S for a plain run.
+- =context-trim=: upkeep of what the next session loads, as status-update is; P, so a token budget
+  can be typed.
+- =ai-outputs= capture: needs the user's description, so P only (=/bx-ai-outputs = left in the
+  prompt to complete). The Read row's =ai-outputs= stays the index.
+- =initiate=: the driver lives in an AI-WorkPlan, which exists only after =initiate=; a link there
+  could never be useful.
+
+Proposed with these, for 7.4 to settle: the session's end as one sequence --- Git: git-uncommitted-list,
+git-commit-msg, git-commit-walk, git-pull-list-add; Close: skills-improve, session-verify. The rows
+must stay within 105 displayed characters, so adding five links may split a row.
+
+** [#A] <<7.4>> Restructure the b:ai:workflow/driver output so that the 4 categories are clear  :aiAndMe:
+SCHEDULED: <2026-11-22 Sun 23:46>
+The actions in the output of the dblock can be catgorized into 4 types
+1) /bx- claude prompts   *|P|*
+2) /bx- claude submitted prompts   *|S|*
+3) VS Code:: -> Visit -> root-window || <- (Key binding of VS Code comes here)
+4) Elisp Commands  (Transient, Panel)
+----- Results: ------
+2026-11-23 (Claude, decided with Mohsen): built in =dblock-vscode-claude.el=. The four kinds, each
+after its bold marker, in this order on every row: =|E|= Emacs (elisp, or a shell command run from
+Blee), =|V|= VS Code, =|P|= a /bx- prompt to complete, =|S|= submitted. A new Info row (Mohsen) for
+what only informs or opens: the newStart Panel, the Transient, partner-show, and the READMEs of this
+package and of bisos.aiActivity. With the 7.3 additions:
+
+#+begin_example
+ *  AI Workflow Driver :: /bx- commands  --  |E| Emacs  |V| VS Code  |P| prompt  |S| submitted
+  Info     :: |E| Panel | Transient | partner-show | vscode-claude-README | aiActivity-README
+  newStart :: |E| setup-check | setup | partner-init  |P| session-start  |S| session-start
+  VS Code  :: |V| Visit | root-window   <- Ctrl+K Ctrl+E: this file in Blee, at its line
+  Session  :: |E| select-session  |P| session-start | session-report  |S| session-start
+  Activity :: |P| activity-reach | activity-report  |S| activity-reach
+  Read     :: |P| status-read | archive-read  |S| status-read | archive-read
+  Work     :: |P| todo-do | todo-done  |S| todo-do | todo-done
+  Record   :: |P| status-update | archive-update | context-trim  |S| status-update | archive-update
+  Outputs  :: |P| ai-outputs | ai-outputs <text>  |S| ai-outputs
+  Git      :: |P| git-uncommitted-list | git-commit-msg  |S| git-uncommitted-list | git-commit-msg
+  Close    :: |P| skills-improve  |S| git-commit-walk | git-pull-list-add | session-verify
+#+end_example
+
+- Changes from 7.3, to keep every row within 105: AI-Outputs has a row of its own (Outputs), and
+  =skills-improve= is P only. =ai-outputs <text>= is the same link as =ai-outputs= (a P link already
+  leaves the prompt open for the defect), labeled for the capture.
+- The code: each row is =(label :e :v :p :s :tail)=; a /bx- command may be =("<name>" . "<label>")=;
+  the READMEs are =b:ai:workflow/driver:readmes=. The old names of the dblock still write it.
+- README.org, "Org Links and the Workflow Driver": the new example and a line per row; its example
+  lines are indented, so toc-org no longer takes them for headings (two stray TOC entries removed).
+- Tested: batch (=emacs-31.1 -Q=, the dblock framework stubbed), 19 checks, 0 failures: 11 rows in
+  order, widest 99 displayed characters, markers in E V P S order, every =aiActivity:= link a
+  =/bx-= command, both READMEs exist, =:controls nil=, the alias. Byte-compiles without warnings.
+- Not yet: in Mohsen's Blee --- reload =dblock-vscode-claude.el=, then =Update Buf Dblocks= in a
+  WorkPlan. The 41 WorkPlans' drivers change only as each is updated.
+
+2026-11-23, revised with Mohsen:
+- Close in the order of a session's end: =|P| session-verify | skills-improve  |S| git-commit-walk |
+  git-pull-list-add= (verify and skills-improve may change files, which the walk commits; the pull list
+  needs the commits pushed). Git is for committing at any time.
+- =ai-outputs= back in Read, P and S; the Outputs row and the =ai-outputs <text>= label dropped (a P
+  =ai-outputs= with the defect typed after it is the capture).
+- A State line above Info, and =Refresh= first on Info (=b:ai:workflow/driver/refresh=). Refresh shows
+  the time, the session a prompt from this buffer goes to (=b:vscode:claude:session/targetDescribe=, as
+  the transient's title) and the partner, as an *overlay* (=display= over a fixed placeholder): the
+  file and the buffer's text do not change, nothing to save or commit; per Emacs and buffer; gone on
+  revert or when the dblock is rewritten (=evaporate=). Text was rejected: churn in 41 committed
+  WorkPlans, meaningless on another machine, a modified buffer after every Refresh. Only the session
+  part is shortened, so the time and the partner always show within 105.
+- Tested: batch, 25 checks, 0 failures (the layout; the overlay covers exactly the placeholder,
+  leaves the text and the modified flag unchanged, is replaced by a second Refresh, evaporates on a
+  rewrite; a long session is cut; no partner file). Byte-compiles without warnings. README.org's
+  section follows. Not yet in Mohsen's Blee.
+
+** TODO [#A] <<7.5>> A newResume row: continuing the work on another machine, after Close :aiAndMe:
+SCHEDULED: <2026-11-23 Mon>
 :PROPERTIES:
 :ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
+:IMPORTANCE: High
+:REPO: this, and bxObjects/aiTemplates-workFlow (the command)
 :BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
+:FOUND: <2026-11-23 Mon>
 :END:
-- Experiment with one or two simple commands like:
--  [[elisp:(b:vscode:claude:aiActivity/bx-confirm-here)][bx-confirm-here]
-- Instead of elisp:  -- Perhaps have [[aiActivity:bx-confirm-here][bx-confirm-here] Does org-mode support that?
------ Results: ------
-2026-11-01 (Claude). Yes: org-link-set-parameters defines a link type. Decided with Mohsen: aiActivity:
-(bx: is too generic). Built in layer 5 (b:vscode:claude:aiActivity.el, "Org Links"):
-[[aiActivity:<name> <args>]] sends /bx-<name> <args> to the buffer's activity session; C-u C-c C-o
-flips submit. confirm-root, confirm-here, git-commit-msg, git-commit-walk go through their functions;
-todo-do and todo-done without an anchor ask among the open TODOs (new todoDo, todoDone; transient t,
-T). commitMsgGenerate now loads magit itself (a link may be followed before magit is loaded).
-- Layer 0, aiTemplates-workFlow: new /bx-todo-do <anchor> (read the TODO from disk, restate it and the
-  plan; :ai: proceeds, others wait; writes Results, never marks DONE); /bx-done renamed /bx-todo-done
-  (bx-done kept as an alias); AI-WORKFLOW.org's command table. aiActivity: the usage figure, its table
-  (README) and the commands tree (aiGeneralTree) follow, re-rendered.
-- Tested: batch, 12 checks (the link type, plain and C-u, each special case, the anchors, through
-  org-open-at-point); the layer test again (31 checks, 0 failures). Not yet: a click in Mohsen's Blee
-  into a real session.
+Close ends a session on one machine; the work then continues on another, with another Claude. There
+the relevant repos are pulled, the pip packages reinstalled (and pushed to PyPI), the CBMs rebuilt.
+A row after Close makes the cycle complete: Git, Close, newResume.
 
-** TODO [#A] <<7.2>> Update b:ai:vscodeClaude/workflow
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-Using the model of [[7.1]] build b:ai:vscodeClaude/workflow
-to produce [[The order and scope of commands]]
------ Results: ------
-2026-11-01 (Claude). Decided with Mohsen: the dblock is b:ai:workflow/driver (named for its purpose;
-layer-neutral, so the seed in layer 0 names no layer-5 code). dblock-vscode-claude.el writes it: a
-heading and rows Session (Select, Root, Here), Read, Work (Do TODO, Done TODO), Record, Git, of
-aiActivity: links. The earlier names b:ai:vscodeClaude/workflow and .../workflowDriver are aliases.
-The seed WorkPlan (aiTemplates-workFlow mother/AI-WorkPlan.org) carries it empty (its frozen body,
-with old bxexamples paths and a copied Control line, is gone); the headers of this WorkPlan, the
-LibreOffice sub's and bisos-pip/vscodeClaude's renamed (their bodies regenerate in Blee). From the
-list: bx-confirm-repo is confirm-root; This Emacs Server is done by confirm-root (emacs=); bx-task-do
-became /bx-todo-do (7.1). README.org: "Org Links and the Workflow Driver".
-- Tested in a fresh Blee: Update Buf Dblocks filled the new name and the old alias. Not yet: in
-  Mohsen's Blee (Update Buf Dblocks here, then a click).
-2026-11-01, revised with Mohsen: lines up to 105 displayed characters; each label is the command it
-sends; after |S| the same links again, submitted (S= in the link path, bold, tooltip "submits:"); a
-control line first (Back ... Magit), :controls nil to omit it (this WorkPlan also has its own
-topPanelControls dblock). Rows: Session, Read, Work, Record, Git (git-commit-walk always submits, no
-copy). Tested: batch, 18 checks; a fresh Blee, displayed widths 49 to 103.
-Then: choices separated by " | ", the |S| marker spaced wider; session-end commands in a row of
-their own, Close (git-uncommitted-list, session-verify), so every row fits 105 (Record would be 111);
-labels padded so the :: align. Fresh Blee: displayed widths 58 to 98.
-Then (Mohsen's layout): a revert-buffer control line, a VS Code row (Visit: b:vscode/fileOpen, by
-true path; Transient), select-session first in Session, every |S| bold (*|S|*), no legend line. The
-dblock moved to the top of a WorkPlan, before its particulars (this one's topPanelControls removed):
-in the seed (aiTemplates-workFlow mother/AI-WorkPlan.org) and, empty, in 41 existing WorkPlans; where
-the driver was a repo's only change, Claude committed and pushed it (26 repos, by Mohsen's one-time
-exception); the rest wait in repos with other work. Clicked in Mohsen's Blee: not yet.
+Decided (Mohsen, 2026-11-23):
+- The row is =newResume=: it pairs with =newStart= (a fresh machine) --- both rows are for the machine
+  you have just come to. =Resume=, =Continue=, =ReNew= were considered.
+- Its /bx- command is =newResume-confirm=, not =session-resume=: the new session has nothing to do
+  with the one that closed; only the work continues, and "session-resume" would say otherwise.
 
+The row (a sketch; labels padded to 9 for =newResume=, the State width to 90):
+#+begin_example
+  newResume :: |E| outputs-pull | pull-list | pipPkgsStatus  |P| newResume-confirm  |S| newResume-confirm
+#+end_example
+- =outputs-pull=: =bashRun:git -C /bxRepos/blee-binders/evolution pull --rebase=. First, because the
+  pull list lives in AI-Outputs.org there. (This WorkPlan's own repo is already pulled if the row is seen.)
+- =pull-list=: opens AI-Outputs.org at the latest open "Pull on other hosts" entry, which
+  =/bx-git-pull-list-add= wrote on Close: a =bashRun:= line per repo and "All of them"; DONE once pulled.
+- =pipPkgsStatus=: =bashRun:pipPkgsStatus.cs -i pkgsStatus= (bisos.pycs; read-only): what needs a
+  reinstall into dev-bisos3, what PyPI lacks. Releasing stays the user's (=bisos-pip-release=).
+- =newResume-confirm=, a new /bx- command (aiTemplates-workFlow =mother/_claude/commands/=, then
+  =aiActivityAssemble.cs -i assemblyUpdate=): read the import chain; check that the latest pull list
+  arrived (each repo at or past its listed commit, or behind / with local changes); run
+  =pipPkgsStatus.cs -i pkgsStatus= and report what needs a reinstall, a PyPI release, a CBM rebuild;
+  say where the work stands and what is next. Read-only; it recommends, the user acts.
+
+Open, later: whether the row also gets reinstall and CBM-rebuild actions; =pypiProc.sh -i
+pkgReInstall= exits 0 on failure (AI-Outputs), so a reinstall is checked by =pkgLocalStatus= after it.
+----- Results: ------
+2026-11-23 (Claude): built as sketched, uncommitted.
+- =dblock-vscode-claude.el=: the newResume row after Close; labels padded to 9
+  (=b:ai:workflow/driver:labelWidth=), the State width 90; =b:ai:workflow/driver:outputsRepo=
+  (=/bxRepos/blee-binders/evolution=, for =outputs-pull=); =b:ai:workflow/driver/pullListVisit= (the
+  =pull-list= link): this buffer's AI-Outputs.org, found upward, as its true file, at the last
+  "Pull on other hosts" entry still TODO, else the last such section.
+- aiTemplates-workFlow: =mother/_claude/commands/bx-newResume-confirm.md= (read-only: the import
+  chain; the outputs repo fetched first; the latest pull section, each repo arrived / to pull / local
+  changes / missing by its listed commit; =pipPkgsStatus.cs -i pkgsStatus= read by its output; a CBM
+  package flagged; a table, where the work stands, the steps in order; DONE only on agreement) and its
+  row in =mother/AI-WORKFLOW.org='s command table.
+- README.org: the example with the newResume row, and a line on it.
+- Tested: batch, 38 checks, 0 failures --- the rows with newResume last (widest exactly 105), every
+  label padded to 9, the newResume links, every =aiActivity:= link a command of the workflow tree;
+  =pull-list= on a scratch AI-Outputs.org (found upward; at the last TODO entry, not a later DONE one;
+  at the last section when none is open; a user-error without one). Byte-compiles without warnings.
+- Left for the user: =aiActivityAssemble.cs -i assemblyUpdate --base=/bisos/apps/defaults/ai-templates=
+  (=assemblyCheck=: BEHIND, link=1 --- the new command); a new session sees =/bx-newResume-confirm=
+  only after that. Then in Blee: reload =dblock-vscode-claude.el=, Update Buf Dblocks, try the row.
+  The commands figure (bisos.aiActivity =aiCommandsSkillsTrees-graphviz.pcs=, =aiGeneralTree=) was not
+  updated; it does not list =git-pull-list-add= either.
+- Not yet: a real cycle --- Close here, newResume on another host.
+2026-11-23, later: the templates base was re-assembled (=assemblyCheck=: IN SYNC, 94 links);
+=/bx-newResume-confirm= is listed in new sessions. Still left: Blee (reload, Update Buf Dblocks) and
+the real cycle.
 
 ** -
 
@@ -463,34 +341,9 @@ exception); the rest wait in repos with other work. Clicked in Mohsen's Blee: no
 - Mohsen: Magit (c c) -- yes for accept Calude Message
 - Mohsen: Ctl-c Ctl-c
 
-* Stage 8 TODOs 
+* Stage 8 TODOs  --- LOOP
 ** +
-** TODO [#A] <<8.1>> Can /bx-git-uncommited-list give me a list from which I can select
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-- Once selected, emacsclient magit
------ Results: ------
-
-** TODO [#A] <<8.2>> After Stage, Magit (x c) -- b:vscode:claude:aiActivity/commitMsgGenerate
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-- Code already exists. In this package now. Needs to be tested.
-- Upstream input for the github magit issues to reserve Magit (x c) for AI Commit Msg Generation
------ Results: ------
-
-** TODO [#A] <<8.3>> Full Cycle testing of all of [[Stage 8]]
+** LOOP [#A] <<8.1>> Full Cycle testing of all of [[Stage 8]]
 SCHEDULED: <2026-10-28 Wed 22:50>
 :PROPERTIES:
 :ORIGIN: Mohsen
@@ -510,20 +363,8 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 
 Revisit README of aiActivity and this package for completeness and consistency
 
-* Stage 9 TODOs 
+* Stage 9 TODOs --- Accomplished and Archived.
 ** +
-** TODO [#A] <<9.1>> Review this Package's README 
-SCHEDULED: <2026-10-28 Wed 22:50>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-01 Thu 10:32>
-:END:
-- Make sure that all relevant aiActivity READMEs are consistent.
------ Results: ------
-
 ** -
 
 * Stage 10: vscode Interfaces
@@ -546,155 +387,6 @@ SCHEDULED: <2026-10-28 Wed 22:50>
 - Think of other features that can go in b:vscode.el
 ----- Results: ------
 
-** TODO [#B] <<10.2>> b:vscode/fileOpen at point: code --goto file:line:col
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- Land on the line (and column) of point, not just the file; =--reuse-window= so it does not
-  open a new window each time.
------ Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenFile <file>
-[line [col]] (--reuse-window --goto). Elisp not yet.
-2026-10-30: b:vscode/fileOpen now runs vscode.cs -i vscodeOpenFile <file> <line> <col> at point (in
-dired: the file at point; no file: the directory, vscodeOpenFolder), through b:vscode:program/run.
-
-** TODO [#A] <<10.3>> Open the repo (project root) as a VS Code folder
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- =magit-toplevel= or =project-root= of the current buffer, opened as a folder.
-- Matters for Claude: the folder sets the session's working directory, so which =CLAUDE.md= and
-  =.claude/commands= are loaded. A single file loses that.
------ Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenFolder
-<dir>, --window=reuse|new. Elisp not yet.
-2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
-stays in vscode.cs for shell use. Revisit if a use from Blee appears.
-2026-11-02: reopened at [#A] (Mohsen): it is part of the workflow after all. A VS Code window's
-folder is the Claude session's working directory, and in our model Claude starts at the root
-(usually a repo); nothing enforces that yet. Found starting from scratch on a VM (the bisos.aiActivity
-newStart panel). To be designed with root enforcement in the session choice and confirmRoot.
-2026-11-02: built with [[14.1]]: =b:vscode/rootOpen= over =vscode.cs -i vscodeOpenFolder --window=focus=
-(the new default). VS Code matches a folder by the spelling it was opened with (/bxRepos/... and its
-true name are two folders to it; found on the desktop, where a plain =code <truename>= opened a second
-window): =vscode_csu.windowsOpen= reads the open windows from its storage.json, and =windowFocus=
-passes the open window's own spelling, else opens a new window and waits for it.
-
-** DONE [#C] <<10.4>> Add a folder to the current VS Code window: code --add
-CLOSED: [2026-10-30 Fri 18:10]
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: Low
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- A multi-root workspace without a new window, e.g. a sibling repo such as bisos-pip/aiActivity.
------ Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeAddFolder <dir>.
-Elisp not yet.
-2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
-stays in vscode.cs for shell use. Revisit if a use from Blee appears.
-
-** DONE [#C] <<10.5>> Diff in VS Code: code --diff
-CLOSED: [2026-10-30 Fri 18:10]
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: Low
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- Two marked files in dired, or the file at point in magit (against HEAD or the index).
------ Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeDiff <a> <b>
-(files; the dired/magit side is elisp). Elisp not yet.
-2026-10-30: DONE at [#C], no elisp (Mohsen): not part of the Blee workflow. The Python side
-stays in vscode.cs for shell use. Revisit if a use from Blee appears.
-
-** DONE [#B] <<10.6>> b:vscode/openUrl: the code --open-url primitive under atPrompt
-CLOSED: [2026-10-30 Fri 17:56]
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: High
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- The design's "prompt in" channel without the Claude part: b:vscode:claude/atPrompt becomes a
-  =vscode://anthropic.claude-code/open?session=…&prompt=…= URI handed to it.
-- Logic in the Python vscode layer of vscodeClaude.cs ([[Stage 4]]); the elisp only wraps it.
------ Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeOpenUri <uri>;
-vscodeClaude_csu sends its /open URI through vscode_csu. Elisp not yet.
-2026-10-30: DONE, no elisp needed. atPrompt already reaches --open-url through vscodeClaude.cs
-(claudePrompt calls vscode_csu.openUriSend); a b:vscode/openUrl would be a primitive no Blee
-command calls. For a raw URI: vscode.cs -i vscodeOpenUri. Answers 10.12's last question: Blee
-reaches VS Code only through vscode.cs.
-
-** DONE [#B] <<10.7>> VS Code status and topology check
-CLOSED: [2026-10-30 Fri 17:56]
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: Medium
-:REPO: /bxRepos/bisos-pip/aiActivity
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- Is a desktop VS Code running on Emacs's DISPLAY (topology A), or is =code= only the remote CLI
-  (=VSCODE_IPC_HOOK_CLI=, topology B) where =--open-url= is refused? See Emacs+VS-Code+Claude.org.
-- Commands then fail with a clear message instead of silently doing nothing.
-- In Python (vscodeClaude.cs vscode layer).
------ Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeTopology
-(launcher, ipcHook, desktop main and DISPLAY, a verdict). Elisp not yet.
-2026-10-30: DONE, no elisp needed. The "fail with a clear message" half is in Python too:
-claudePrompt refuses through vscode_csu.displayProblem (naming the desktop's DISPLAY), and
-atPrompt shows the EH_Problem. vscodeTopology is a diagnostic, run from a shell or the examples.
-
-** DONE [#B] <<10.8>> VS Code extension setup: --list-extensions, --install-extension
-CLOSED: [2026-10-30 Fri 17:56]
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: Low
-:REPO: /bxRepos/bisos-pip/aiActivity
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- Check for and install =anthropic.claude-code=: item 4 of the design's "Components to Build".
-- In Python (vscodeClaude.cs vscode layer).
------ Results: ------
-2026-10-29: Python side done in bisos-pip/aiActivity (its 22.1): vscode.cs -i vscodeExtensions and
-vscodeExtensionVersion <id>; installing stays in vscode-sbom.pcs. Elisp not yet.
-2026-10-30: DONE, no elisp needed. Checking and installing are setup, done once from a shell
-(vscode.cs -i vscodeExtensionVersion anthropic.claude-code; vscode-sbom.pcs), not from Blee.
-
-** TODO [#B] <<10.9>> VS Code to Emacs: open the current file in Blee at its line
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- A VS Code task or keybinding running =emacsclient -s <socket> +line file=.
-- A setup snippet for README.org or the panel, not elisp. Makes editing two-way, not only Claude.
------ Results: ------
-2026-10-30: built: vscode.cs -i bleeOpenFile <file> [line [col]] (partner socket, emacsclient -n
-+L:C, raise the frame) and vscodeBleeLinkSnippet (the user task, ctrl+alt+e, task.saveBeforeRun).
-Tested against a fresh Blee (line and column land). Not yet: the task in VS Code.
-2026-11-01: the setup is now a command, not a paste: vscode.cs -i vscodeBleeLinkInstall (and
-vscodeBleeLinkCheck), bisos-pip/vscodeClaude 3.1. Tested on scratch directories; not yet on
-Mohsen's files.
-
 ** TODO [#B] <<10.10>> One owner for "open in vscode": b:vscode vs open-in
 :PROPERTIES:
 :ORIGIN: Claude
@@ -706,43 +398,6 @@ Mohsen's files.
 - =b:open-in/vscode= (from =xah-open-in-vscode=) and =b:vscode/fileOpen= are the same function.
 - Keep one implementation, probably in b:vscode, and have the open-in transient call it. See [[10.1]].
 ----- Results: ------
-
-** TODO [#B] <<10.11>> Menu entries for the vscode layer
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: Low
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- A VS Code submenu in b:vscode:claude:menu.el, or a b:vscode:menu.el of its own.
------ Results: ------
-2026-10-30: b:vscode:claude:menu.el has Prompt, Magit, Session and VS Code submenus; and a transient,
-b:vscode:claude/dispatch (also magit x d).
-2026-11-02: the menu is in Blee's Apps menu: blee/env3 legacy/apps-menu.el calls
-b:vscode:claude:menu:plugin|install (guarded by fboundp; added and tested by Mohsen). Its install no
-longer adds an (empty) function to menu-bar-update-hook: menus are built once. Stage 14 added
-Session Start, Activity Reach, Session Report, Activity Report and This Root's Window to it.
-
-** TODO [#B] <<10.12>> Make b:vscode/fileOpen robust: local process, TRAMP paths, Linux only
-:PROPERTIES:
-:ORIGIN: Claude
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-29 Thu>
-:END:
-- =shell-command= runs in the buffer's =default-directory=: from a TRAMP buffer it runs remotely
-  and passes a =/ssh:…= path. Run locally (=default-directory= =~/=, as atPrompt does), and either
-  refuse remote paths or map them to a =vscode-remote://= URI.
-- Drop the macOS and Windows branches: Blee runs on Linux.
-- Should fileOpen and 10.2–10.5 go through vscodeClaude.cs too, so one place knows how to reach
-  VS Code? Decide with [[10.6]].
------ Results: ------
-2026-10-30: decided with [[10.6]]: through vscode.cs (vscodeOpenFile), which already runs code
-locally, with the right environment, Linux only. Left here: the TRAMP path handling.
-2026-10-30: done with 10.2: local process (default-directory ~/), TRAMP paths refused, the macOS
-and Windows branches dropped.
 
 ** -
 
@@ -759,64 +414,6 @@ this phase.
 
 * Stage 11 TODOs
 ** +
-** TODO [#A] <<11.1>> b:vscode/init and the partner file
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-30 Fri>
-:END:
-- Write /bisos/var/blee/vscode/partner-<user>.json (socket, pid, DISPLAY, time); remove it on
-  kill-emacs-hook if still ours. Run from bnpa:vscode-claude's config|main, or by hand.
-- Python reader in vscode_csu (bisos-pip/aiActivity): the live partner or none (stale: dead pid,
-  missing socket). Used by 11.3 and 10.9.
------ Results: ------
-2026-10-30: built. b:vscode.el: b:vscode/init (writes the file, adds b:vscode:partner/remove to
-kill-emacs-hook; removes only if the pid is ours), b:vscode/partnerShow, b:vscode:partner/socket
-(starts the server, Blee's naming). Run by hand, not from config|main: a second Blee must not take the
-partner role unasked. vscode_csu.partnerRead (pid must be an emacs, socket must exist) and vscode.cs -i
-vscodePartner. Tested: batch (scratch dir), and a fresh Blee: init wrote it, vscodePartner live, exit
-removed it, a stale file reads as none.
-
-** TODO [#A] <<11.2>> Associations: confirmRoot, confirmHere, rootRegister
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-30 Fri>
-:END:
-- b:vscode:claude/confirmRoot sends /bx-confirm-root dir= emacs= callback=yes; rootRegister (Claude's
-  callback) records root dir → session id. confirmHere sends /bx-confirm-here <dir> and records it.
-- atPrompt finds the session by walk-up from default-directory; checks it against the running ones.
------ Results: ------
-2026-10-30: built in b:vscode:claude.el: associations (activity dir -> session, true names), the
-walk-up in session/forDir (association if its session runs, a dead one dropped; else the covering
-session, deepest cwd then newest; else the latest), confirmRoot (/bx-confirm-root dir= emacs=
-callback=yes), rootRegister, confirmHere, associationsShow. Tested in batch with stubbed sessions;
-rootRegister called by emacsclient in a fresh Blee, as Claude does. Not yet: a real confirmRoot into a
-VS Code session, with Mohsen watching.
-
-** TODO [#A] <<11.3>> vscodeClaude.cs -i hookToEmacs and hooksSnippet
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: /bxRepos/bisos-pip/aiActivity
-:BASE: this
-:FOUND: <2026-10-30 Fri>
-:END:
-- Reads the hook JSON on stdin; no live partner → exit 0 at once, silently. Otherwise emacsclient
-  --eval (b:vscode:claude/hookHandle ...) with a short timeout; always exit 0.
-- hooksSnippet prints the ~/.claude/settings.json "hooks" entry (Stop, Notification) to paste.
------ Results: ------
-2026-10-30: built in vscodeClaude_csu (bisos-pip/aiActivity): hookToEmacs (stdin JSON; no live
-partner: nothing, silent, about 0.4s; else emacsclient --eval hookHandle, 5s timeout; stdout always
-empty; always exit 0) and hooksSnippet (Stop and Notification, absolute path, timeout 10). Not
-installed in ~/.claude/settings.json: that is Mohsen's to add.
-2026-11-01: vscodeClaude.cs -i hooksInstall merges them (and hooksCheck reports them),
-bisos-pip/vscodeClaude 3.2. Tested on a scratch settings file; not yet on Mohsen's.
-
 ** TODO [#A] <<11.4>> b:vscode:claude/hookHandle and the first handlers
 :PROPERTIES:
 :ORIGIN: Mohsen
@@ -862,51 +459,6 @@ by C-u. To be decided before building.
 
 * Stage 12 TODOs
 ** +
-** TODO [#A] <<12.1>> b:vscode:claude/sessionSelect: a picker over the running sessions
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-30 Fri>
-:END:
-- completing-read over claudeSessionsList: name, folder, status (busy, idle), last active.
-- The choice becomes the association of this buffer's activity dir (nearest CLAUDE.md above, else
-  default-directory); with C-u, a buffer-local override instead.
-- A "new conversation" candidate: the next prompt starts a fresh session (--session=new).
------ Results: ------
-2026-10-31: built in layer 4 (b:vscode:claude.el): b:vscode:claude/sessionSelect, a picker over
-the running sessions (name, status, last active, folder, id) and "(a new conversation)". The choice
-is recorded for the base dir (b:vscode:claude:baseDir: the git repo; with layer 5 the AI-Activity
-dir); C-u: buffer-local (b:vscode:claude:session:buffer). "New" is one-shot
-(b:vscode:claude:session:next) and drops the base dir's association, so the new session is found by
-its folder afterwards. Tested in batch (layertest.el, layer 4 alone).
-
-** TODO [#B] <<12.2>> b:vscode:claude/sessionForget: back to the automatic choice
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-30 Fri>
-:END:
-- Drop this activity dir's association (or, with C-u, the buffer-local override).
------ Results: ------
-2026-10-31: b:vscode:claude/sessionForget (C-u: the buffer-local choice). Tested in batch.
-
-** TODO [#B] <<12.3>> confirmRoot asks when several sessions share the root's folder
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-30 Fri>
-:END:
-- Today it takes the most recently active one silently; ask through the 12.1 picker instead.
------ Results: ------
-2026-10-31: layer 5's confirmRoot asks through layer 4's b:vscode:claude:session/choose when
-several sessions share the root's folder (one: no question). Tested in batch.
-
 ** TODO [#B] <<12.4>> Show the target session in the transient, and a "Choose session" key
 :PROPERTIES:
 :ORIGIN: Mohsen
@@ -921,24 +473,6 @@ several sessions share the root's folder (one: no question). Tested in batch.
 2026-10-31: b:vscode:claude/dispatch's title shows where a prompt would go
 (b:vscode:claude:session/targetDescribe); c Choose session, F Forget, l Associations. Tested in
 batch; the transient not yet opened interactively.
-
-** TODO [#B] <<12.5>> A Blee-side commit walk: x n in magit moves to the next repo
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-31 Sat>
-:END:
-- /bx-git-commit-walk (aiTemplates-workFlow, 2026-10-31) opens each repo's magit through
-  vscode.cs -i bleeMagit, and the user says "next" to Claude. Instead: Claude sends the walk's list
-  to Blee once (b:vscode:claude:magit/walk), and x n in magit opens the next repo; with the Claude
-  Code hooks, the Stop after a commit message could also bring magit back.
------ Results: ------
-2026-10-31: built in layer 5: b:vscode:claude:aiActivity:magit/walk (Claude hands Blee the
-list: /bx-git-commit-walk emacs= walk=<this function>), walkNext (magit x n; asks when the repo still
-has changes), walkStart (x w: sends that prompt, submitted). Tested in batch and in a fresh Blee
-(the walk opened the first repo's magit). Not yet: a real walk driven by Claude.
 
 ** -
 
@@ -963,123 +497,8 @@ layer 3's Python commands sit in =vscode.cs= beside layer 2; and layer 1 names u
 (=/bx-confirm-root callback=yes= evaluates =b:vscode:claude/rootRegister=; =/bx-git-commit-walk= runs
 =vscode.cs -i bleeMagit=). Test of done: each layer loads and works with the layers below it only.
 
-* Stage 13 TODOs
+* Stage 13 TODOs --- Accomplished -- Archived.
 ** +
-** TODO [#A] <<13.1>> Split b:vscode:claude.el: layer 4 and b:vscode:claude:aiActivity.el (layer 5)
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: High
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-31 Sat>
-:END:
-- Layer 4 (=b:vscode:claude.el=): atPrompt, sessions, the generic dir -> session association API,
-  the sends, submit, the hook mechanism (hookHandle, event-hook), a transient without /bx-. It names
-  no /bx- command and no CLAUDE.md.
-- Layer 5 (=b:vscode:claude:aiActivity.el=): confirmRoot, confirmHere, rootRegister (filling the
-  layer-4 association by activity dir), the commit cycle (x c, x x, offer, markUsed, the Stop
-  handler), the /bx- transient as a suffix group added to layer 4's, the walk (12.5), Stage 7.
-- Names: keep the user-facing ones where possible; layer-5 functions under =b:vscode:claude:aiActivity=.
-- Tests: batch-load layer 4 alone; the existing batch test split along the same line.
------ Results: ------
-2026-10-31: split. b:vscode:claude.el is layer 4 (prompts, sessions, base dirs and
-associations, sends, submit, hooks, its transient) and names no /bx- command and no CLAUDE.md;
-b:vscode:claude:aiActivity.el is layer 5 (the AI-Activity dir as layer 4's base dir, confirmRoot /
-confirmHere / rootRegister, bxSend, the commit cycle and its Stop handler, the walk, the /bx-
-transient appended to layer 4's as "a", magit's x). Layer-5 names moved under
-b:vscode:claude:aiActivity; b:vscode:claude:magit|config kept as an alias (env3's bnpa calls it).
-Tested: batch, 32 checks, layer 4 loaded alone first; a fresh Blee loads both. Found: Blee sets
-straight-check-for-modifications to nil, so the new file needed its link in straight's build dir
-(added by hand; a straight-rebuild-package does the same), else Blee's startup stops.
-
-** TODO [#A] <<13.2>> Layer 3's Python out of vscode.cs
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: High
-:REPO: /bxRepos/bisos-pip/aiActivity
-:BASE: this
-:FOUND: <2026-10-31 Sat>
-:END:
-- vscodePartner, bleeOpenFile, bleeMagit, vscodeBleeLinkSnippet and the partner helpers move to
-  =vscodeEmacs_csu.py=. Decide: its own CSXU (=vscodeEmacs.cs=, the one-CSXU-per-elisp-layer rule:
-  b:vscode.el sits over it) or a second CSU in vscode.cs's csuList (one examples menu, two chapters).
-- vscodeClaude_csu's hookToEmacs then imports the partner reader from layer 3, not layer 2.
------ Results: ------
-2026-10-31: layer 3's Python moved to vscodeEmacs_csu.py (partner file, partnerRead,
-elispString, emacsEval; vscodePartner, bleeOpenFile, bleeMagit, vscodeBleeLinkSnippet), a second CSU
-in vscode.cs's csuList (one examples menu, the Blee chapter); vscode_csu (layer 2) has no Emacs in it
-now; vscodeClaude_csu takes the partner reader from vscodeEmacs_csu. Tested through the dispatchers.
-
-** TODO [#A] <<13.3>> Layer 1 states a contract instead of naming upper-layer code
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: High
-:REPO: /bxRepos/bxObjects/aiTemplates-workFlow
-:BASE: this
-:FOUND: <2026-10-31 Sat>
-:END:
-- /bx-confirm-root: the prompt names its registration function (e.g. =register=<function>=), so the
-  command evaluates what Blee sent, not =b:vscode:claude/rootRegister=; keep callback=yes as the
-  switch, or fold it into register=.
-- /bx-git-commit-walk: "the opener the partner Emacs provides" in the command; the specific
-  =vscode.cs -i bleeMagit= in layer 3's documentation (or passed as an argument).
-- The skills (bs-blee-emacs-server) and AI-WORKFLOW.org follow the same rule.
------ Results: ------
-2026-10-31: /bx-confirm-root takes register=<function> (named by the sender) instead of
-callback=yes; /bx-git-commit-walk opens repos with open=<command> or the new aiActivity.cs userConfig
-setting gitOpener (empty by default; for Blee: vscode.cs -i bleeMagit), and takes walk=<function>
-from Blee. The workflow tree names no Blee code now; AI-WORKFLOW.org and bs-blee-emacs-server follow.
-
-** TODO [#B] <<13.4>> README.org and the layers figure as five layers
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-31 Sat>
-:END:
-- README.org presents layers 1-5 explicitly (what each holds, what it needs, how to use only the
-  lower ones); =vscodeClaude-graphviz.pcs=: =vscodeClaudeLayers= redrawn with five bands; aiActivity's
-  README section follows.
-- AI-Activity.org (blee-pkg) and the =blee-pkg-authorship= skill: the rule "a lower layer never names
-  an upper one", with this package as the example.
------ Results: ------
-2026-10-31: the rule "a lower layer never names an upper one" is in the blee-pkg
-AI-Activity.org and in the blee-pkg-authorship skill (with the inversion table and the straight
-pitfall). Left for the next step: README.org and the five-band layers figure.
-2026-11-01: README.org presents the layers as 0-5, and vscodeClaudeLayers has six bands (with [[13.5]]).
-
-** TODO [#A] <<13.5>> Table of Repos for the 6 Layers in README.org
-SCHEDULED: <2026-11-01 Sun>
-:PROPERTIES:
-:ORIGIN: Mohsen
-:IMPORTANCE: Medium
-:REPO: this
-:BASE: this
-:FOUND: <2026-10-31 Sat>
-:END:
-After the graphical presentation of the 6 layers, we will have a
-table with  3 Columns. Column 1 is The Layer #, Column 2 is the github URL, Column 3 is package name/link
-
-For layer 0 There will be 3 Repos and no package.
-For Layer 1, there will be 1 Repo and bisos.aiActivity at PyPi
-For Layer 2, there will be 1 github repo and bisos.vscodeClaude at PyPi (I have not pushed that yet, but we can document it.)
-For Layer 3, there will be one github repo. Not Pkg at at this time. Later I may put it at melpa, etc.
-The guthub urls should be fully spelled out.
------ Results: ------
-2026-11-01 (Claude). Decided with Mohsen: layers numbered 0 to 5 (0 the templates, 1 their
-executables; 1 to 5 keep their earlier meaning), and tables top down, layer 5 first, as in the figure.
-- README.org, "Where Each Layer Lives" after the figure's text: #, GitHub URL, PyPI URL; 3, 4 and 5
-  share bx-blee/vscode-claude (no package yet, package.recipe ready for MELPA); 2 bisos.vscodeClaude
-  (marked planned on PyPI); 1 bisos.aiActivity; 0 the three bxObjects repos, no package. Notes below
-  the table: layer 2 also holds the Python of 3 and 4; which of layer 0's repos is the base.
-- With it: "The Five Layers" became "The Six Layers" (Overview, TOC, principles); "What Each Layer
-  Holds" reversed and renumbered 0-5 (rows and bullets for 0 and 1 apart); the supplies table's /bx-
-  rows are layer 0, gitOpener layer 1; "Layers 0 and 1 alone", "All six"; Related.
-- The graphviz layers figure (vscodeClaudeLayers) has six bands, 0 the templates; title and caption
-  follow; re-rendered. The PyPI and package cells are plain URLs, so the table aligns by raw width.
-
-
 ** -
 
 * Stage 14: Session-Root, Native and Foreign

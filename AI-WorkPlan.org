@@ -17,7 +17,7 @@
   Info      :: *[[elisp:(b:ai:workflow/driver/refresh)][$Refresh]]* | *[[elisp:(blee:bnsm:panel-goto "/bisos/panels/bisos-core/bisos-pip/bisos.aiActivity/newStart/_nodeBase_")][$Panel]]* | *[[elisp:(b:vscode:claude/dispatch)][$Transient]]* | *[[elisp:(b:vscode/partnerShow)][$partner]]* | *[[file:/bisos/git/bxRepos/blee/vscode-claude/README.org][$vscode-claude-README]]* | *[[file:/bisos/git/bxRepos/bisos-pip/aiActivity/README.org][$aiActivity-README]]*
   newStart  :: *[[bashRun:vscodeClaude-assemble.cs -i fullCheck][$setup-check]]* | *[[bashRun:vscodeClaude-assemble.cs -i fullUpdate][$setup]]* | *[[elisp:(b:vscode/init)][$partner-init]]* | [[aiActivity:session-start][#session-start]] | _[[aiActivity:S=session-start][!session-start]]_
   VS Code   :: /[[elisp:(b:vscode/fileOpen)][@Visit]]/ | /[[elisp:(b:vscode/rootOpen)][@root-window]]/   <- Ctrl+K Ctrl+E: this file in Blee, at its line
-  Session   :: *[[elisp:(b:vscode:claude/sessionSelect)][$select-session]]* | [[aiActivity:session-start][#session-start]] | [[aiActivity:session-report][#session-report]] | _[[aiActivity:S=session-start][!session-start]]_
+  Session   :: *[[elisp:(b:vscode:claude/sessionSelect)][$select-session]]* | [[aiActivity:session-start][#session-start]] | [[aiActivity:session-report][#session-report]] | [[aiActivity:session-summary][#session-summary]] | _[[aiActivity:S=session-start][!session-start]]_
   Activity  :: [[aiActivity:activity-reach][#activity-reach]] | [[aiActivity:activity-report][#activity-report]] | _[[aiActivity:S=activity-reach][!activity-reach]]_
   Read      :: [[aiActivity:status-read][#status-read]] | [[aiActivity:archive-read][#archive-read]] | [[aiActivity:ai-outputs][#ai-outputs]] | _[[aiActivity:S=status-read][!status-read]]_ | _[[aiActivity:S=archive-read][!archive-read]]_ | _[[aiActivity:S=ai-outputs][!ai-outputs]]_
   Work      :: [[aiActivity:todo-do][#todo-do]] | [[aiActivity:todo-done][#todo-done]] | _[[aiActivity:S=todo-do][!todo-do]]_ | _[[aiActivity:S=todo-done][!todo-done]]_
@@ -91,7 +91,8 @@ Goal: A placeholder for misc ideas and TODOs
 
 * Stage 1 TODOs (Misc)
 ** +
-** TODO [#C] A Placeholder
+** TODO [#C] Re-Order b:ai:workflow/driver.  Now that we have catgories/types, order is important 
+** TODO [#C] Create a session-ping. Add ito the VS Code row.
 ** -
 
 
@@ -173,7 +174,7 @@ b:ai:workflow/driver
 
 * Stage 7 TODOs --- Continuation
 ** +
-** [#A] <<7.3>> List additional claude /bx-  commands that could be added to the above b:ai:workflow/driver dblock :aiAndMe:
+** WAIT [#A] <<7.3>> List additional claude /bx-  commands that could be added to the above b:ai:workflow/driver dblock :aiAndMe:
 SCHEDULED: <2026-11-22 Sun 23:46>
 ----- Results: ------
 2026-11-23 (Claude, decided with Mohsen). Of the 23 =/bx-= commands in
@@ -201,66 +202,6 @@ SCHEDULED: <2026-11-22 Sun 23:46>
 Proposed with these, for 7.4 to settle: the session's end as one sequence --- Git: git-uncommitted-list,
 git-commit-msg, git-commit-walk, git-pull-list-add; Close: skills-improve, session-verify. The rows
 must stay within 105 displayed characters, so adding five links may split a row.
-
-** [#A] <<7.4>> Restructure the b:ai:workflow/driver output so that the 4 categories are clear  :aiAndMe:
-SCHEDULED: <2026-11-22 Sun 23:46>
-The actions in the output of the dblock can be catgorized into 4 types
-1) /bx- claude prompts   *|P|*
-2) /bx- claude submitted prompts   *|S|*
-3) VS Code:: -> Visit -> root-window || <- (Key binding of VS Code comes here)
-4) Elisp Commands  (Transient, Panel)
------ Results: ------
-2026-11-23 (Claude, decided with Mohsen): built in =dblock-vscode-claude.el=. The four kinds, each
-after its bold marker, in this order on every row: =|E|= Emacs (elisp, or a shell command run from
-Blee), =|V|= VS Code, =|P|= a /bx- prompt to complete, =|S|= submitted. A new Info row (Mohsen) for
-what only informs or opens: the newStart Panel, the Transient, partner-show, and the READMEs of this
-package and of bisos.aiActivity. With the 7.3 additions:
-
-#+begin_example
- *  AI Workflow Driver :: /bx- commands  --  |E| Emacs  |V| VS Code  |P| prompt  |S| submitted
-  Info     :: |E| Panel | Transient | partner-show | vscode-claude-README | aiActivity-README
-  newStart :: |E| setup-check | setup | partner-init  |P| session-start  |S| session-start
-  VS Code  :: |V| Visit | root-window   <- Ctrl+K Ctrl+E: this file in Blee, at its line
-  Session  :: |E| select-session  |P| session-start | session-report  |S| session-start
-  Activity :: |P| activity-reach | activity-report  |S| activity-reach
-  Read     :: |P| status-read | archive-read  |S| status-read | archive-read
-  Work     :: |P| todo-do | todo-done  |S| todo-do | todo-done
-  Record   :: |P| status-update | archive-update | context-trim  |S| status-update | archive-update
-  Outputs  :: |P| ai-outputs | ai-outputs <text>  |S| ai-outputs
-  Git      :: |P| git-uncommitted-list | git-commit-msg  |S| git-uncommitted-list | git-commit-msg
-  Close    :: |P| skills-improve  |S| git-commit-walk | git-pull-list-add | session-verify
-#+end_example
-
-- Changes from 7.3, to keep every row within 105: AI-Outputs has a row of its own (Outputs), and
-  =skills-improve= is P only. =ai-outputs <text>= is the same link as =ai-outputs= (a P link already
-  leaves the prompt open for the defect), labeled for the capture.
-- The code: each row is =(label :e :v :p :s :tail)=; a /bx- command may be =("<name>" . "<label>")=;
-  the READMEs are =b:ai:workflow/driver:readmes=. The old names of the dblock still write it.
-- README.org, "Org Links and the Workflow Driver": the new example and a line per row; its example
-  lines are indented, so toc-org no longer takes them for headings (two stray TOC entries removed).
-- Tested: batch (=emacs-31.1 -Q=, the dblock framework stubbed), 19 checks, 0 failures: 11 rows in
-  order, widest 99 displayed characters, markers in E V P S order, every =aiActivity:= link a
-  =/bx-= command, both READMEs exist, =:controls nil=, the alias. Byte-compiles without warnings.
-- Not yet: in Mohsen's Blee --- reload =dblock-vscode-claude.el=, then =Update Buf Dblocks= in a
-  WorkPlan. The 41 WorkPlans' drivers change only as each is updated.
-
-2026-11-23, revised with Mohsen:
-- Close in the order of a session's end: =|P| session-verify | skills-improve  |S| git-commit-walk |
-  git-pull-list-add= (verify and skills-improve may change files, which the walk commits; the pull list
-  needs the commits pushed). Git is for committing at any time.
-- =ai-outputs= back in Read, P and S; the Outputs row and the =ai-outputs <text>= label dropped (a P
-  =ai-outputs= with the defect typed after it is the capture).
-- A State line above Info, and =Refresh= first on Info (=b:ai:workflow/driver/refresh=). Refresh shows
-  the time, the session a prompt from this buffer goes to (=b:vscode:claude:session/targetDescribe=, as
-  the transient's title) and the partner, as an *overlay* (=display= over a fixed placeholder): the
-  file and the buffer's text do not change, nothing to save or commit; per Emacs and buffer; gone on
-  revert or when the dblock is rewritten (=evaporate=). Text was rejected: churn in 41 committed
-  WorkPlans, meaningless on another machine, a modified buffer after every Refresh. Only the session
-  part is shortened, so the time and the partner always show within 105.
-- Tested: batch, 25 checks, 0 failures (the layout; the overlay covers exactly the placeholder,
-  leaves the text and the modified flag unchanged, is replaced by a second Refresh, evaporates on a
-  rewrite; a long session is cut; no partner file). Byte-compiles without warnings. README.org's
-  section follows. Not yet in Mohsen's Blee.
 
 ** DONE [#A] <<7.4.1>> Redo b:ai:workflow/driver with different legend for 4 categories 
 CLOSED: [2026-11-24 Tue 18:04] SCHEDULED: <2026-11-23 Mon>

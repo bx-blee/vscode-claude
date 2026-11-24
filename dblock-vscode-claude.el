@@ -161,7 +161,7 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
                  :tail "   <- Ctrl+K Ctrl+E: this file in Blee, at its line")
                 ("Session"
                  :e (,(funcall $elisp "(b:vscode:claude/sessionSelect)" "select-session"))
-                 :p ("session-start" "session-report") :s ("session-start"))
+                 :p ("session-start" "session-report" "session-summary") :s ("session-start"))
                 ("Activity" :p ("activity-reach" "activity-report") :s ("activity-reach"))
                 ;; ai-outputs: the ledger's index; as a prompt, with the defect typed after it, a capture.
                 ("Read" :p ("status-read" "archive-read" "ai-outputs")

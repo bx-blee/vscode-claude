@@ -38,7 +38,9 @@ committed): the Info row (Refresh, Panel, Transient, partner, the two READMEs), 
 context-trim, skills-improve, git-pull-list-add, Close in its order, and the =newResume= row (7.5:
 =outputs-pull=, =pull-list=, =pipPkgsStatus=, =/bx-newResume-confirm=). Next: the order of links
 within rows (Mohsen, later; the marks make any order readable); a real cycle --- Close here,
-newResume on another host.
+newResume on another host. Also 2026-11-24, uncommitted: =#session-summary= on the Session row, for
+the new =/bx-session-summary= (aiTemplates-workFlow 6.2; new sessions only, after its base's
+=assemblyUpdate=).
 
 Open: 10.1/10.10 (one owner for "open in VS Code": =blee/open-in= still binds =b:open-in/vscode= to
 its own =xah-open-in-vscode=, which bypasses =vscode.cs=); 11.4/11.5 (a hook from a real session seen

@@ -531,7 +531,7 @@ a link makes it unfollowable.) A control line comes first, unless =:controls nil
   Info      :: $Refresh | $Panel | $Transient | $partner | $vscode-claude-README | $aiActivity-README
   newStart  :: $setup-check | $setup | $partner-init | #session-start | !session-start
   VS Code   :: @Visit | @root-window   <- Ctrl+K Ctrl+E: this file in Blee, at its line
-  Session   :: $select-session | #session-start | #session-report | !session-start
+  Session   :: $select-session | #session-start | #session-report | #session-summary | !session-start
   Activity  :: #activity-reach | #activity-report | !activity-reach
   Read      :: #status-read | #archive-read | #ai-outputs | !status-read | !archive-read | !ai-outputs
   Work      :: #todo-do | #todo-done | !todo-do | !todo-done

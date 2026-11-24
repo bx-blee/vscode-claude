@@ -23,21 +23,22 @@ This file is maintained by Claude. Updates are typically triggered by the
 =/bx-status-update= slash command, after major interactions, or before a release.
 
 * Current State
-As of 2026-11-23. The Blee layer that joins Emacs and VS Code Claude for AI-Activity, as six
+As of 2026-11-24. The Blee layer that joins Emacs and VS Code Claude for AI-Activity, as six
 layers (0-5), each usable without those above; here are layers 3 to 5 in elisp. Optional: VS Code
 alone is a complete AI-Activity. Stages 2-7, 9 and 13 are done and archived
 (=AI-WorkPlan.org_archive=); most of 10-12 too. In daily use: sessions are started and driven from
 Mohsen's Blee (=/bx-session-start ... register==, =/bx-activity-reach <dir>=, the commit walk).
 
-Latest (2026-11-23, WorkPlan 7.3 to 7.5, uncommitted): the workflow driver restructured --- four
-kinds of action, each after a marker (=|E|= Emacs, =|V|= VS Code, =|P|= prompt, =|S|= submitted); an
-Info row (Refresh, the newStart Panel, the Transient, partner-show, the two READMEs); a State line
-that Refresh fills with an overlay; new links context-trim, skills-improve, git-pull-list-add; Close
-in its order; and a last row, =newResume= (7.5), where the work continues on another machine:
-=outputs-pull=, =pull-list=, =pipPkgsStatus=, and the new =/bx-newResume-confirm= (aiTemplates-workFlow;
-the templates base is re-assembled). Close, then newResume: the cycle across machines. Tested in batch
-only (38 checks). Next: in Mohsen's Blee, reload =dblock-vscode-claude.el=, Update Buf Dblocks in a
-WorkPlan, follow Refresh; then a real cycle --- Close here, newResume on another host.
+Latest (2026-11-24, WorkPlan 7.4.1, uncommitted): the driver's links mark their own kind --- a sigil
+first in the link's text and an org face around the link: =$= bold Emacs, =@= italic VS Code, =#= the
+link's own face (a prompt to complete), =!= underline (submitted; red in =blee-dark-1=). The group
+markers are gone, a =|= between every two links, the legend =*$Emacs*  /@VS Code/  #prompt-claude
+_!submit-claude_=. Seen and approved in Mohsen's Blee. Before it (2026-11-23, 7.3 to 7.5,
+committed): the Info row (Refresh, Panel, Transient, partner, the two READMEs), the State overlay,
+context-trim, skills-improve, git-pull-list-add, Close in its order, and the =newResume= row (7.5:
+=outputs-pull=, =pull-list=, =pipPkgsStatus=, =/bx-newResume-confirm=). Next: the order of links
+within rows (Mohsen, later; the marks make any order readable); a real cycle --- Close here,
+newResume on another host.
 
 Open: 10.1/10.10 (one owner for "open in VS Code": =blee/open-in= still binds =b:open-in/vscode= to
 its own =xah-open-in-vscode=, which bypasses =vscode.cs=); 11.4/11.5 (a hook from a real session seen
@@ -80,7 +81,8 @@ yet); Stage 8 is a LOOP (the full Claude-magit cycle).
 - The commit walk driven by Claude (2026-11-03): x n replaces the previous repo's magit in its window.
 - VS Code to Blee: Ctrl+K Ctrl+E opens the file in Blee at its line (Mohsen, 2026-11-01).
 - Dblock updates from outside Emacs, in Mohsen's Blee (6.2, 2026-11-01).
-- The driver dblock (the 2026-11-01 layout) in Mohsen's Blee; its links in daily use.
+- The driver dblock in Mohsen's Blee; its links in daily use. The 7.4.1 marks (2026-11-24): updated
+  and approved there.
 - Installed for Mohsen: the partner (=vscodePartner= live, his Blee) and the Stop and Notification
   hooks in =~/.claude/settings.json=.
 - Batch tests (scratchpad files, not kept in the repo): the layer test (49 checks, layer 4 alone
@@ -89,7 +91,7 @@ yet); Stage 8 is a LOOP (the full Claude-magit cycle).
 - hookToEmacs with no partner or a stale one: exit 0, no output, about 0.4 s.
 
 * What Is Untested
-- The 7.4 driver in Mohsen's Blee (reload, Update Buf Dblocks, Refresh).
+- The State line's Refresh in Mohsen's Blee; the newResume row on another host.
 - A hook from a real session reaching Blee: no "VS Code Claude (...)" Notification line in Blee's
   =*Messages*= (only the last 1000 lines are kept); the magit raise on Stop after x c (11.4).
 - A session with the hooks installed and Blee not running (11.5).
@@ -116,6 +118,12 @@ yet); Stage 8 is a LOOP (the full Claude-magit cycle).
   the order of a session's end --- session-verify and skills-improve first (they change files), then
   the walk, then the pull list (it needs pushed commits). =initiate= stays out: the driver lives in a
   WorkPlan, which exists only after it. Link prefix =aiActivity:=, not =bx:= (too generic).
+- The driver's marks (2026-11-24, 7.4.1): each link carries its kind, so a row may list its links in
+  any order. Faces go around the link (=*[[...][$x]]*=), the sigil inside its text. =!= submit is
+  underlined (red in Blee's theme): final, nothing to edit, it must stand out; =#= prompt has the
+  link's own face. Rows within 105 as Blee shows them (=org-hide-emphasis-markers= t); shown markers
+  add 2 per marked link. Rejected: faces inside the link text (org ignores them), verbatim (the link
+  is no longer followed), strike-through (not readable), a separate READMEs row.
 - Moment-to-moment state is shown, not written: the State line is an overlay (=display= over a fixed
   placeholder), so a Refresh never modifies the WorkPlan or reaches git; per Emacs, per buffer, gone
   on revert or rewrite. Writing it as text was rejected: churn in 41 committed WorkPlans, meaningless
@@ -137,6 +145,9 @@ yet); Stage 8 is a LOOP (the full Claude-magit cycle).
 - Menus are built once; nothing on =menu-bar-update-hook= (a rebuild there made Blee slow, 2026-10-31).
 
 Found the hard way:
+- Org shows no face for emphasis inside a link's text, and verbatim or code around a link makes it
+  literal; a batch-test stub of =bx:dblock:control|wrapper= must call through (its advice is
+  =:around=), else the dblock writes nothing (2026-11-24; now in the =blee-pkg-authorship= skill).
 - Blee sets =straight-check-for-modifications= to nil: a new =.el= file needs its link in straight's
   build dir (a =straight-rebuild-package=), else Blee's startup stops (13.1).
 - A Blee started before Stage 13 kept magit's =x= on the old =b:vscode:claude:magit/dispatch= (no x n);

@@ -515,26 +515,34 @@ without an anchor ask which open TODO of the activity's WorkPlan.
 
 The =b:ai:workflow/driver= dblock, near the top of every =AI-WorkPlan.org=, is a panel of them;
 =Update Buf Dblocks= in Blee fills it. Each label is the command it sends. Its actions are of four
-kinds, each after its bold marker, always in this order: =|E|= Emacs (elisp, or a shell command run
-from Blee), =|V|= VS Code, =|P|= a =/bx-= prompt pasted for you to complete and send, =|S|= the same
-prompt submitted (=S== in its path). A control line comes first, unless =:controls nil=:
+kinds, and each link marks its own kind: a sigil first in its text, and an org face around the whole
+link --- so a row may list its links in any order. =$= bold: Emacs (elisp, or a shell command run
+from Blee); =@= italic: VS Code; =#= the link's own face: a =/bx-= prompt pasted for you to complete and
+send; =!= underline: the same prompt submitted (=S== in its path) --- final, nothing to edit, so it
+stands out (red in Blee's dark theme). The legend is on the second
+line; a =|= separates every two links. (The faces are
+around the link, not in its text: org does not show a face inside a link's text, and verbatim around
+a link makes it unfollowable.) A control line comes first, unless =:controls nil=:
 
 #+begin_example
  *  revert-buffer | read/wr | Show-All  Overview  Content | (1) | S&Q Save Quit Bury Magit
- *  AI Workflow Driver :: /bx- commands  --  |E| Emacs  |V| VS Code  |P| prompt  |S| submitted
+ *  AI Workflow Driver  --  *$Emacs*  /@VS Code/  #prompt-claude  _!submit-claude_
   State     :: (Refresh, on the Info line, shows the session)
-  Info      :: |E| Refresh | Panel | Transient | partner-show | vscode-claude-README | aiActivity-README
-  newStart  :: |E| setup-check | setup | partner-init  |P| session-start  |S| session-start
-  VS Code   :: |V| Visit | root-window   <- Ctrl+K Ctrl+E: this file in Blee, at its line
-  Session   :: |E| select-session  |P| session-start | session-report  |S| session-start
-  Activity  :: |P| activity-reach | activity-report  |S| activity-reach
-  Read      :: |P| status-read | archive-read | ai-outputs  |S| status-read | archive-read | ai-outputs
-  Work      :: |P| todo-do | todo-done  |S| todo-do | todo-done
-  Record    :: |P| status-update | archive-update | context-trim  |S| status-update | archive-update
-  Git       :: |P| git-uncommitted-list | git-commit-msg  |S| git-uncommitted-list | git-commit-msg
-  Close     :: |P| session-verify | skills-improve  |S| git-commit-walk | git-pull-list-add
-  newResume :: |E| outputs-pull | pull-list | pipPkgsStatus  |P| newResume-confirm  |S| newResume-confirm
+  Info      :: $Refresh | $Panel | $Transient | $partner | $vscode-claude-README | $aiActivity-README
+  newStart  :: $setup-check | $setup | $partner-init | #session-start | !session-start
+  VS Code   :: @Visit | @root-window   <- Ctrl+K Ctrl+E: this file in Blee, at its line
+  Session   :: $select-session | #session-start | #session-report | !session-start
+  Activity  :: #activity-reach | #activity-report | !activity-reach
+  Read      :: #status-read | #archive-read | #ai-outputs | !status-read | !archive-read | !ai-outputs
+  Work      :: #todo-do | #todo-done | !todo-do | !todo-done
+  Record    :: #status-update | #archive-update | #context-trim | !status-update | !archive-update
+  Git       :: #git-uncommitted-list | #git-commit-msg | !git-uncommitted-list | !git-commit-msg
+  Close     :: #session-verify | #skills-improve | !git-commit-walk | !git-pull-list-add
+  newResume :: $outputs-pull | $pull-list | $pipPkgsStatus | #newResume-confirm | !newResume-confirm
 #+end_example
+
+(The example shows the sigils only; in the file each link also has its face markers and its target.
+The rows are within 105 characters as Blee shows them, with =org-hide-emphasis-markers=.)
 
 - State, after Refresh (the first item of Info), shows over its placeholder:
   : State     :: 2026-11-23 10:42  -> <session> (idle, 2m ago) at <folder>  --  partner: this Emacs
@@ -544,8 +552,8 @@ prompt submitted (=S== in its path). A control line comes first, unless =:contro
   Refresh leaves nothing to save or commit, and the state is gone when the buffer is closed or the
   dblock rewritten --- Refresh again (=b:ai:workflow/driver/refresh=).
 - Info: Refresh, bisos.aiActivity's newStart panel (the steps of a start), the transient
-  (=b:vscode:claude/dispatch=), the partner Emacs (=b:vscode/partnerShow=), and the READMEs of this
-  package and of bisos.aiActivity.
+  (=b:vscode:claude/dispatch=), the partner Emacs (=partner=: =b:vscode/partnerShow=), and the READMEs
+  of this package and of bisos.aiActivity.
 - newStart, for starting from scratch: =vscodeClaude-assemble.cs -i fullCheck= (=setup-check=,
   read-only) or =-i fullUpdate= (=setup=, once per platform, idempotent) as =bashRun:= links, this
   Emacs declared VS Code's partner (=partner-init=: =b:vscode/init=), then =session-start=, a

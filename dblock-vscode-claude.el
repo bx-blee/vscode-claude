@@ -113,16 +113,27 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
     (defun bodyContentPlus ())
     (defun bodyContent ()
       (let* (($controls (if (plist-member <params :controls) (plist-get <params :controls) t))
+             ;; Four kinds of action, each link marking its own kind (WorkPlan 7.4.1): a sigil
+             ;; first in the link's text, and an org face around the whole link (a face inside a
+             ;; link's text is not shown by org; verbatim around a link makes it unfollowable):
+             ;;   e  $ bold       Emacs (elisp, or a shell command run from Blee)
+             ;;   v  @ italic     VS Code
+             ;;   p  #            a /bx- prompt you complete and send: the link's own face
+             ;;   s  ! underline  the same prompt submitted: final, nothing to edit, so it stands out
+             ($wrap (lambda (<kind <path <label)
+                      (let (($sigil (cdr (assq <kind '((e . "$") (v . "@") (p . "#") (s . "!")))))
+                            ($face (cdr (assq <kind '((e . "*") (v . "/") (p . "") (s . "_"))))))
+                        (format "%s[[%s][%s%s]]%s" $face <path $sigil <label $face))))
              ;; A /bx- command: "<name>", or ("<name>" . "<label>") when the label says more.
-             ($link (lambda (<cmnd &optional <submit)
+             ($link (lambda (<cmnd <kind)
                       (let (($name (if (consp <cmnd) (car <cmnd) <cmnd))
                             ($label (if (consp <cmnd) (cdr <cmnd) <cmnd)))
-                        (format "[[aiActivity:%s%s][%s]]" (if <submit "S=" "") $name $label))))
-             ($elisp (lambda (<form <label) (format "[[elisp:%s][%s]]" <form <label)))
-             ;; Four kinds of action, each after its marker, always in this order:
-             ;; |E| Emacs (elisp, or a shell command run from Blee), |V| VS Code, |P| a /bx- prompt
-             ;; you complete and send, |S| the same prompt submitted. Each row:
-             ;; (label :e links :v links :p commands :s commands :tail text).
+                        (funcall $wrap <kind (format "aiActivity:%s%s" (if (eq <kind 's) "S=" "") $name)
+                                 $label))))
+             ($elisp (lambda (<form <label) (funcall $wrap 'e (concat "elisp:" <form) <label)))
+             ($elispV (lambda (<form <label) (funcall $wrap 'v (concat "elisp:" <form) <label)))
+             ;; Each row: (label :e links :v links :p commands :s commands :tail text); within a
+             ;; row the kinds are still in e v p s order (the order of links is to be decided).
              ;; Session: this session, at its Session-Root; Activity: the AI-Activities it reaches.
              ;; Git commits at any time; Close is the end of a session, in its order.
              ($rows
@@ -132,21 +143,21 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
                                               b:ai:workflow/driver:newStartPanel)
                                "Panel")
                      ,(funcall $elisp "(b:vscode:claude/dispatch)" "Transient")
-                     ,(funcall $elisp "(b:vscode/partnerShow)" "partner-show")
-                     ,@(mapcar (lambda (r) (format "[[file:%s][%s]]" (cdr r) (car r)))
+                     ,(funcall $elisp "(b:vscode/partnerShow)" "partner")
+                     ,@(mapcar (lambda (r) (funcall $wrap 'e (concat "file:" (cdr r)) (car r)))
                                b:ai:workflow/driver:readmes)))
                 ;; Starting from scratch (bisos.aiActivity's newStart panel): setup is
                 ;; vscodeClaude's CBM assemble, once per platform and idempotent; partner-init is
                 ;; b:vscode/init (layer 3); session-start, in this buffer's home window (layer 5).
                 ("newStart"
-                 :e ("[[bashRun:vscodeClaude-assemble.cs -i fullCheck][setup-check]]"
-                     "[[bashRun:vscodeClaude-assemble.cs -i fullUpdate][setup]]"
+                 :e (,(funcall $wrap 'e "bashRun:vscodeClaude-assemble.cs -i fullCheck" "setup-check")
+                     ,(funcall $wrap 'e "bashRun:vscodeClaude-assemble.cs -i fullUpdate" "setup")
                      ,(funcall $elisp "(b:vscode/init)" "partner-init"))
                  :p ("session-start") :s ("session-start"))
                 ;; The way back, VS Code to Blee, is a key in VS Code (vscode.cs -i vscodeBleeLinkInstall).
                 ("VS Code"
-                 :v (,(funcall $elisp "(b:vscode/fileOpen)" "Visit")
-                     ,(funcall $elisp "(b:vscode/rootOpen)" "root-window"))
+                 :v (,(funcall $elispV "(b:vscode/fileOpen)" "Visit")
+                     ,(funcall $elispV "(b:vscode/rootOpen)" "root-window"))
                  :tail "   <- Ctrl+K Ctrl+E: this file in Blee, at its line")
                 ("Session"
                  :e (,(funcall $elisp "(b:vscode:claude/sessionSelect)" "select-session"))
@@ -167,10 +178,11 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
                 ;; Close's pull list, on the machine where the work continues (WorkPlan 7.5): the
                 ;; repo of the pull lists first, then the latest list, the packages, then Claude's check.
                 ("newResume"
-                 :e (,(format "[[bashRun:git -C %s pull --rebase][outputs-pull]]"
-                              b:ai:workflow/driver:outputsRepo)
+                 :e (,(funcall $wrap 'e (format "bashRun:git -C %s pull --rebase"
+                                                b:ai:workflow/driver:outputsRepo)
+                               "outputs-pull")
                      ,(funcall $elisp "(b:ai:workflow/driver/pullListVisit)" "pull-list")
-                     "[[bashRun:pipPkgsStatus.cs -i pkgsStatus][pipPkgsStatus]]")
+                     ,(funcall $wrap 'e "bashRun:pipPkgsStatus.cs -i pkgsStatus" "pipPkgsStatus"))
                  :p ("newResume-confirm") :s ("newResume-confirm")))))
         (when $controls
           (insert (format "%s  [[elisp:(revert-buffer)][revert-buffer]] | " (make-string <outLevel ?*))
@@ -180,26 +192,24 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
                   "[[elisp:(delete-other-windows)][(1)]] | "
                   "[[elisp:(progn (save-buffer) (kill-buffer))][S&Q]] [[elisp:(save-buffer)][Save]] "
                   "[[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]]\n"))
-        (insert (format "%s  [[elisp:(org-cycle)][AI Workflow Driver :: /bx- commands]]  --  %s\n"
+        (insert (format "%s  [[elisp:(org-cycle)][AI Workflow Driver]]  --  %s\n"
                         (make-string <outLevel ?*)
-                        "*|E|* Emacs  *|V|* VS Code  *|P|* prompt  *|S|* submitted"))
+                        "*$Emacs*  /@VS Code/  #prompt-claude  _!submit-claude_"))
         ;; What changes from moment to moment is not written into the file: Refresh shows it over
         ;; this line (b:ai:workflow/driver/refresh), so the WorkPlan does not change.
         (insert (format "  %s :: %s\n" (string-pad "State" b:ai:workflow/driver:labelWidth)
                         b:ai:workflow/driver:state:placeholder))
         (dolist ($row $rows)
           (let* (($plist (cdr $row))
-                 ($groups
-                  (delq nil
-                        (list
-                         (when-let* (($e (plist-get $plist :e))) (concat "*|E|* " (string-join $e " | ")))
-                         (when-let* (($v (plist-get $plist :v))) (concat "*|V|* " (string-join $v " | ")))
-                         (when-let* (($p (plist-get $plist :p)))
-                           (concat "*|P|* " (mapconcat $link $p " | ")))
-                         (when-let* (($s (plist-get $plist :s)))
-                           (concat "*|S|* " (mapconcat (lambda (c) (funcall $link c t)) $s " | ")))))))
+                 ;; "|" between all links: each link marks its own kind. Within 105 as Blee shows
+                 ;; it, with org-hide-emphasis-markers (shown markers add 2 per marked link).
+                 ($links
+                  (append (plist-get $plist :e)
+                          (plist-get $plist :v)
+                          (mapcar (lambda (c) (funcall $link c 'p)) (plist-get $plist :p))
+                          (mapcar (lambda (c) (funcall $link c 's)) (plist-get $plist :s)))))
             (insert (format "  %s :: %s%s\n" (string-pad (car $row) b:ai:workflow/driver:labelWidth)
-                            (string-join $groups "  ")
+                            (string-join $links " | ")
                             (or (plist-get $plist :tail) "")))))))
     (defun outCommentPostContent ())
 

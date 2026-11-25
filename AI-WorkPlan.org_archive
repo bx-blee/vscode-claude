@@ -1043,3 +1043,44 @@ package and of bisos.aiActivity. With the 7.3 additions:
   rewrite; a long session is cut; no partner file). Byte-compiles without warnings. README.org's
   section follows. Not yet in Mohsen's Blee.
 
+
+* DONE [#A] <<7.4.1>> Redo b:ai:workflow/driver with different legend for 4 categories 
+CLOSED: [2026-11-24 Tue 18:04] SCHEDULED: <2026-11-23 Mon>
+:PROPERTIES:
+:ARCHIVE_TIME: 2026-11-24 Tue 22:22
+:ARCHIVE_FILE: /bxRepos/blee/vscode-claude/AI-WorkPlan.org
+:ARCHIVE_OLPATH: Stage 7 TODOs --- Continuation
+:ARCHIVE_CATEGORY: AI-WorkPlan
+:ARCHIVE_TODO: DONE
+:END:
+*$Emacs$*   *@VS Code@*  *#prompt#*  *=submitted=*
+The new legend will permit to imply order in each line without having to keep the type order of before
+----- Results: ------
+2026-11-24 (Claude): Mohsen was right: org does not apply a face to emphasis markers /inside/ a
+link's text (batch, emacs 31.1 =-Q=: =[[l][*x*]]= gets only =org-link=). Markers /around/ the whole link
+do show (bold, italic, underline: face and link both work). Verbatim =...= around a link does show
+the face but makes the link literal: =org-element-context= says verbatim, so C-c C-o will not follow
+it. Nested (bold-italic) shows only the outer face. Four examples, sigil inside the text, face
+outside, for you to look at in Blee:
+- Emacs, =$=, bold:             *[[elisp:(b:ai:workflow/driver/refresh)][$Refresh]]*
+- VS Code, =@=, italic:         /[[elisp:(b:vscode/fileOpen)][@Visit]]/
+- prompt, =#=, underline:       _[[aiActivity:session-start][#session-start]]_
+- submitted, =!=, strike-through: +[[aiActivity:S=session-start][!session-start]]+
+Decided (Mohsen): strike-through is not readable; the fourth kind has no face, the link's own; =!= stays.
+Ordering of links within rows is deferred (Mohsen): the kinds are still in E V P S order.
+2026-11-24, built in =dblock-vscode-claude.el= (final, with Mohsen): =$wrap= makes every link
+=face[[path][sigil label]]face=: =$= bold (Emacs), =@= italic (VS Code), =#= the link's own face (a
+prompt to complete), =!= underline (submitted: final, nothing to edit, so it stands out; red in
+=blee-dark-1=). The =|E| |V| |P| |S|= group markers are gone; a =|= separates every two links. The
+legend, with "/bx- commands" dropped from the heading: =*$Emacs*  /@VS Code/  #prompt-claude
+_!submit-claude_=. The READMEs stay in Info; its =partner-show= is now =partner=, to fit.
+- Width: measured as Blee shows it (=org-hide-emphasis-markers= is =t=): widest row 102 (Read).
+  With markers shown, Read and newResume are 108.
+- Tested: batch (=emacs -Q=, dblock framework stubbed): 48 links, every one followable
+  (=org-element-context= is =link=) with the face of its sigil; byte-compiles without warnings.
+  In Mohsen's Blee: reloaded, Update Buf Dblocks, approved ("looks good", 2026-11-24).
+- README.org, "Org Links and the Workflow Driver": the example, the legend, the faces.
+- Left: the order of links within rows (Mohsen: later). The other WorkPlans' drivers change as each
+  is updated.
+
+

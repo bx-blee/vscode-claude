@@ -113,16 +113,17 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
     (defun bodyContentPlus ())
     (defun bodyContent ()
       (let* (($controls (if (plist-member <params :controls) (plist-get <params :controls) t))
-             ;; Four kinds of action, each link marking its own kind (WorkPlan 7.4.1): a sigil
+             ;; Five kinds of action, each link marking its own kind (WorkPlan 7.4.1, 7.6): a sigil
              ;; first in the link's text, and an org face around the whole link (a face inside a
              ;; link's text is not shown by org; verbatim around a link makes it unfollowable):
              ;;   e  $ bold       Emacs (elisp, or a shell command run from Blee)
+             ;;   b  ^ bold       a .cs command in Blee's *LSIP* shell, from this buffer's directory
              ;;   v  @ italic     VS Code
              ;;   p  #            a /bx- prompt you complete and send: the link's own face
              ;;   s  ! underline  the same prompt submitted: final, nothing to edit, so it stands out
              ($wrap (lambda (<kind <path <label)
-                      (let (($sigil (cdr (assq <kind '((e . "$") (v . "@") (p . "#") (s . "!")))))
-                            ($face (cdr (assq <kind '((e . "*") (v . "/") (p . "") (s . "_"))))))
+                      (let (($sigil (cdr (assq <kind '((e . "$") (b . "^") (v . "@") (p . "#") (s . "!")))))
+                            ($face (cdr (assq <kind '((e . "*") (b . "*") (v . "/") (p . "") (s . "_"))))))
                         (format "%s[[%s][%s%s]]%s" $face <path $sigil <label $face))))
              ;; A /bx- command: "<name>", or ("<name>" . "<label>") when the label says more.
              ($link (lambda (<cmnd <kind)
@@ -133,7 +134,7 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
              ($elisp (lambda (<form <label) (funcall $wrap 'e (concat "elisp:" <form) <label)))
              ($elispV (lambda (<form <label) (funcall $wrap 'v (concat "elisp:" <form) <label)))
              ;; Each row: (label :e links :v links :p commands :s commands :tail text); within a
-             ;; row the kinds are still in e v p s order (the order of links is to be decided).
+             ;; row the kinds are still in e v p s order, b with e (the order of links is to be decided).
              ;; Session: this session, at its Session-Root; Activity: the AI-Activities it reaches.
              ;; Git commits at any time; Close is the end of a session, in its order.
              ($rows
@@ -155,18 +156,26 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
                      ,(funcall $elisp "(b:vscode/init)" "partner-init"))
                  :p ("session-start") :s ("session-start"))
                 ;; The way back, VS Code to Blee, is a key in VS Code (vscode.cs -i vscodeBleeLinkInstall).
+                ;; vscode.cs (layers 2, 3) and vscodeClaude.cs (layer 4) in a Blee shell, by name on
+                ;; PATH: their examples, to run or debug what the links below them do.
                 ("VS Code"
+                 :e (,(funcall $wrap 'b "bashRunHere:vscode.cs" "vscode.cs")
+                     ,(funcall $wrap 'b "bashRunHere:vscodeClaude.cs" "vscodeClaude.cs"))
                  :v (,(funcall $elispV "(b:vscode/fileOpen)" "Visit")
                      ,(funcall $elispV "(b:vscode/rootOpen)" "root-window"))
-                 :tail "   <- Ctrl+K Ctrl+E: this file in Blee, at its line")
+                 :tail "   <- Ctrl+K Ctrl+E")
                 ("Session"
                  :e (,(funcall $elisp "(b:vscode:claude/sessionSelect)" "select-session"))
                  :p ("session-start" "session-report" "session-summary") :s ("session-start"))
-                ("Activity" :p ("activity-reach" "activity-report") :s ("activity-reach"))
+                ;; aiActivity.cs (layer 1) in a Blee shell, as for the VS Code row.
+                ("Activity"
+                 :e (,(funcall $wrap 'b "bashRunHere:aiActivity.cs" "aiActivity.cs"))
+                 :p ("activity-reach" "activity-report") :s ("activity-reach"))
                 ;; ai-outputs: the ledger's index; as a prompt, with the defect typed after it, a capture.
                 ("Read" :p ("status-read" "archive-read" "ai-outputs")
                  :s ("status-read" "archive-read" "ai-outputs"))
-                ("Work" :p ("todo-do" "todo-done") :s ("todo-do" "todo-done"))
+                ("Work" :p ("todo-do" "todo-done") :s ("todo-do" "todo-done")
+                 :tail ,(concat " | " (funcall $elisp "(b:ai:workflow/driver/aiOutputsVisit)" "Visit-AiOutputs")))
                 ("Record" :p ("status-update" "archive-update" "context-trim")
                  :s ("status-update" "archive-update"))
                 ("Git" :p ("git-uncommitted-list" "git-commit-msg")
@@ -194,7 +203,7 @@ b:vscode:claude:aiActivity:link/follow); C-u C-c C-o on one flips submit. The se
                   "[[elisp:(kill-buffer)][Quit]] [[elisp:(bury-buffer)][Bury]] [[elisp:(magit)][Magit]]\n"))
         (insert (format "%s  [[elisp:(org-cycle)][AI Workflow Driver]]  --  %s\n"
                         (make-string <outLevel ?*)
-                        "*$Emacs*  /@VS Code/  #prompt-claude  _!submit-claude_"))
+                        "*$Emacs*  *^Bash*  /@VS Code/  #prompt-claude  _!submit-claude_"))
         ;; What changes from moment to moment is not written into the file: Refresh shows it over
         ;; this line (b:ai:workflow/driver/refresh), so the WorkPlan does not change.
         (insert (format "  %s :: %s\n" (string-pad "State" b:ai:workflow/driver:labelWidth)
@@ -291,6 +300,21 @@ when the buffer has no State line.
     (message (if $found "Driver state: %s" "No driver State line in this buffer") $text)
     (and $found $text)))
 
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:ai:workflow/driver:aiOutputs/file" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:ai:workflow/driver:aiOutputs/file>>  --  -- This buffer's AI-Outputs.org, found upward, as its true file.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:ai:workflow/driver:aiOutputs/file (
+;;;#+END:
+                  )
+   " #+begin_org
+** DocStr: This buffer's AI-Outputs.org, found upward from its directory, as its true file.
+Signals a user-error when there is none.
+#+end_org "
+  (let (($dir (or (locate-dominating-file default-directory "AI-Outputs.org")
+                  (user-error "No AI-Outputs.org above %s" default-directory))))
+    (file-truename (expand-file-name "AI-Outputs.org" $dir))))
+
 ;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:ai:workflow/driver/pullListVisit" :advice ()
 (orgCmntBegin "
 *  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:ai:workflow/driver/pullListVisit>>  --  -- Open AI-Outputs.org at the latest pull list still to pull.  [[elisp:(org-cycle)][| ]]
@@ -306,9 +330,7 @@ upward from its directory), as its true file. Point goes to the last entry still
 \"Pull On Other Hosts\" section. Returns the file, or signals when there is none.
 #+end_org "
   (interactive)
-  (let* (($dir (or (locate-dominating-file default-directory "AI-Outputs.org")
-                   (user-error "No AI-Outputs.org above %s" default-directory)))
-         ($file (file-truename (expand-file-name "AI-Outputs.org" $dir))))
+  (let (($file (b:ai:workflow/driver:aiOutputs/file)))
     (find-file $file)
     (widen)
     (goto-char (point-max))
@@ -320,6 +342,23 @@ upward from its directory), as its true file. Point goes to the last entry still
              (message "No pull list in %s" $file)))
     (when (derived-mode-p 'org-mode) (org-fold-show-context) (org-fold-show-subtree))
     (when (eq (window-buffer) (current-buffer)) (recenter 0))
+    $file))
+
+
+;;;#+BEGIN:  b:elisp:defs/cl-defun :defName "b:ai:workflow/driver/aiOutputsVisit" :advice ()
+(orgCmntBegin "
+*  _[[elisp:(blee:menu-sel:outline:popupMenu)][±]]_ _[[elisp:(blee:menu-sel:navigation:popupMenu)][Ξ]]_ [[elisp:(outline-show-branches+toggle)][|=]] [[elisp:(bx:orgm:indirectBufOther)][|>]] *[[elisp:(blee:ppmm:org-mode-toggle)][|N]]*  cl-defun   [[elisp:(outline-show-subtree+toggle)][||]]  <<b:ai:workflow/driver/aiOutputsVisit>>  --  -- Open this buffer's AI-Outputs.org.  [[elisp:(org-cycle)][| ]]
+" orgCmntEnd)
+(cl-defun b:ai:workflow/driver/aiOutputsVisit (
+;;;#+END:
+                  )
+   " #+begin_org
+** DocStr: Open this buffer's AI-Outputs.org (found upward), at its top: the Work row's =Visit-AiOutputs=.
+Returns the file, or signals when there is none.
+#+end_org "
+  (interactive)
+  (let (($file (b:ai:workflow/driver:aiOutputs/file)))
+    (find-file $file)
     $file))
 
 

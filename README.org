@@ -514,27 +514,27 @@ request recorded for the Stop hook), =git-commit-walk= through =x w=, and =todo-
 without an anchor ask which open TODO of the activity's WorkPlan.
 
 The =b:ai:workflow/driver= dblock, near the top of every =AI-WorkPlan.org=, is a panel of them;
-=Update Buf Dblocks= in Blee fills it. Each label is the command it sends. Its actions are of four
+=Update Buf Dblocks= in Blee fills it. Each label is the command it sends. Its actions are of five
 kinds, and each link marks its own kind: a sigil first in its text, and an org face around the whole
 link --- so a row may list its links in any order. =$= bold: Emacs (elisp, or a shell command run
-from Blee); =@= italic: VS Code; =#= the link's own face: a =/bx-= prompt pasted for you to complete and
-send; =!= underline: the same prompt submitted (=S== in its path) --- final, nothing to edit, so it
-stands out (red in Blee's dark theme). The legend is on the second
-line; a =|= separates every two links. (The faces are
+from Blee); =^= bold: a =.cs= command in Blee's =*LSIP*= shell (a =bashRunHere:= link); =@= italic:
+VS Code; =#= the link's own face: a =/bx-= prompt pasted for you to complete and send; =!= underline:
+the same prompt submitted (=S== in its path) --- final, nothing to edit, so it stands out (red in
+Blee's dark theme). The legend is on the second line; a =|= separates every two links. (The faces are
 around the link, not in its text: org does not show a face inside a link's text, and verbatim around
 a link makes it unfollowable.) A control line comes first, unless =:controls nil=:
 
 #+begin_example
  *  revert-buffer | read/wr | Show-All  Overview  Content | (1) | S&Q Save Quit Bury Magit
- *  AI Workflow Driver  --  *$Emacs*  /@VS Code/  #prompt-claude  _!submit-claude_
+ *  AI Workflow Driver  --  *$Emacs*  *^Bash*  /@VS Code/  #prompt-claude  _!submit-claude_
   State     :: (Refresh, on the Info line, shows the session)
   Info      :: $Refresh | $Panel | $Transient | $partner | $vscode-claude-README | $aiActivity-README
   newStart  :: $setup-check | $setup | $partner-init | #session-start | !session-start
-  VS Code   :: @Visit | @root-window   <- Ctrl+K Ctrl+E: this file in Blee, at its line
+  VS Code   :: ^vscode.cs | ^vscodeClaude.cs | @Visit | @root-window   <- Ctrl+K Ctrl+E
   Session   :: $select-session | #session-start | #session-report | #session-summary | !session-start
-  Activity  :: #activity-reach | #activity-report | !activity-reach
+  Activity  :: ^aiActivity.cs | #activity-reach | #activity-report | !activity-reach
   Read      :: #status-read | #archive-read | #ai-outputs | !status-read | !archive-read | !ai-outputs
-  Work      :: #todo-do | #todo-done | !todo-do | !todo-done
+  Work      :: #todo-do | #todo-done | !todo-do | !todo-done | $Visit-AiOutputs
   Record    :: #status-update | #archive-update | #context-trim | !status-update | !archive-update
   Git       :: #git-uncommitted-list | #git-commit-msg | !git-uncommitted-list | !git-commit-msg
   Close     :: #session-verify | #skills-improve | !git-commit-walk | !git-pull-list-add
@@ -559,10 +559,16 @@ The rows are within 105 characters as Blee shows them, with =org-hide-emphasis-m
   Emacs declared VS Code's partner (=partner-init=: =b:vscode/init=), then =session-start=, a
   session at this WorkPlan's home.
 - VS Code: =Visit= opens this file in its root's window (=b:vscode/fileOpen=), =root-window= brings
-  that window forward or opens it (=b:vscode/rootOpen=); the way back is a key in VS Code (see "From
-  VS Code to Blee").
+  that window forward or opens it (=b:vscode/rootOpen=); the way back is a key in VS Code, Ctrl+K
+  Ctrl+E (see "From VS Code to Blee"). =vscode.cs= (layers 2 and 3) and =vscodeClaude.cs= (layer 4)
+  run in Blee's =*LSIP*= shell from this file's directory (=bashRunHere:=), showing the command's
+  examples, to run or debug at shell level what the links do; by name on PATH, so the dev install
+  where there is one.
+- Activity: =aiActivity.cs= (layer 1) the same way; =activity-reach= and =activity-report= ask Claude.
 - Read: =ai-outputs= lists =AI-Outputs.org='s index; as a prompt, with the defect typed after it,
   it captures one.
+- Work: =Visit-AiOutputs= opens this activity's =AI-Outputs.org= (found upward;
+  =b:ai:workflow/driver/aiOutputsVisit=).
 - Git commits at any time: what is uncommitted, a commit message for this repo.
 - Close is the end of a session, in its order: =session-verify= and =skills-improve= first (they may
   change files), then the commit walk, then the pull list for other hosts (it needs the commits
